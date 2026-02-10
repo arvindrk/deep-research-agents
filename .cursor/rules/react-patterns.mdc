@@ -1,0 +1,70 @@
+---
+description: React and Next.js performance patterns - apply best practices from react-best-practices skill
+globs:
+    - '*.tsx'
+    - '*.jsx'
+    - '**/app/**/*.ts'
+alwaysApply: false
+---
+
+# React & Next.js Performance Patterns
+
+When editing React components or Next.js code, automatically reference `.agents/skills/react-best-practices/`.
+
+## CRITICAL Patterns (Always Apply)
+
+### 1. Eliminate Waterfalls
+
+- Use `Promise.all()` for independent async operations
+- Defer `await` until actually needed
+- Start promises early in API routes and Server Components
+- Use `better-all` for dependency-based parallelism
+
+### 2. Bundle Size Optimization
+
+- **Avoid barrel imports**: Import directly from source files
+    ```ts
+    // ❌ import { Check } from 'lucide-react'
+    // ✅ import Check from 'lucide-react/dist/esm/icons/check'
+    ```
+- Use `next/dynamic` for heavy components (Monaco, charts)
+- Defer non-critical third-party libraries (analytics, logging)
+
+### 3. Server-Side Performance
+
+- Use `React.cache()` for per-request deduplication
+- Use LRU cache for cross-request caching
+- Minimize serialization at RSC boundaries (only pass needed fields)
+- Use `after()` for non-blocking operations
+
+### 4. Re-render Optimization
+
+- Use functional `setState` updates: `setItems(curr => [...curr, newItem])`
+- Defer state reads to usage point (don't subscribe in render if only used in callbacks)
+- Subscribe to derived boolean state, not continuous values
+
+## Quick Reference
+
+| Priority | Pattern             | When to Apply                            |
+| -------- | ------------------- | ---------------------------------------- |
+| CRITICAL | Promise.all         | Any async operations                     |
+| CRITICAL | Direct imports      | Icon libraries, large packages           |
+| HIGH     | React.cache()       | Database queries, auth checks            |
+| MEDIUM   | Functional setState | Any state updates based on current value |
+| MEDIUM   | Memo components     | Expensive rendering work                 |
+
+## Full Documentation
+
+For complete rules and examples:
+
+- **Overview**: `.agents/skills/react-best-practices/SKILL.md`
+- **All Rules**: `.agents/skills/react-best-practices/AGENTS.md`
+
+## Auto-Integration with MCP Tools
+
+- **next-devtools**: Automatically use on build failures or runtime errors
+- **OpenAI docs**: Use when implementing OpenAI API calls or embeddings
+
+---
+
+**Note**: These patterns are applied automatically to all React/Next.js files. Focus on CRITICAL patterns first for maximum impact.

@@ -1,0 +1,147 @@
+---
+description: UI component design patterns - Linear design system, modern aesthetics, accessibility
+globs:
+    - '**/components/ui/**'
+    - '**/app/**/page.tsx'
+    - '**/app/**/layout.tsx'
+    - '**/components/**/*.tsx'
+alwaysApply: false
+---
+
+# UI Component Design Patterns
+
+When creating or editing UI components, reference multiple design skills for comprehensive guidance.
+
+## Skill Priority
+
+1. **linear-design-system** (Highest Priority)
+2. **frontend-design** (For new pages/apps)
+3. **web-design-guidelines** (For accessibility/best practices)
+
+## 1. Linear Design System (PRIMARY)
+
+**Reference**: `.agents/skills/linear-design-system/`
+
+### Critical Rules
+
+- **Token-first development**: NEVER hardcode design values
+
+    ```tsx
+    // ❌ className="bg-[#f5f5f5] text-[14px] shadow-md"
+    // ✅ className="bg-secondary text-primary text-xs shadow-low"
+    ```
+
+- **No hover movement**: Interactive elements must NOT shift position on hover
+
+    ```tsx
+    // ❌ hover:translate-x-1 hover:scale-105 hover:m-2
+    // ✅ hover:bg-bg-tertiary hover:opacity-90 hover:shadow-md
+    ```
+
+- **Background layering**: Use increasing layers for depth
+
+    ```
+    primary (bg-primary) → secondary (bg-secondary) → tertiary (bg-tertiary) → quaternary (bg-quaternary)
+    ```
+
+- **Component structure**: Use `cva()` + `forwardRef`
+
+    ```tsx
+    import { cva, type VariantProps } from "class-variance-authority";
+
+    const buttonVariants = cva("base-classes", {
+      variants: { size: {...}, variant: {...} }
+    });
+    ```
+
+### Documentation
+
+- **Tokens**: `.agents/skills/linear-design-system/TOKENS.md`
+- **Components**: `.agents/skills/linear-design-system/COMPONENTS.md`
+- **Validation**: `.agents/skills/linear-design-system/VALIDATION.md`
+
+## 2. Frontend Design (For New Pages)
+
+**Reference**: `.agents/skills/frontend-design/`
+
+### Use When
+
+- Building landing pages, dashboards, web apps from scratch
+- Creating distinctive, non-generic interfaces
+- "Make this beautiful/polished" requests
+
+### Key Principles
+
+- **Bold aesthetic direction**: Choose clear vision (minimal, brutalist, etc.)
+- **Distinctive typography**: Avoid generic fonts (Inter, Roboto)
+- **Strategic motion**: Page load reveals, scroll triggers, hover states
+- **Spatial composition**: Asymmetry, overlap, generous negative space
+
+## 3. Web Design Guidelines (Accessibility)
+
+**Reference**: `.agents/skills/web-design-guidelines/`
+
+### Always Apply
+
+- **Accessibility**: ARIA labels, semantic HTML, keyboard navigation
+- **Focus states**: Visible focus indicators on all interactive elements
+- **Forms**: Proper autocomplete, validation, error messages
+- **Images**: Always include alt text, dimensions, lazy loading
+- **Animation**: Respect `prefers-reduced-motion`
+
+### Critical Patterns
+
+```tsx
+// Focus states
+<button className="focus-visible:ring-2 ring-accent">
+
+// Accessible forms
+<input
+  type="email"
+  autoComplete="email"
+  aria-label="Email address"
+  aria-invalid={hasError}
+  aria-describedby={hasError ? "email-error" : undefined}
+/>
+
+// Reduced motion
+<div className="motion-safe:animate-fade-in">
+```
+
+## Component Creation Workflow
+
+1. **Check existing components** (shadcn MCP)
+    - Search shadcn registry before creating new components
+    - Use `search_items_in_registries` and `view_items_in_registries`
+
+2. **Apply Linear tokens**
+    - Use design tokens for colors, spacing, typography, shadows
+    - Check `.agents/skills/linear-design-system/TOKENS.md`
+
+3. **Use frontend-design principles** (if new page/app)
+    - Choose bold aesthetic direction
+    - Apply distinctive typography and motion
+
+4. **Validate accessibility**
+    - Check `.agents/skills/web-design-guidelines/`
+    - Ensure ARIA, focus states, keyboard nav
+
+## Auto-Integration with MCP Tools
+
+- **shadcn**: Check registry before creating new UI components
+- **Vercel**: Reference for deployment-specific UI optimizations
+
+## Quick Checklist
+
+- [ ] Uses design tokens (no hardcoded values)
+- [ ] No hover movement (no translate, scale, margin changes)
+- [ ] Uses `cva()` for variants
+- [ ] Includes proper TypeScript types
+- [ ] Has focus-visible states
+- [ ] Includes ARIA labels where needed
+- [ ] Respects prefers-reduced-motion
+- [ ] Uses forwardRef for ref forwarding
+
+---
+
+**Note**: Linear design system takes precedence for all UI work in this project. Frontend-design applies to new pages/apps. Web-design-guidelines ensures accessibility compliance.

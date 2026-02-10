@@ -1,0 +1,274 @@
+---
+description: Pattern-based MCP tool usage - automatic invocation of database, deployment, documentation, and framework tools
+globs: []
+alwaysApply: true
+---
+
+# MCP Tool Auto-Application Patterns
+
+This rule defines when to automatically use MCP tools based on file patterns and task types.
+
+## Database Operations → Neon MCP
+
+**Auto-use when editing**:
+
+- `**/db/**/*`
+- `**/*.sql`
+- `**/migrations/**/*`
+- `**/prisma/**/*`
+- Database schema files
+
+**MCP Tool**: `user-Neon`
+
+**Common Operations**:
+
+```
+run_sql                      - Execute SQL queries
+prepare_database_migration   - Create and run migrations
+list_projects               - List Neon projects
+create_branch               - Create database branch for testing
+list_slow_queries           - Identify performance issues
+```
+
+**Pattern**:
+
+- Schema changes → Use `prepare_database_migration`
+- Query optimization → Use `list_slow_queries`
+- Testing → Use `create_branch` for isolated environment
+
+---
+
+## Next.js Diagnostics → next-devtools MCP
+
+**Auto-use when**:
+
+- Build failures occur
+- Runtime errors appear
+- Compilation issues
+- Debugging Next.js applications
+- Cache issues
+
+**MCP Tool**: `user-next-devtools`
+
+**Common Operations**:
+
+```
+nextjs_index                    - Discover Next.js dev server
+nextjs_call get_errors          - Get compilation/runtime errors
+nextjs_call get_routes          - List all routes
+nextjs_call clear_cache         - Clear Next.js cache
+```
+
+**Pattern**:
+
+1. Index dev server first: `nextjs_index`
+2. Get diagnostics: `nextjs_call get_errors`
+3. Fix issues
+4. Clear cache if needed: `nextjs_call clear_cache`
+
+---
+
+## Component Creation → shadcn MCP
+
+**Auto-use when**:
+
+- Creating new UI components in `**/components/**`
+- Need component examples or patterns
+- Before implementing custom components
+
+**MCP Tool**: `user-shadcn`
+
+**Common Operations**:
+
+```
+search_items_in_registries      - Find existing components
+view_items_in_registries        - View component source
+get_item_examples_from_registries - Get usage examples
+get_add_command_for_items       - Get CLI install command
+```
+
+**Pattern**:
+
+1. Search first: `search_items_in_registries`
+2. View details: `view_items_in_registries`
+3. Get examples: `get_item_examples_from_registries`
+4. Install via CLI if suitable
+
+---
+
+## Deployment & Infrastructure → Vercel MCP
+
+**Auto-use when**:
+
+- Deploying application
+- Editing `vercel.json`
+- Managing environment variables
+- Debugging production issues
+- Domain configuration
+
+**MCP Tool**: `user-vercel`
+
+**Common Operations**:
+
+```
+deploy_to_vercel            - Deploy project
+get_deployment              - Get deployment details
+list_projects               - List Vercel projects
+get_deployment_build_logs   - Debug build failures
+```
+
+**Pattern**:
+
+- Deploy operations: Use `deploy_to_vercel`
+- Debug production: Use `get_deployment_build_logs`
+
+---
+
+## OpenAI API Integration → openaiDeveloperDocs MCP
+
+**Auto-use when**:
+
+- Editing `**/embeddings/**/*`
+- Implementing OpenAI API calls
+- Using ChatGPT, GPT-4, embeddings, assistants
+- Function calling, fine-tuning
+
+**MCP Tool**: `user-openaiDeveloperDocs`
+
+**Common Operations**:
+
+```
+search_openai_docs          - Search for API patterns
+fetch_openai_doc            - Fetch detailed documentation
+get_openapi_spec            - Get API specifications
+```
+
+**Pattern**:
+
+1. Search for topic: `search_openai_docs`
+2. Fetch detailed docs: `fetch_openai_doc`
+3. Implement with exact schemas
+
+---
+
+## Trigger.dev Documentation → trigger MCP
+
+**Auto-use when**:
+
+- Editing `**/trigger/**/*`
+- Implementing complex Trigger.dev patterns
+- Need advanced workflow examples
+- Troubleshooting task issues
+
+**MCP Tool**: `user-trigger`
+
+**Common Operations**:
+
+- Search Trigger.dev documentation
+- Get examples for advanced patterns
+- Answer questions about Trigger.dev features
+
+**Pattern**: Auto-search when implementing advanced features (batching, realtime, etc.)
+
+---
+
+## Web Scraping → firecrawl MCP
+
+**Auto-use when**:
+
+- Need to fetch web content
+- Scraping websites
+- Converting web pages to markdown
+- Extracting structured data from URLs
+
+**MCP Tool**: `user-firecrawl`
+
+**Pattern**: Use when need to fetch external web content for processing
+
+---
+
+## Browser Automation → browsermcp MCP
+
+**Auto-use when**:
+
+- Testing UI changes
+- Automating browser interactions
+- Taking screenshots
+- Frontend development and testing
+
+**MCP Tool**: `user-browsermcp`
+
+**Common Operations**:
+
+```
+browser_navigate            - Navigate to URL
+browser_snapshot            - Get page structure
+browser_click               - Click elements
+browser_type                - Type text
+browser_screenshot          - Take screenshot
+```
+
+**Pattern**:
+
+1. Navigate: `browser_navigate`
+2. Get structure: `browser_snapshot`
+3. Interact: `browser_click`, `browser_type`
+4. Verify: `browser_screenshot`
+
+---
+
+## AI Model Operations → hf-mcp-server MCP
+
+**Auto-use when**:
+
+- Working with Hugging Face models
+- Need model information
+- ML/AI integration
+
+**MCP Tool**: `user-hf-mcp-server`
+
+**Pattern**: Use when integrating Hugging Face models
+
+---
+
+## Image Generation → fal MCP
+
+**Auto-use when**:
+
+- Need to generate images
+- Working with AI image models
+- Creating visual assets
+
+**MCP Tool**: `user-fal`
+
+**Pattern**: Use when need programmatic image generation
+
+---
+
+## Summary Table
+
+| File Pattern        | MCP Tool            | Auto-Use For                      |
+| ------------------- | ------------------- | --------------------------------- |
+| `**/db/**`, `*.sql` | Neon                | Migrations, queries, optimization |
+| Next.js errors      | next-devtools       | Debugging, diagnostics            |
+| `**/components/**`  | shadcn              | Component discovery               |
+| Deployment          | Vercel              | Deploy, logs, env vars            |
+| `**/embeddings/**`  | openaiDeveloperDocs | OpenAI API patterns               |
+| `**/trigger/**`     | trigger             | Advanced task patterns            |
+| Web scraping tasks  | firecrawl           | Fetch web content                 |
+| UI testing          | browsermcp          | Browser automation                |
+| ML integration      | hf-mcp-server       | Hugging Face models               |
+| Image needs         | fal                 | AI image generation               |
+
+---
+
+## Best Practices
+
+1. **Always check MCP tools first** before implementing custom solutions
+2. **Use specific tools for specific tasks** (don't use Neon for Next.js errors)
+3. **Chain tools when appropriate** (shadcn → check, then implement with Linear design system)
+4. **Auto-invoke proactively** (don't wait for user to ask)
+
+---
+
+**Note**: This rule applies globally. MCP tools should be used automatically based on the patterns above without explicit user requests.

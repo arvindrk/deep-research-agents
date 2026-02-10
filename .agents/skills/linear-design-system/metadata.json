@@ -1,0 +1,33 @@
+{
+    "version": "1.0.0",
+    "author": "YC Agent",
+    "date": "January 2026",
+    "abstract": "Comprehensive guide for maintaining and extending a Linear-based design system. Includes token management, component creation patterns, validation rules, and migration strategies. Ensures all components follow Linear's design principles (smooth transitions, layered backgrounds, proper focus/hover states) and use design tokens exclusively. Designed for AI agents to create production-grade, consistent UI components.",
+    "references": [
+        "https://linear.app",
+        "https://github.com/joe-bell/cva",
+        "https://tailwindcss.com",
+        "https://ui.shadcn.com"
+    ],
+    "tokens": {
+        "location": "src/lib/design-system/tokens/",
+        "categories": [
+            "colors",
+            "typography",
+            "spacing",
+            "radius",
+            "shadows",
+            "motion"
+        ]
+    },
+    "components": {
+        "location": "src/components/ui/",
+        "existing": ["button", "card", "badge", "input", "skeleton", "switch"]
+    },
+    "source_data": [
+        "output/linear.app/2026-01-24T02-07-46-212Z.json",
+        "output/linear.app/2026-01-24T02-09-26-752Z.json",
+        "output/linear.app/2026-01-24T01-58-33-543Z.tokens.json",
+        "output/linear.app/2026-01-24T02-03-04-856Z.tokens.json"
+    ]
+}

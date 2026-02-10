@@ -1,0 +1,106 @@
+---
+description: Trigger.dev v4 task patterns - reference trigger skill for background jobs and workflows
+globs: '**/trigger/**/*.ts'
+alwaysApply: false
+---
+
+# Trigger.dev Task Patterns
+
+When editing Trigger.dev tasks, reference `.agents/skills/trigger/` for v4 patterns.
+
+## MUST FOLLOW (Critical)
+
+1. **ALWAYS use SDK**: Import from `@trigger.dev/sdk`
+
+    ```ts
+    import { task } from '@trigger.dev/sdk';
+
+    export const myTask = task({
+        id: 'my-task',
+        run: async (payload) => {
+            /* ... */
+        },
+    });
+    ```
+
+2. **NEVER use v2 API**: Don't use `client.defineJob()` - it breaks applications
+
+3. **Handle Results Properly**: Check `result.ok` before accessing output
+
+    ```ts
+    const result = await myTask.triggerAndWait({ data: 'value' });
+    if (result.ok) {
+        console.log(result.output);
+    } else {
+        console.error(result.error);
+    }
+    ```
+
+4. **No Promise.all with Trigger.dev**: Don't wrap `triggerAndWait()` or `wait` calls in Promise.all
+
+## Common Patterns
+
+### Basic Task
+
+```ts
+export const processData = task({
+    id: 'process-data',
+    retry: {
+        maxAttempts: 10,
+        factor: 1.8,
+        minTimeoutInMs: 500,
+        maxTimeoutInMs: 30_000,
+    },
+    run: async (payload: { userId: string }) => {
+        return { processed: true };
+    },
+});
+```
+
+### Batch Triggering
+
+```ts
+await myTask.batchTrigger([
+    { payload: { userId: '1' } },
+    { payload: { userId: '2' } },
+]);
+```
+
+### Debouncing
+
+```ts
+await myTask.trigger(
+    { userId: '123' },
+    {
+        debounce: {
+            key: 'user-123-update',
+            delay: '5s',
+        },
+    }
+);
+```
+
+## When to Use Each Documentation File
+
+| File                 | Use When                                           |
+| -------------------- | -------------------------------------------------- |
+| `basic.mdc`          | Creating tasks, triggering, waits, debouncing      |
+| `advanced-tasks.mdc` | Batching, concurrency, idempotency, error handling |
+| `config.mdc`         | Project setup, build extensions, integrations      |
+| `realtime.mdc`       | Building UI for task monitoring                    |
+
+## Documentation Paths
+
+- **Basic**: `.agents/skills/trigger/basic.mdc`
+- **Advanced**: `.agents/skills/trigger/advanced-tasks.mdc`
+- **Config**: `.agents/skills/trigger/config.mdc`
+- **Realtime**: `.agents/skills/trigger/realtime.mdc`
+
+## Auto-Integration with MCP Tools
+
+- **trigger (MCP)**: Automatically search Trigger.dev docs for advanced patterns
+- **Vercel**: Use when deploying trigger tasks to production
+
+---
+
+**Note**: Always start with basic.mdc for task structure, then reference advanced patterns as needed.
