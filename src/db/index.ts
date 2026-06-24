@@ -6,4 +6,8 @@ export {
   getCompanyCount,
   getCompaniesWithOffset,
   searchCompanies,
+  listCompaniesMissingEmbeddings,
+  updateCompanyEmbedding,
+  toEmbeddingFields,
+  type CompanyEmbeddingSource,
 } from './queries/companies';

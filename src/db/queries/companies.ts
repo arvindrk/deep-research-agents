@@ -1,7 +1,24 @@
 import { getDBClient } from '../client';
+import {
+  assertEmbeddingDimensions,
+  type CompanyEmbeddingFields,
+} from '@/lib/company-embedding';
 import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
 
 const HNSW_EF_SEARCH = 200;
+
+/** Columns needed to compose embedding input; never includes the vector. */
+export type CompanyEmbeddingSource = {
+  id: string;
+  name: string;
+  one_liner: string | null;
+  long_description: string | null;
+  tags: string[];
+  industries: string[];
+  regions: string[];
+  batch: string | null;
+  stage: string | null;
+};
 
 export async function getCompanyById(id: string): Promise<QueryResult<Company>> {
   try {
@@ -162,4 +179,96 @@ export async function searchCompanies(
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+}
+
+/**
+ * Page of companies with null embeddings for backfill. Selects only id and
+ * text fields used as embedding input (never the embedding column itself).
+ */
+export async function listCompaniesMissingEmbeddings(
+  limit: number = 50,
+  cursor?: string,
+): Promise<QueryResult<CompanyEmbeddingSource[]>> {
+  try {
+    const sql = getDBClient();
+
+    const results = cursor
+      ? await sql`
+          SELECT
+            id, name, one_liner, long_description, tags, industries, regions,
+            batch, stage
+          FROM companies
+          WHERE embedding IS NULL AND id > ${cursor}
+          ORDER BY id
+          LIMIT ${limit}
+        `
+      : await sql`
+          SELECT
+            id, name, one_liner, long_description, tags, industries, regions,
+            batch, stage
+          FROM companies
+          WHERE embedding IS NULL
+          ORDER BY id
+          LIMIT ${limit}
+        `;
+
+    return { success: true, data: results as CompanyEmbeddingSource[] };
+  } catch {
+    return {
+      success: false,
+      error: 'Failed to list companies missing embeddings',
+    };
+  }
+}
+
+/**
+ * Persist a full embedding vector for one company. Asserts dimensions before
+ * write; uses JSON + ::vector like searchCompanies.
+ */
+export async function updateCompanyEmbedding(
+  id: string,
+  embedding: number[],
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    assertEmbeddingDimensions(embedding);
+    const sql = getDBClient();
+    const embeddingJSON = JSON.stringify(embedding);
+
+    const results = await sql`
+      UPDATE companies
+      SET embedding = ${embeddingJSON}::vector
+      WHERE id = ${id}
+      RETURNING id
+    `;
+
+    if (results.length === 0) {
+      return { success: false, error: 'Company not found' };
+    }
+
+    return { success: true, data: { id: results[0].id as string } };
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Expected embedding length')) {
+      return { success: false, error: error.message };
+    }
+    return {
+      success: false,
+      error: 'Failed to update company embedding',
+    };
+  }
+}
+
+/** Map a slim embedding source row to the pure text builder fields. */
+export function toEmbeddingFields(
+  row: CompanyEmbeddingSource,
+): CompanyEmbeddingFields {
+  return {
+    name: row.name,
+    one_liner: row.one_liner,
+    long_description: row.long_description,
+    tags: row.tags,
+    industries: row.industries,
+    regions: row.regions,
+    batch: row.batch,
+    stage: row.stage,
+  };
 }
