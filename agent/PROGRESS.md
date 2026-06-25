@@ -76,3 +76,15 @@ No canary code was merged.
   - `npm ci` (worktree had no `node_modules`)
   - `npm run verify` → exit 0 (lint, typecheck, 74 evals, build). Route table still includes `ƒ /` and `ƒ /companies/[id]`. Build succeeded without DATABASE_URL.
 - **Human notes:** No new dependencies. No `src/db/**`, eval, hybrid weights, or package.json changes. No hermetic eval under `src/eval/**` (plan forbade that path; boundaries are presentational + copy). Horizon advanced past this completed feature.
+
+## continue-20260811-214332 (embedding-generation-pipeline)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260811-214332` / `harness/continue-local-20260811-214332`
+- **Task / plan:** `embedding-generation-pipeline` / `plan-20260811161522`
+- **What changed:** Added pure helpers in `src/lib/company-embedding.ts` (1536-d constant, text composition, dimension assert, batch count). Added `embedText` via OpenAI embeddings HTTP `fetch` (no SDK) and `refreshCompanyEmbedding` for new/updated rows. DB: `listCompaniesMissingEmbeddings` (id + text only, `embedding IS NULL`) and `updateCompanyEmbedding` (JSON + `::vector`, dimension assert before write). Dry-runable `scripts/backfill-embeddings.ts` (not in verify/build). Hermetic evals in `src/eval/company-embedding.eval.ts`. Unblocked hybrid search by producing store path for vectors. Horizon advanced past this feature.
+- **Why:** `searchCompanies` expects vectors; schema had the column; nothing generated embeddings, so semantic search was unreachable.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules`)
+  - Eval canary: set `EMBEDDING_DIMENSIONS` to 999 → company-embedding eval exit 1 (3 fails); restored → exit 0 (10 pass)
+  - `npm run verify` → exit 0 (lint, typecheck, 84 evals, build). Build succeeded without DATABASE_URL or OPENAI_API_KEY.
+- **Human notes:** No new dependencies. Did not add search route, search UI, or change hybrid weights (0.7/0.2/0.1) or `HNSW_EF_SEARCH`. Backfill not executed against a live DB in this run (no secrets in worktree). Operator can run `npx tsx scripts/backfill-embeddings.ts --dry-run` then without `--dry-run` when keys are set. EXPLAIN ANALYZE not run live (no DATABASE_URL); intended plans: list uses `WHERE embedding IS NULL ORDER BY id LIMIT` (bounded); update is single-row by primary key.

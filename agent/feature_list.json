@@ -142,13 +142,13 @@
   },
   {
     "id": "embedding-generation-pipeline",
-    "status": "pending",
+    "status": "completed",
     "priority": 15,
     "category": "new_feature",
     "depends_on": [],
     "description": "Generate and store embeddings for companies. The schema has the column, searchCompanies takes a query vector, and nothing produces one, so semantic search is unreachable. Build the embedding module, backfill existing rows in batches, and keep new and updated rows current.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "hybrid-search-api",
