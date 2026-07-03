@@ -20,13 +20,19 @@ export default async function Home({ searchParams }: PageProps) {
   if (!countResult.success) {
     return (
       <div className={cn('min-h-screen', 'bg-[var(--color-bg-primary)]')}>
-        <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="mx-auto max-w-7xl px-4 py-16">
           <div className="text-center">
-            <h1 className={cn('text-2xl font-semibold mb-4', 'text-[var(--color-text-primary)]')}>
-              Error loading companies
+            <h1
+              className={cn(
+                'mb-4 text-2xl font-semibold',
+                'text-[var(--color-text-primary)]'
+              )}
+            >
+              Unable to load companies
             </h1>
             <p className={cn('text-[var(--color-text-secondary)]')}>
-              {countResult.error}
+              Something went wrong while loading companies. Please try again
+              later.
             </p>
           </div>
         </div>
@@ -47,13 +53,19 @@ export default async function Home({ searchParams }: PageProps) {
   if (!companiesResult.success) {
     return (
       <div className={cn('min-h-screen', 'bg-[var(--color-bg-primary)]')}>
-        <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="mx-auto max-w-7xl px-4 py-16">
           <div className="text-center">
-            <h1 className={cn('text-2xl font-semibold mb-4', 'text-[var(--color-text-primary)]')}>
-              Error loading companies
+            <h1
+              className={cn(
+                'mb-4 text-2xl font-semibold',
+                'text-[var(--color-text-primary)]'
+              )}
+            >
+              Unable to load companies
             </h1>
             <p className={cn('text-[var(--color-text-secondary)]')}>
-              {companiesResult.error}
+              Something went wrong while loading companies. Please try again
+              later.
             </p>
           </div>
         </div>
