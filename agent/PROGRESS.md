@@ -65,3 +65,14 @@ No canary code was merged.
   - `npm ci` (worktree had no `node_modules`)
   - `npm run verify` → exit 0 (lint, typecheck, 74 evals, build). Build succeeded without DATABASE_URL.
 - **Human notes:** No new dependencies. No app/component/schema changes. No hermetic eval under `src/eval/**` (plan allowed only query/types paths; behaviour is column-list omission, not ranking). Parameterized SQL only. Horizon next: route-loading-and-error-states.
+
+## continue-20260811-181159 (route-loading-and-error-states)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260811-181159` / `harness/continue-local-20260811-181159`
+- **Task / plan:** `route-loading-and-error-states` / `plan-20260811124342`
+- **What changed:** Added App Router `loading.tsx` and client `error.tsx` for the listing segment (`src/app/`) and the detail segment (`src/app/companies/[id]/`). Listing page Result failure paths no longer interpolate `countResult.error` / `companiesResult.error`; they show generic actionable copy. Detail keeps `notFound()` for missing companies and its existing safe inline error for other failures. Loading UIs are presentational skeletons using design tokens only (no db or env).
+- **Why:** Failed DB work must not blank the page or leak driver text; slow server awaits need a real loading surface for UI reliability before the embedding arc.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules`)
+  - `npm run verify` → exit 0 (lint, typecheck, 74 evals, build). Route table still includes `ƒ /` and `ƒ /companies/[id]`. Build succeeded without DATABASE_URL.
+- **Human notes:** No new dependencies. No `src/db/**`, eval, hybrid weights, or package.json changes. No hermetic eval under `src/eval/**` (plan forbade that path; boundaries are presentational + copy). Horizon advanced past this completed feature.

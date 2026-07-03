@@ -1,27 +1,26 @@
 {
   "slice": [
-    "route-loading-and-error-states",
     "embedding-generation-pipeline",
     "hybrid-search-api",
-    "hybrid-search-ranking-eval"
+    "hybrid-search-ranking-eval",
+    "search-ui"
   ],
   "rationale_per_step": {
-    "route-loading-and-error-states": "Detail route exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement next for UI and UX.",
-    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies expect vectors, nothing produces them. Highest-leverage unblocked capability after route polish.",
-    "hybrid-search-api": "Once embeddings exist, expose validated hybrid search over searchCompanies. Continues Hybrid search and Discovery with low noise.",
-    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking eval over fixed vectors so weight regressions fail CI instead of a silent build."
+    "embedding-generation-pipeline": "Unblocks Hybrid search: schema and searchCompanies expect vectors, nothing produces them. Highest-leverage new_feature now that route loading/error polish shipped.",
+    "hybrid-search-api": "Validated route over searchCompanies once embeddings exist. Hybrid search + Discovery with low noise.",
+    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking eval so weight regressions fail CI.",
+    "search-ui": "User-facing discovery once the API and ranking eval exist; continues UI and UX on a working search backend."
   },
   "category_mix": {
-    "feature_improvement": 1,
-    "new_feature": 2,
+    "new_feature": 3,
     "testing_observability": 1
   },
   "vision_refs": {
-    "route-loading-and-error-states": ["UI and UX"],
     "embedding-generation-pipeline": ["Hybrid search", "Discovery with low noise"],
     "hybrid-search-api": ["Hybrid search", "Discovery with low noise"],
-    "hybrid-search-ranking-eval": ["Measurable quality", "Hybrid search"]
+    "hybrid-search-ranking-eval": ["Measurable quality", "Hybrid search"],
+    "search-ui": ["UI and UX", "Discovery with low noise"]
   },
-  "generated_by_run": "continue-20260811-175138",
-  "notes": "Executor completed drop-unused-embedding-select (omitted embedding from getCompanyById and getAllCompanies; searchCompanies unchanged). Horizon advances to route-loading then embedding pipeline + hybrid search + ranking eval."
+  "generated_by_run": "continue-20260811-181159",
+  "notes": "Executor completed route-loading-and-error-states (loading.tsx + error.tsx for listing and detail; listing Result errors no longer interpolate driver text). Horizon advances to embedding pipeline + hybrid search + ranking eval + search UI."
 }

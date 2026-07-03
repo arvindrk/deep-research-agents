@@ -132,13 +132,13 @@
   },
   {
     "id": "route-loading-and-error-states",
-    "status": "pending",
+    "status": "completed",
     "priority": 14,
     "category": "feature_improvement",
     "depends_on": ["company-detail-route"],
     "description": "Add loading and error boundaries for the listing and detail routes. A failed database call currently renders an inline error block on the listing and nothing at all on the detail route, and there is no loading state while a server component awaits.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "embedding-generation-pipeline",
