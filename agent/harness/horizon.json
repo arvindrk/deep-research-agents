@@ -1,27 +1,27 @@
 {
   "slice": [
-    "drop-unused-embedding-select",
     "route-loading-and-error-states",
     "embedding-generation-pipeline",
-    "hybrid-search-api"
+    "hybrid-search-api",
+    "hybrid-search-ranking-eval"
   ],
   "rationale_per_step": {
-    "drop-unused-embedding-select": "getCompanyById and getAllCompanies still select embedding for callers that never read it. Trim waste before embedding work makes those rows heavier; tech_debt for Hybrid search readiness.",
-    "route-loading-and-error-states": "Detail route exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement after polish pair.",
-    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies expect vectors, nothing produces them. Highest-leverage unblocked capability after polish.",
-    "hybrid-search-api": "Once embeddings exist, expose validated hybrid search over searchCompanies. Continues Hybrid search and Discovery with low noise; blocked until embedding-generation-pipeline completes."
+    "route-loading-and-error-states": "Detail route exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement next for UI and UX.",
+    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies expect vectors, nothing produces them. Highest-leverage unblocked capability after route polish.",
+    "hybrid-search-api": "Once embeddings exist, expose validated hybrid search over searchCompanies. Continues Hybrid search and Discovery with low noise.",
+    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking eval over fixed vectors so weight regressions fail CI instead of a silent build."
   },
   "category_mix": {
-    "tech_debt": 1,
     "feature_improvement": 1,
-    "new_feature": 2
+    "new_feature": 2,
+    "testing_observability": 1
   },
   "vision_refs": {
-    "drop-unused-embedding-select": ["Hybrid search"],
     "route-loading-and-error-states": ["UI and UX"],
     "embedding-generation-pipeline": ["Hybrid search", "Discovery with low noise"],
-    "hybrid-search-api": ["Hybrid search", "Discovery with low noise"]
+    "hybrid-search-api": ["Hybrid search", "Discovery with low noise"],
+    "hybrid-search-ranking-eval": ["Measurable quality", "Hybrid search"]
   },
-  "generated_by_run": "continue-20260811-173859",
-  "notes": "Executor removed app-metadata-and-db-exports after it completed. Remaining four: unused-embedding trim, route loading, then embedding + hybrid search API."
+  "generated_by_run": "continue-20260811-175138",
+  "notes": "Executor completed drop-unused-embedding-select (omitted embedding from getCompanyById and getAllCompanies; searchCompanies unchanged). Horizon advances to route-loading then embedding pipeline + hybrid search + ranking eval."
 }
