@@ -25,5 +25,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run eval
       # Runs without DATABASE_URL on purpose: the build must never require secrets.
       - run: npm run build
