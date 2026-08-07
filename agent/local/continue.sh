@@ -121,8 +121,12 @@ feature_id="$(json_field "$summary" feature_id)"
 
 # ── Shape the branch ────────────────────────────────────────────────────────
 
-commit_as_harness() {
-  git -C "$worktree" -c user.name="harness" -c user.email="harness@localhost" commit --quiet "$@"
+# Inherits the repository's configured identity. A hardcoded local address
+# produces commits GitHub cannot attribute to any account, which is worse than
+# useless on a branch a human has to review. Agent work is already identifiable
+# by its branch prefix and pull request title.
+commit_change() {
+  git -C "$worktree" commit --quiet "$@"
 }
 commits_ahead() { git -C "$worktree" rev-list --count "origin/$BASE_BRANCH..HEAD"; }
 
@@ -155,7 +159,7 @@ fi
 # Sweep anything the executor left uncommitted.
 if [[ -n "$(git -C "$worktree" status --porcelain)" ]]; then
   git -C "$worktree" add -A
-  commit_as_harness -m "chore: commit remaining continuation changes"
+  commit_change -m "chore: commit remaining continuation changes"
 fi
 
 # The executor is told to commit incrementally. When it does not, rebuild the
@@ -177,7 +181,7 @@ if [[ "$(commits_ahead)" -lt "$MIN_COMMITS_PER_PR" ]]; then
       done
       [[ "${#local_files[@]}" -eq 0 ]] && continue
       git -C "$worktree" add -A -- "${local_files[@]}"
-      commit_as_harness -m "$(message_for "$group")"
+      commit_change -m "$(message_for "$group")"
     done
   fi
 fi
