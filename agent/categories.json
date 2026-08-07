@@ -1,0 +1,47 @@
+{
+  "categories": [
+    {
+      "id": "new_feature",
+      "label": "New feature development",
+      "weight": 0.25,
+      "description": "Brand new user-visible or API capability."
+    },
+    {
+      "id": "feature_improvement",
+      "label": "Improving existing features",
+      "weight": 0.2,
+      "description": "Enhancements to behaviour, UX, or performance of something that already ships."
+    },
+    {
+      "id": "tech_debt",
+      "label": "Tech debt and refactoring",
+      "weight": 0.15,
+      "description": "Cleanup and reduced complexity with no behaviour change."
+    },
+    {
+      "id": "testing_observability",
+      "label": "Testing, evals, observability",
+      "weight": 0.15,
+      "description": "Evals, logging, metrics, and harness instrumentation."
+    },
+    {
+      "id": "maintenance",
+      "label": "Maintenance and bugfix",
+      "weight": 0.1,
+      "description": "Fixes, dependency updates, stability."
+    },
+    {
+      "id": "dx_infra",
+      "label": "DX, infra, tooling",
+      "weight": 0.1,
+      "description": "Developer experience, build, CI, harness mechanics."
+    },
+    {
+      "id": "innovation",
+      "label": "Innovation and exploratory",
+      "weight": 0.05,
+      "description": "Speculative spikes. Use sparingly."
+    }
+  ],
+  "notes": "Weights are the target mix across a horizon slice and across recent runs, not a per-run quota. The planner uses agent/vision.md to set strategic emphasis and this file to keep the mix balanced."
+}
