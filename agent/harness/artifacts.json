@@ -1,0 +1,41 @@
+{
+  "description": "The contract between the three prompt personas and the orchestration layer. The prompts describe these artifacts, src/eval/prompt-contracts.eval.ts asserts they still do, and agent/local/continue.sh reads these paths. One source of truth so the three cannot drift apart.",
+  "tmp_dir": ".harness/tmp",
+  "artifacts": {
+    "plan": {
+      "written_by": "planner",
+      "path_glob": ".harness/tmp/plan-*.json",
+      "companion_glob": ".harness/tmp/plan-*.md",
+      "prompt": "agent/harness/planner-prompt.md",
+      "required_keys": [
+        "plan_id",
+        "timestamp",
+        "vision_refs",
+        "category_balance_rationale",
+        "chosen_task",
+        "horizon_after",
+        "principles",
+        "alternatives_considered",
+        "risks_and_verification_criteria",
+        "execution_constraints"
+      ],
+      "required_on_failure": "no plan artifact means the run aborts before the executor starts"
+    },
+    "run_summary": {
+      "written_by": "executor",
+      "path": ".harness/tmp/run-summary.json",
+      "prompt": "agent/harness/executor-prompt.md",
+      "required_keys": ["feature_id", "title", "pr_body_md", "verify_command", "verify_passed"],
+      "required_on_failure": "no run summary means the wrapper falls back to PROGRESS.md and opens the pull request with a degraded body"
+    },
+    "validation": {
+      "written_by": "validator",
+      "path": ".harness/tmp/validation.json",
+      "prompt": "agent/harness/validator-prompt.md",
+      "required_keys": ["verdict", "findings", "verify_passed", "constraint_violations", "secret_scan_clean"],
+      "required_on_failure": "no validation artifact is treated as a fail verdict; the run does not open a pull request"
+    }
+  },
+  "verdicts": ["pass", "fail"],
+  "finding_severities": ["blocker", "major", "minor"]
+}
