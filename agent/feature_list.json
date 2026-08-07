@@ -1,0 +1,92 @@
+[
+  {
+    "id": "verifiable-baseline",
+    "status": "completed",
+    "priority": 1,
+    "category": "dx_infra",
+    "depends_on": [],
+    "description": "Make the repository installable, buildable without secrets, and checkable by CI: pin the public npm registry, resync the lockfile so npm ci works, resolve DATABASE_URL lazily, and add typecheck, verify, and a CI workflow.",
+    "verify": "npm ci && npm run verify",
+    "passes": true
+  },
+  {
+    "id": "validator-engine",
+    "status": "completed",
+    "priority": 2,
+    "category": "testing_observability",
+    "depends_on": ["verifiable-baseline"],
+    "description": "Add the glob-discovered eval runner over src/eval/**/*.eval.ts, extract batch formatting and pagination windowing into pure modules, and lock both with hermetic evals.",
+    "verify": "npm run eval",
+    "passes": true
+  },
+  {
+    "id": "repo-constitution",
+    "status": "completed",
+    "priority": 3,
+    "category": "dx_infra",
+    "depends_on": ["validator-engine"],
+    "description": "Add AGENTS.md, the always-on rule set under .agents/rules, and a manifest eval that fails when a rule is unindexed or a documented link does not resolve.",
+    "verify": "npm run eval",
+    "passes": true
+  },
+  {
+    "id": "harness-state",
+    "status": "in_progress",
+    "priority": 4,
+    "category": "dx_infra",
+    "depends_on": ["repo-constitution"],
+    "description": "Add the durable harness state the planner reads and writes: vision, category weights, feature list, progress log, config, horizon, and the context refresh script, with a schema eval enforcing the feature list invariants.",
+    "verify": "npm run eval",
+    "passes": false
+  },
+  {
+    "id": "harness-prompts",
+    "status": "pending",
+    "priority": 5,
+    "category": "dx_infra",
+    "depends_on": ["harness-state"],
+    "description": "Add the planner, executor, and validator prompt personas plus a contract eval asserting each prompt still emits the artifact schema the orchestration layer parses.",
+    "verify": "npm run eval",
+    "passes": false
+  },
+  {
+    "id": "harness-orchestration",
+    "status": "pending",
+    "priority": 6,
+    "category": "dx_infra",
+    "depends_on": ["harness-prompts"],
+    "description": "Add the merge watcher, worktree continuation, provider adapters, and pre-push guards that turn a merge to main into a reviewed draft pull request.",
+    "verify": "npm run lint:shell && npm run watch:dry-run",
+    "passes": false
+  },
+  {
+    "id": "harness-observability",
+    "status": "pending",
+    "priority": 7,
+    "category": "testing_observability",
+    "depends_on": ["harness-orchestration"],
+    "description": "Add a zero-dependency reporter over the run event stream so a continuation can be inspected after the fact by run, by feature, or as a summary.",
+    "verify": "npm run eval",
+    "passes": false
+  },
+  {
+    "id": "supply-chain-hardening",
+    "status": "pending",
+    "priority": 8,
+    "category": "dx_infra",
+    "depends_on": ["harness-orchestration"],
+    "description": "Add dependency audit, secret scanning, and code scanning workflows, the manual continuation fallback, the autonomy model document, and a branch ruleset staged for later application.",
+    "verify": "npm run verify",
+    "passes": false
+  },
+  {
+    "id": "product-backlog-seed",
+    "status": "pending",
+    "priority": 9,
+    "category": "dx_infra",
+    "depends_on": ["harness-observability", "supply-chain-hardening"],
+    "description": "Seed the product roadmap from the vision into this file, set the opening horizon slice, and take the harness through its first supervised live run.",
+    "verify": "npm run eval",
+    "passes": false
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "gh_repo": "arvindrk/deep-research-agents",
+  "display_name": "Deep Research Agents",
+  "base_branch": "main",
+  "agent_cmd": "grok",
+  "agent_model": "grok-4.5",
+  "branch_prefix": "harness/continue-local-",
+  "watch_interval_seconds": 180,
+  "max_inflight_prs": 5,
+  "min_commits_per_pr": 4,
+  "max_files_changed": 40,
+  "max_lines_changed": 1500
+}
