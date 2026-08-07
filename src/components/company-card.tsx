@@ -4,28 +4,13 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Company } from '@/db/types';
+import { formatBatch } from '@/lib/format-batch';
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
 interface CompanyCardProps {
   company: Company;
-}
-
-function formatBatch(batch: string): string {
-  const seasonMap: Record<string, string> = {
-    'Winter': 'W',
-    'Summer': 'S',
-    'Fall': 'F',
-    'Spring': 'X'
-  };
-
-  const match = batch.match(/^(Winter|Summer|Fall|Spring)\s+(\d{4})$/);
-  if (!match) return batch;
-
-  const [, season, year] = match;
-  const shortYear = year.slice(-2);
-  return `${seasonMap[season]}${shortYear}`;
 }
 
 export function CompanyCard({ company }: CompanyCardProps) {
