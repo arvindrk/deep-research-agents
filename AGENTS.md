@@ -24,6 +24,8 @@ Direction and priorities live in `agent/vision.md`. What to work on next lives i
 | Evals | `npm run eval` |
 | Build | `npm run build` |
 | **Verify before every PR** | `npm run verify` |
+| Lint the harness scripts | `npm run lint:shell` |
+| Watch for merges | `npm run watch` (Ctrl-C stops it) |
 
 `npm run verify` is the gate: lint, typecheck, evals, build. CI runs the same steps. The build runs without `DATABASE_URL` on purpose, so it can never start requiring secrets.
 

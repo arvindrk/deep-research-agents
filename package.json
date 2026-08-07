@@ -12,7 +12,11 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "eval": "node --import tsx --test \"src/eval/**/*.eval.ts\"",
-    "verify": "npm run lint && npm run typecheck && npm run eval && npm run build"
+    "lint:shell": "shellcheck -x -S warning agent/init.sh agent/local/*.sh agent/local/providers/*.sh",
+    "verify": "npm run lint && npm run typecheck && npm run eval && npm run build",
+    "watch": "bash agent/local/watch.sh",
+    "watch:once": "bash agent/local/merge-watch.sh",
+    "watch:dry-run": "bash agent/local/merge-watch.sh --dry-run"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

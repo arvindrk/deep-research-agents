@@ -19,6 +19,19 @@ Any stage failing aborts the run. The worktree is discarded, the merge SHA is no
 
 The Validator is the piece ycagent.ai does not have. There, the executor certifies its own work, which is not a control.
 
+## Running it
+
+| Command | Purpose |
+| --- | --- |
+| `npm run watch` | Foreground watcher. Ctrl-C is the kill switch. |
+| `npm run watch:once` | A single poll, for debugging. |
+| `npm run watch:dry-run` | Reports what would happen and changes nothing. |
+| `npm run lint:shell` | shellcheck over the harness scripts. |
+
+Prerequisites: `gh` authenticated against the repository, `jq`, `node`, the configured agent CLI on `PATH`, and `shellcheck` for `lint:shell` (`brew install shellcheck`; CI's runner already has it).
+
+Put `[skip harness]` in a merge commit message to suppress continuation for that merge.
+
 ## Personas
 
 | Persona | Prompt | Writes | Never |
