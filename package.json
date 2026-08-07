@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm run build"
+    "eval": "node --import tsx --test \"src/eval/**/*.eval.ts\"",
+    "verify": "npm run lint && npm run typecheck && npm run eval && npm run build"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -33,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.11",
     "typescript": "^5"
   }
 }
