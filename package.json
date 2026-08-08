@@ -12,7 +12,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "eval": "node --import tsx --test \"src/eval/**/*.eval.ts\"",
-    "lint:shell": "shellcheck -x -S warning agent/init.sh agent/local/*.sh agent/local/providers/*.sh",
+    "lint:shell": "shellcheck -x -S warning agent/init.sh agent/local/*.sh agent/local/providers/*.sh scripts/*.sh",
     "verify": "npm run lint && npm run typecheck && npm run eval && npm run build",
     "watch": "bash agent/local/watch.sh",
     "watch:once": "bash agent/local/merge-watch.sh",

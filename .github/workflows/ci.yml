@@ -34,5 +34,5 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The harness that opens pull requests is held to the same bar as the code it writes.
-      - run: shellcheck -x -S warning agent/init.sh agent/local/*.sh agent/local/providers/*.sh
-      - run: for f in agent/init.sh agent/local/*.sh agent/local/providers/*.sh; do bash -n "$f"; done
+      - run: shellcheck -x -S warning agent/init.sh agent/local/*.sh agent/local/providers/*.sh scripts/*.sh
+      - run: for f in agent/init.sh agent/local/*.sh agent/local/providers/*.sh scripts/*.sh; do bash -n "$f"; done
