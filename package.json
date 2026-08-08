@@ -16,7 +16,8 @@
     "verify": "npm run lint && npm run typecheck && npm run eval && npm run build",
     "watch": "bash agent/local/watch.sh",
     "watch:once": "bash agent/local/merge-watch.sh",
-    "watch:dry-run": "bash agent/local/merge-watch.sh --dry-run"
+    "watch:dry-run": "bash agent/local/merge-watch.sh --dry-run",
+    "logs": "node --import tsx agent/local/logview/index.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
