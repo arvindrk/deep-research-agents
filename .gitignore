@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local/generated agent state
+agent/brain/**
+!agent/brain/
+!agent/brain/README.md
+
+# harness scratch space (worktrees, run artifacts)
+.harness/

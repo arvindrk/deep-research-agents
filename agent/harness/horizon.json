@@ -1,0 +1,18 @@
+{
+  "slice": ["harness-state", "harness-prompts", "harness-orchestration"],
+  "rationale_per_step": {
+    "harness-state": "The planner cannot plan without durable state to read and write. Everything downstream depends on it.",
+    "harness-prompts": "Defines the three personas and the artifact contract the orchestration layer parses. Must exist before the layer that parses it.",
+    "harness-orchestration": "Turns a merge into a reviewed draft pull request. Last piece before the loop can run at all."
+  },
+  "category_mix": {
+    "dx_infra": 3
+  },
+  "vision_refs": {
+    "harness-state": ["Measurable quality"],
+    "harness-prompts": ["Measurable quality"],
+    "harness-orchestration": ["Measurable quality"]
+  },
+  "generated_by_run": "bootstrap",
+  "notes": "Bootstrap horizon, written by hand. The mix is deliberately all dx_infra because the harness does not exist yet; the planner rebalances toward the category weights once product work is selectable."
+}
