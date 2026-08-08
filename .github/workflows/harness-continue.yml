@@ -1,0 +1,62 @@
+name: Harness continuation (manual fallback)
+
+# The loop normally runs on the maintainer's machine via `npm run watch`, where
+# the kill switch is closing the terminal and no agent credential lives in repo
+# secrets. This exists for the case where that machine is unavailable.
+#
+# It is workflow_dispatch only, and deliberately so: wiring it to `push` would
+# make every merge spend money and would move the credential into the
+# repository, which is the trade the local watcher exists to avoid.
+#
+# Requires an AGENT_AUTH_JSON secret for the configured provider. Without it the
+# run fails fast rather than half-working.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Commit to continue from (defaults to the current tip of main)
+        required: false
+        type: string
+
+concurrency:
+  group: harness-continue
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Check the provider credential is present
+        env:
+          AGENT_AUTH_JSON: ${{ secrets.AGENT_AUTH_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AGENT_AUTH_JSON:-}" ]; then
+            echo "::error::AGENT_AUTH_JSON is not set. See agent/AUTONOMY.md for how to run the loop locally instead."
+            exit 1
+          fi
+
+      - name: Report what would run
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+        run: |
+          set -euo pipefail
+          echo "Provider: $(node -p 'require("./agent/harness-config.json").agent_cmd')"
+          echo "Model:    $(node -p 'require("./agent/harness-config.json").agent_model')"
+          echo "Base:     ${BASE_SHA:-$(git rev-parse HEAD)}"
+          echo
+          echo "Continuation from CI is not enabled. Run 'npm run watch' locally."
+          echo "To enable it here, install the provider CLI in this job and call agent/local/continue.sh."
