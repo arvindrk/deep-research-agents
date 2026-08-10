@@ -1,18 +1,20 @@
 {
-  "slice": ["harness-state", "harness-prompts", "harness-orchestration"],
+  "slice": ["company-detail-route", "app-metadata-and-db-exports", "drop-unused-embedding-select"],
   "rationale_per_step": {
-    "harness-state": "The planner cannot plan without durable state to read and write. Everything downstream depends on it.",
-    "harness-prompts": "Defines the three personas and the artifact contract the orchestration layer parses. Must exist before the layer that parses it.",
-    "harness-orchestration": "Turns a merge into a reviewed draft pull request. Last piece before the loop can run at all."
+    "company-detail-route": "Every card on every page links to a route that does not exist, so the primary interaction in the product is a 404. Highest user-visible value available, and it advances the UI and UX facet directly.",
+    "app-metadata-and-db-exports": "Cheap correctness: the site still identifies itself as Create Next App, and the database barrel hides a query the page actually uses.",
+    "drop-unused-embedding-select": "Two queries pull a full vector per row for callers that never read it. Removes waste before the embedding work makes those rows heavier."
   },
   "category_mix": {
-    "dx_infra": 3
+    "new_feature": 1,
+    "maintenance": 1,
+    "tech_debt": 1
   },
   "vision_refs": {
-    "harness-state": ["Measurable quality"],
-    "harness-prompts": ["Measurable quality"],
-    "harness-orchestration": ["Measurable quality"]
+    "company-detail-route": ["UI and UX", "Evidence-backed intelligence"],
+    "app-metadata-and-db-exports": ["UI and UX"],
+    "drop-unused-embedding-select": ["Hybrid search"]
   },
   "generated_by_run": "bootstrap",
-  "notes": "Bootstrap horizon, written by hand. The mix is deliberately all dx_infra because the harness does not exist yet; the planner rebalances toward the category weights once product work is selectable."
+  "notes": "Opening product slice, written by hand. Deliberately mixed across three categories rather than three new features, so the loop starts near the target weights instead of correcting later. All three are unblocked with no dependencies. The search stack (embeddings, then the API, then its ranking eval, then the UI) is the next arc."
 }
