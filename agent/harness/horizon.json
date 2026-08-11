@@ -1,20 +1,28 @@
 {
-  "slice": ["company-detail-route", "app-metadata-and-db-exports", "drop-unused-embedding-select"],
+  "slice": [
+    "app-metadata-and-db-exports",
+    "drop-unused-embedding-select",
+    "route-loading-and-error-states",
+    "embedding-generation-pipeline"
+  ],
   "rationale_per_step": {
-    "company-detail-route": "Every card on every page links to a route that does not exist, so the primary interaction in the product is a 404. Highest user-visible value available, and it advances the UI and UX facet directly.",
-    "app-metadata-and-db-exports": "Cheap correctness: the site still identifies itself as Create Next App, and the database barrel hides a query the page actually uses.",
-    "drop-unused-embedding-select": "Two queries pull a full vector per row for callers that never read it. Removes waste before the embedding work makes those rows heavier."
+    "app-metadata-and-db-exports": "Cheap maintenance after the detail page: replace Create Next App metadata and re-export getCompaniesWithOffset from the db barrel so the public surface matches use.",
+    "drop-unused-embedding-select": "getCompanyById and getAllCompanies still select embedding for callers that never read it. Trim waste before embedding work makes those rows heavier; advances Hybrid search readiness as tech debt.",
+    "route-loading-and-error-states": "Detail route now exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement weight is underrepresented after the opening new_feature.",
+    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies already expect vectors, but nothing produces them. After the polish slice, this is the highest-leverage unblocked capability."
   },
   "category_mix": {
     "new_feature": 1,
     "maintenance": 1,
-    "tech_debt": 1
+    "tech_debt": 1,
+    "feature_improvement": 1
   },
   "vision_refs": {
-    "company-detail-route": ["UI and UX", "Evidence-backed intelligence"],
     "app-metadata-and-db-exports": ["UI and UX"],
-    "drop-unused-embedding-select": ["Hybrid search"]
+    "drop-unused-embedding-select": ["Hybrid search"],
+    "route-loading-and-error-states": ["UI and UX", "Reliable autonomous research"],
+    "embedding-generation-pipeline": ["Hybrid search", "Discovery with low noise"]
   },
-  "generated_by_run": "bootstrap",
-  "notes": "Opening product slice, written by hand. Deliberately mixed across three categories rather than three new features, so the loop starts near the target weights instead of correcting later. All three are unblocked with no dependencies. The search stack (embeddings, then the API, then its ranking eval, then the UI) is the next arc."
+  "generated_by_run": "continue-20260811-160356",
+  "notes": "Executor removed company-detail-route after it completed. Remaining four keep the planned polish pair plus route-loading (now unblocked) and embedding-generation as the start of the search arc."
 }

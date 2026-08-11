@@ -92,13 +92,13 @@
 
   {
     "id": "company-detail-route",
-    "status": "pending",
+    "status": "completed",
     "priority": 10,
     "category": "new_feature",
     "depends_on": [],
     "description": "Add the /companies/[id] route. Every company card already links there and the route does not exist, so all 24 cards on every page currently lead to a 404. Render the full profile from the existing columns: description, website, batch, team size, location, tags, industries, status, and last synced date.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "app-metadata-and-db-exports",
