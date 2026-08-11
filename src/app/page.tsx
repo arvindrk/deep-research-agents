@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { CompanyGrid } from '@/components/company-grid';
 import { CompanyPagination } from '@/components/company-pagination';
 import { Badge } from '@/components/ui/badge';
-import { getCompaniesWithOffset, getCompanyCount } from '@/db/queries/companies';
+import { getCompaniesWithOffset, getCompanyCount } from '@/db';
 import { cn } from '@/lib/utils';
 
 const COMPANIES_PER_PAGE = 24;

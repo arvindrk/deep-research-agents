@@ -1,28 +1,27 @@
 {
   "slice": [
-    "app-metadata-and-db-exports",
     "drop-unused-embedding-select",
     "route-loading-and-error-states",
-    "embedding-generation-pipeline"
+    "embedding-generation-pipeline",
+    "hybrid-search-api"
   ],
   "rationale_per_step": {
-    "app-metadata-and-db-exports": "Cheap maintenance after the detail page: replace Create Next App metadata and re-export getCompaniesWithOffset from the db barrel so the public surface matches use.",
-    "drop-unused-embedding-select": "getCompanyById and getAllCompanies still select embedding for callers that never read it. Trim waste before embedding work makes those rows heavier; advances Hybrid search readiness as tech debt.",
-    "route-loading-and-error-states": "Detail route now exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement weight is underrepresented after the opening new_feature.",
-    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies already expect vectors, but nothing produces them. After the polish slice, this is the highest-leverage unblocked capability."
+    "drop-unused-embedding-select": "getCompanyById and getAllCompanies still select embedding for callers that never read it. Trim waste before embedding work makes those rows heavier; tech_debt for Hybrid search readiness.",
+    "route-loading-and-error-states": "Detail route exists; add loading and error boundaries for listing and detail so failed DB calls and slow awaits have real states. feature_improvement after polish pair.",
+    "embedding-generation-pipeline": "Opens the hybrid search arc: schema and searchCompanies expect vectors, nothing produces them. Highest-leverage unblocked capability after polish.",
+    "hybrid-search-api": "Once embeddings exist, expose validated hybrid search over searchCompanies. Continues Hybrid search and Discovery with low noise; blocked until embedding-generation-pipeline completes."
   },
   "category_mix": {
-    "new_feature": 1,
-    "maintenance": 1,
     "tech_debt": 1,
-    "feature_improvement": 1
+    "feature_improvement": 1,
+    "new_feature": 2
   },
   "vision_refs": {
-    "app-metadata-and-db-exports": ["UI and UX"],
     "drop-unused-embedding-select": ["Hybrid search"],
-    "route-loading-and-error-states": ["UI and UX", "Reliable autonomous research"],
-    "embedding-generation-pipeline": ["Hybrid search", "Discovery with low noise"]
+    "route-loading-and-error-states": ["UI and UX"],
+    "embedding-generation-pipeline": ["Hybrid search", "Discovery with low noise"],
+    "hybrid-search-api": ["Hybrid search", "Discovery with low noise"]
   },
-  "generated_by_run": "continue-20260811-160356",
-  "notes": "Executor removed company-detail-route after it completed. Remaining four keep the planned polish pair plus route-loading (now unblocked) and embedding-generation as the start of the search arc."
+  "generated_by_run": "continue-20260811-173859",
+  "notes": "Executor removed app-metadata-and-db-exports after it completed. Remaining four: unused-embedding trim, route loading, then embedding + hybrid search API."
 }

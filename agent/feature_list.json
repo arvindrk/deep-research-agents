@@ -102,13 +102,13 @@
   },
   {
     "id": "app-metadata-and-db-exports",
-    "status": "pending",
+    "status": "completed",
     "priority": 11,
     "category": "maintenance",
     "depends_on": [],
     "description": "Replace the placeholder 'Create Next App' title and description in the root layout with real metadata, and export getCompaniesWithOffset from src/db/index.ts. The page imports it from the query module directly while every sibling query is re-exported, so the barrel is misleading about the module's surface.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "drop-unused-embedding-select",
