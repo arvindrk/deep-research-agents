@@ -4,5 +4,6 @@ export {
   getCompanyById,
   getAllCompanies,
   getCompanyCount,
+  getCompaniesWithOffset,
   searchCompanies,
 } from './queries/companies';
