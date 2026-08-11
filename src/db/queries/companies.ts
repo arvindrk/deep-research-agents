@@ -11,8 +11,7 @@ export async function getCompanyById(id: string): Promise<QueryResult<Company>> 
         id, source, source_id, source_url, name, slug, website, logo_url,
         one_liner, long_description, tags, industries, regions, batch,
         team_size, founded_at, stage, status, is_hiring, is_nonprofit,
-        all_locations, source_metadata, created_at, updated_at, last_synced_at,
-        embedding
+        all_locations, source_metadata, created_at, updated_at, last_synced_at
       FROM companies
       WHERE id = ${id}
     `;
@@ -43,8 +42,7 @@ export async function getAllCompanies(
             id, source, source_id, source_url, name, slug, website, logo_url,
             one_liner, long_description, tags, industries, regions, batch,
             team_size, founded_at, stage, status, is_hiring, is_nonprofit,
-            all_locations, source_metadata, created_at, updated_at, last_synced_at,
-            embedding
+            all_locations, source_metadata, created_at, updated_at, last_synced_at
           FROM companies
           WHERE id > ${cursor}
           ORDER BY id
@@ -55,8 +53,7 @@ export async function getAllCompanies(
             id, source, source_id, source_url, name, slug, website, logo_url,
             one_liner, long_description, tags, industries, regions, batch,
             team_size, founded_at, stage, status, is_hiring, is_nonprofit,
-            all_locations, source_metadata, created_at, updated_at, last_synced_at,
-            embedding
+            all_locations, source_metadata, created_at, updated_at, last_synced_at
           FROM companies
           ORDER BY id
           LIMIT ${limit + 1}

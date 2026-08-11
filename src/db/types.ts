@@ -24,7 +24,7 @@ export type Company = {
   created_at: Date;
   updated_at: Date;
   last_synced_at: Date;
-  embedding: number[] | null;
+  embedding?: number[] | null;
 };
 
 export type SearchResult = Company & {

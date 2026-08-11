@@ -54,3 +54,14 @@ No canary code was merged.
   - `npm ci` (worktree had no `node_modules`)
   - `npm run verify` → exit 0 (lint, typecheck, 74 evals, build). Build succeeded without DATABASE_URL.
 - **Human notes:** No new dependencies. No SQL, schema, embeddings, or route loading/error files. No hermetic eval under `src/eval/**` (static metadata + re-export only; plan path caps). Horizon slice advanced past this completed feature.
+
+## continue-20260811-175138 (drop-unused-embedding-select)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260811-175138` / `harness/continue-local-20260811-175138`
+- **Task / plan:** `drop-unused-embedding-select` / `plan-20260811122236`
+- **What changed:** Removed `embedding` from the SELECT lists of `getCompanyById` and both cursor branches of `getAllCompanies` in `src/db/queries/companies.ts`. Made `Company.embedding` optional in `src/db/types.ts` so omitted selects match the type. Left `searchCompanies` embedding column, hybrid weights (0.7 / 0.2 / 0.1), and `HNSW_EF_SEARCH` unchanged. Advanced horizon past this completed feature.
+- **Why:** List and detail callers never read the vector; selecting it ships large unused payloads and will get worse once embeddings are populated.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules`)
+  - `npm run verify` → exit 0 (lint, typecheck, 74 evals, build). Build succeeded without DATABASE_URL.
+- **Human notes:** No new dependencies. No app/component/schema changes. No hermetic eval under `src/eval/**` (plan allowed only query/types paths; behaviour is column-list omission, not ranking). Parameterized SQL only. Horizon next: route-loading-and-error-states.

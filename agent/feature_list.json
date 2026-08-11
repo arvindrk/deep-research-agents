@@ -112,13 +112,13 @@
   },
   {
     "id": "drop-unused-embedding-select",
-    "status": "pending",
+    "status": "completed",
     "priority": 12,
     "category": "tech_debt",
     "depends_on": [],
     "description": "Stop selecting the embedding column in queries whose callers never read it. getCompanyById and getAllCompanies each pull a full vector per row across the wire for no consumer. Keep it only where similarity scoring needs it.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "server-render-company-grid",
