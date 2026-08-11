@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CompanyDetail } from '@/components/company-detail';
 import { getCompanyById } from '@/db/queries/companies';
@@ -5,6 +6,22 @@ import { cn } from '@/lib/utils';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getCompanyById(id);
+
+  if (!result.success) {
+    return { title: 'Company' };
+  }
+
+  return {
+    title: result.data.name,
+    description: result.data.one_liner ?? undefined,
+  };
 }
 
 export default async function CompanyDetailPage({ params }: PageProps) {
