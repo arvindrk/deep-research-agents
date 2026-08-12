@@ -5,7 +5,8 @@ export type PublicSearchResult = Omit<SearchResult, 'embedding'>;
 
 /** Strip embedding (and any other non-public fields) before JSON serialization. */
 export function toPublicSearchResult(row: SearchResult): PublicSearchResult {
-  const { embedding: _embedding, ...rest } = row;
+  const rest = { ...row };
+  delete rest.embedding;
   return rest;
 }
 
