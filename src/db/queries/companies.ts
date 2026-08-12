@@ -7,6 +7,13 @@ import type { Company, SearchResult, QueryResult, PaginatedResult } from '../typ
 
 const HNSW_EF_SEARCH = 200;
 
+/** Hybrid ranking weights. Product behaviour; locked by hermetic eval. */
+export const HYBRID_SEARCH_WEIGHTS = {
+  semantic: 0.7,
+  nameTrigram: 0.2,
+  fullText: 0.1,
+} as const;
+
 /** Columns needed to compose embedding input; never includes the vector. */
 export type CompanyEmbeddingSource = {
   id: string;
@@ -152,17 +159,18 @@ export async function searchCompanies(
 
     const embeddingJSON = JSON.stringify(embedding);
 
+    const { semantic, nameTrigram, fullText } = HYBRID_SEARCH_WEIGHTS;
+
     const results = await sql`
       SELECT 
         id, source, source_id, source_url, name, slug, website, logo_url,
         one_liner, long_description, tags, industries, regions, batch,
         team_size, founded_at, stage, status, is_hiring, is_nonprofit,
         all_locations, source_metadata, created_at, updated_at, last_synced_at,
-        embedding,
         (
-          (1 - (embedding <=> ${embeddingJSON}::vector)) * 0.7 + 
-          similarity(name, ${query}) * 0.2 +
-          ts_rank_cd(search_vector, plainto_tsquery('english', ${query})) * 0.1
+          (1 - (embedding <=> ${embeddingJSON}::vector)) * ${semantic} + 
+          similarity(name, ${query}) * ${nameTrigram} +
+          ts_rank_cd(search_vector, plainto_tsquery('english', ${query})) * ${fullText}
         ) AS relevance_score
       FROM companies
       WHERE 
