@@ -88,3 +88,15 @@ No canary code was merged.
   - Eval canary: set `EMBEDDING_DIMENSIONS` to 999 → company-embedding eval exit 1 (3 fails); restored → exit 0 (10 pass)
   - `npm run verify` → exit 0 (lint, typecheck, 84 evals, build). Build succeeded without DATABASE_URL or OPENAI_API_KEY.
 - **Human notes:** No new dependencies. Did not add search route, search UI, or change hybrid weights (0.7/0.2/0.1) or `HNSW_EF_SEARCH`. Backfill not executed against a live DB in this run (no secrets in worktree). Operator can run `npx tsx scripts/backfill-embeddings.ts --dry-run` then without `--dry-run` when keys are set. EXPLAIN ANALYZE not run live (no DATABASE_URL); intended plans: list uses `WHERE embedding IS NULL ORDER BY id LIMIT` (bounded); update is single-row by primary key.
+
+## continue-20260812-161258 (hybrid-search-api)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260812-161258` / `harness/continue-local-20260812-161258`
+- **Task / plan:** `hybrid-search-api` / `plan-20260812104450`
+- **What changed:** Named `HYBRID_SEARCH_WEIGHTS` (semantic 0.7 / nameTrigram 0.2 / fullText 0.1) and used those scalars as parameterized weights in `searchCompanies`; omitted `embedding` from the SELECT (score still uses the column). Pure `parseHybridSearchInput` (reject empty query, non-integer/out-of-range limit; max 50) and `toPublicSearchResult` (never serializes vectors). `GET /api/search` validates first, embeds via `embedText`, calls `searchCompanies`, returns `{ results }` with generic 400/502/503 JSON (no driver/provider text). Hermetic evals in `src/eval/hybrid-search.eval.ts`. Marked feature completed; advanced horizon past this feature.
+- **Why:** Hybrid discovery was unreachable without a validated route that embeds the query and ranks via existing SQL.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules` for build)
+  - Eval canary: `semantic: 0.5` → weight eval exit 1; empty-query gate disabled → parse eval exit 1; restored → 8/8 pass
+  - `npm run verify` → exit 0 (lint, typecheck, 92 evals, build). Route table includes `ƒ /api/search`. Build succeeded without DATABASE_URL or OPENAI_API_KEY.
+- **Human notes:** No new dependencies. Did not implement search-ui or hybrid-search-ranking-eval ranking fixtures. Did not change weight values or `HNSW_EF_SEARCH` (200). SQL shape unchanged except named weight parameters and omitting embedding from SELECT; intended plan still HNSW + trigram filters with LIMIT (no live EXPLAIN without DATABASE_URL).

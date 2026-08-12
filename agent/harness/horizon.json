@@ -1,30 +1,27 @@
 {
   "slice": [
-    "hybrid-search-api",
     "hybrid-search-ranking-eval",
     "search-ui",
     "company-ingestion-refresh",
     "server-render-company-grid"
   ],
   "rationale_per_step": {
-    "hybrid-search-api": "Embedding module and store path shipped; next is a validated route that embeds the query and calls searchCompanies. Hybrid search + Discovery with low noise.",
-    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking eval so weight regressions fail CI (Measurable quality).",
-    "search-ui": "User-facing discovery once API and ranking eval exist; UI and UX on a working search backend.",
-    "company-ingestion-refresh": "Refresh source rows and re-embed changes via refreshCompanyEmbedding; unblocks research-agent-runtime.",
+    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking over fixed vectors/rows so 0.7/0.2/0.1 weight regressions fail CI (Measurable quality). Next head after hybrid-search-api.",
+    "search-ui": "Shareable URL-driven search surface once ranking eval exists; UI and UX on a working backend.",
+    "company-ingestion-refresh": "Resumable source refresh + re-embed via refreshCompanyEmbedding; unblocks research-agent-runtime (Evidence-backed intelligence / Reliable autonomous research).",
     "server-render-company-grid": "Unblocked tech_debt: drop unnecessary client JS on the grid once the hybrid path is moving."
   },
   "category_mix": {
-    "new_feature": 3,
+    "new_feature": 2,
     "testing_observability": 1,
     "tech_debt": 1
   },
   "vision_refs": {
-    "hybrid-search-api": ["Hybrid search", "Discovery with low noise"],
     "hybrid-search-ranking-eval": ["Measurable quality", "Hybrid search"],
     "search-ui": ["UI and UX", "Discovery with low noise"],
     "company-ingestion-refresh": ["Evidence-backed intelligence", "Reliable autonomous research"],
     "server-render-company-grid": ["UI and UX"]
   },
-  "generated_by_run": "continue-20260811-214332",
-  "notes": "Executor completed embedding-generation-pipeline. Horizon advances past it so completed work is not rescheduled. Next head is hybrid-search-api."
+  "generated_by_run": "continue-20260812-161258",
+  "notes": "Executor completed hybrid-search-api. Horizon advances past it so completed work is not rescheduled. Next head is hybrid-search-ranking-eval."
 }
