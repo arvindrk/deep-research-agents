@@ -152,13 +152,13 @@
   },
   {
     "id": "hybrid-search-api",
-    "status": "pending",
+    "status": "completed",
     "priority": 16,
     "category": "new_feature",
     "depends_on": ["embedding-generation-pipeline"],
     "description": "Expose hybrid search through a validated route that embeds the query and calls searchCompanies. Validate input at the boundary, bound the result set, and keep the existing semantic, trigram, and full-text weighting behind a single named constant.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "hybrid-search-ranking-eval",
