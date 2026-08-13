@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Company } from '@/db/types';
+import { overflowTagLabel, pickDisplayTags } from '@/lib/company-tags';
 import { formatBatch } from '@/lib/format-batch';
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
@@ -15,8 +16,8 @@ interface CompanyCardProps {
 
 export function CompanyCard({ company }: CompanyCardProps) {
   const [imageError, setImageError] = useState(false);
-  const displayTags = company.tags.slice(0, 3);
-  const hasMoreTags = company.tags.length > 3;
+  const displayTags = pickDisplayTags(company.tags);
+  const overflowLabel = overflowTagLabel(company.tags);
 
   return (
     <Link
@@ -78,9 +79,9 @@ export function CompanyCard({ company }: CompanyCardProps) {
                   {tag}
                 </Badge>
               ))}
-              {hasMoreTags && (
+              {overflowLabel && (
                 <Badge variant="outline" className="text-xs">
-                  +{company.tags.length - 3}
+                  {overflowLabel}
                 </Badge>
               )}
             </div>
