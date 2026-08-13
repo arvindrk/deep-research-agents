@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import type { Company } from '@/db/types';
 
 interface CompanyGridProps {
-  companies: Company[];
+  companies: readonly Company[];
 }
 
 export function CompanyGrid({ companies }: CompanyGridProps) {
