@@ -32,6 +32,19 @@ describe('overflowTagCount', () => {
   });
 });
 
+describe('display limit overrides', () => {
+  it('treats a zero or negative limit as showing nothing', () => {
+    assert.deepEqual(pickDisplayTags(tags(4), 0), []);
+    assert.deepEqual(pickDisplayTags(tags(4), -3), []);
+    assert.equal(overflowTagCount(tags(4), -3), 4);
+  });
+
+  it('shows every tag when the limit exceeds the list', () => {
+    assert.deepEqual(pickDisplayTags(tags(2), 9), tags(2));
+    assert.equal(overflowTagLabel(tags(2), 9), null);
+  });
+});
+
 describe('overflowTagLabel', () => {
   it('is null while every tag is visible', () => {
     assert.equal(overflowTagLabel(tags(DISPLAY_TAG_LIMIT)), null);
