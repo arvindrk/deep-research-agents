@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Building2, ExternalLink, MapPin, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CompanyLogo } from '@/components/company-logo';
 import {
   Card,
   CardContent,
@@ -66,13 +66,7 @@ export function CompanyDetail({ company }: CompanyDetailProps) {
             <div className="flex items-start gap-4">
               {company.logo_url ? (
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                  <Image
-                    src={company.logo_url}
-                    alt={`${company.name} logo`}
-                    width={64}
-                    height={64}
-                    className="object-contain"
-                  />
+                  <CompanyLogo src={company.logo_url} name={company.name} size={64} />
                 </div>
               ) : (
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
