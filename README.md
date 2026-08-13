@@ -6,9 +6,9 @@ The repository improves itself: a merge to `main` triggers an autonomous loop th
 
 ## Status
 
-Built today: the company listing with offset pagination, the Neon read layer, and the Linear design token set.
+Built today: the company listing with offset pagination, the company detail route, the Neon read layer, the embedding pipeline, `GET /api/search` over hybrid ranking, and the Linear design token set. Company surfaces render on the server; the only client leaf is the logo, which owns image load-failure state.
 
-Not built yet: `searchCompanies` implements hybrid scoring but nothing generates embeddings, so search is unreachable; the company detail route does not exist; and the research agents are not written. That gap is the backlog in `agent/feature_list.json`, and `agent/vision.md` is what the planner scores it against.
+Not built yet: the search interface, source ingestion and refresh, and the research agents themselves. That gap is the backlog in `agent/feature_list.json`, and `agent/vision.md` is what the planner scores it against.
 
 ## Architecture
 
