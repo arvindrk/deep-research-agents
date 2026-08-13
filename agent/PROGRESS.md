@@ -113,3 +113,14 @@ No canary code was merged.
   - `npm run eval` → exit 0 (101 tests)
   - `npm run verify` → exit 0 (lint, typecheck, evals, build). Build succeeded without DATABASE_URL.
 - **Human notes:** No new dependencies. Did not implement search-ui, company-ingestion-refresh, or server-render-company-grid. Did not change weight numeric values or `HNSW_EF_SEARCH` (200). No app/route/component changes. No secrets read or written.
+
+## local-20260813 (server-render-company-grid)
+
+- **Worktree / branch:** local maintainer checkout / `feat/server-render-company-grid`
+- **Task / plan:** `server-render-company-grid` / no planner artifact; maintainer-run session, not a continuation
+- **What changed:** Dropped `'use client'` from the company card, the company grid, and the pagination control. Image load-failure state moved into one client leaf, `src/components/company-logo.tsx`, now used by both the card and the detail header (the detail header previously had no fallback at all). Added pure tag display helpers in `src/lib/company-tags.ts` and used them in the card instead of inline slicing. Grid now takes a `readonly Company[]`.
+- **Why:** Those three components held no state, ran no effect, and touched no browser API, so they shipped client JavaScript for markup the server can render. The card's only reason to be a client component was the logo `onError` handler.
+- **Commands:**
+  - `npm run verify` → exit 0 (lint, typecheck, evals, build). Build succeeded without `DATABASE_URL`.
+  - Eval canary: added `'use client'` to `company-grid.tsx` → `client-boundaries` eval exit 1; removed → pass.
+- **Human notes:** No new dependencies. No SQL, schema, or route changes. `src/eval/client-boundaries.eval.ts` now fails any new `'use client'` that is not allowlisted with a reason, so the boundary policy in `.agents/rules/nextjs-react.md` is enforced rather than asserted. README status section refreshed: it still claimed search and the detail route did not exist.
