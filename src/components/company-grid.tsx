@@ -1,6 +1,3 @@
-'use client';
-
-import * as React from 'react';
 import { CompanyCard } from './company-card';
 import { cn } from '@/lib/utils';
 import type { Company } from '@/db/types';
