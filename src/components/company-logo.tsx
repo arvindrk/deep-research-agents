@@ -23,7 +23,7 @@ export function CompanyLogo({ src, name, size }: CompanyLogoProps) {
   return (
     <Image
       src={failed ? FALLBACK_LOGO : src}
-      alt={`${name} logo`}
+      alt={failed ? `${name} logo unavailable` : `${name} logo`}
       width={size}
       height={size}
       className={cn('object-contain', failed && 'grayscale opacity-60')}
