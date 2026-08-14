@@ -124,3 +124,14 @@ No canary code was merged.
   - `npm run verify` → exit 0 (lint, typecheck, evals, build). Build succeeded without `DATABASE_URL`.
   - Eval canary: added `'use client'` to `company-grid.tsx` → `client-boundaries` eval exit 1; removed → pass.
 - **Human notes:** No new dependencies. No SQL, schema, or route changes. `src/eval/client-boundaries.eval.ts` now fails any new `'use client'` that is not allowlisted with a reason, so the boundary policy in `.agents/rules/nextjs-react.md` is enforced rather than asserted. README status section refreshed: it still claimed search and the detail route did not exist.
+
+## local-20260814 (search-observability)
+
+- **Worktree / branch:** local maintainer checkout / `feat/search-observability`
+- **Task / plan:** `search-observability` / no planner artifact; maintainer-run session, not a continuation. Feature defined in this run at priority 23.
+- **What changed:** New `src/lib/observability/`: `search-event.ts` holds the outcome taxonomy (`ok`, `invalid_request`, `embed_unavailable`, `search_failed`), fixed latency buckets, query bounding with credential scrubbing, and the pure event builder; `emit.ts` writes one JSON line and is the only I/O. `GET /api/search` now times the embed and query phases separately and emits exactly one event on every exit path, with the result count taken from the public results the client actually receives.
+- **Why:** Search had three distinct failure modes (bad input, embedding provider down, database down) and none of them were visible once the response was sent. Latency was equally invisible, so a slow embed and a slow query looked identical.
+- **Commands:**
+  - `npm run verify` → exit 0 (lint, typecheck, 123 evals, build). Build succeeded without `DATABASE_URL` or `OPENAI_API_KEY`.
+  - Eval canary: widened `MAX_LOGGED_QUERY_CHARS` and dropped a credential pattern → `search-event` eval exit 1; restored → pass.
+- **Human notes:** No new dependencies. Event shape is deliberately fixed across outcomes so log queries do not need per-outcome key knowledge. The query prefix is scrubbed before truncation, so a secret cannot be half-logged. No SQL, schema, or UI changes.
