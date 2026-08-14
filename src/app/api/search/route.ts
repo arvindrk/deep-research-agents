@@ -70,18 +70,18 @@ export async function GET(request: Request): Promise<Response> {
     return NextResponse.json(SEARCH_FAILED, { status: 503 });
   }
 
+  const results = toPublicSearchResults(result.data);
+
   emitSearchEvent(
     buildSearchEvent({
       outcome: 'ok',
       durationMs: Date.now() - startedAt,
       embedMs,
       queryMs,
-      resultCount: result.data.length,
+      resultCount: results.length,
       query,
     }),
   );
 
-  return NextResponse.json({
-    results: toPublicSearchResults(result.data),
-  });
+  return NextResponse.json({ results });
 }
