@@ -3,9 +3,11 @@ import { describe, it } from 'node:test';
 
 import {
   boundQueryText,
+  buildSearchEvent,
   LATENCY_BUCKETS_MS,
   latencyBucket,
   MAX_LOGGED_QUERY_CHARS,
+  SEARCH_OUTCOMES,
 } from '@/lib/observability/search-event';
 
 describe('latencyBucket', () => {
@@ -66,5 +68,48 @@ describe('boundQueryText', () => {
 
   it('handles an empty query', () => {
     assert.deepEqual(boundQueryText('   '), { query_prefix: '', query_chars: 0 });
+  });
+});
+
+describe('buildSearchEvent', () => {
+  it('carries the same keys for every outcome', () => {
+    const shapes = SEARCH_OUTCOMES.map((outcome) =>
+      Object.keys(buildSearchEvent({ outcome, durationMs: 12 })).sort(),
+    );
+    for (const shape of shapes) {
+      assert.deepEqual(shape, shapes[0], 'event shape drifts between outcomes');
+    }
+  });
+
+  it('records a successful search with its phase timings', () => {
+    assert.deepEqual(
+      buildSearchEvent({
+        outcome: 'ok',
+        durationMs: 180,
+        embedMs: 120,
+        queryMs: 55,
+        resultCount: 7,
+        query: 'climate fintech',
+      }),
+      {
+        event: 'search.request',
+        outcome: 'ok',
+        duration_ms: 180,
+        latency_bucket: '<=250ms',
+        embed_ms: 120,
+        query_ms: 55,
+        result_count: 7,
+        query_prefix: 'climate fintech',
+        query_chars: 15,
+      },
+    );
+  });
+
+  it('zeroes the phases a failed request never reached', () => {
+    const event = buildSearchEvent({ outcome: 'invalid_request', durationMs: 1 });
+    assert.equal(event.embed_ms, 0);
+    assert.equal(event.query_ms, 0);
+    assert.equal(event.result_count, 0);
+    assert.equal(event.query_prefix, '');
   });
 });
