@@ -61,3 +61,45 @@ export function boundQueryText(query: string): {
     query_chars: trimmed.length,
   };
 }
+
+/** What the route knows by the time a request ends, one way or another. */
+export type SearchEventInput = {
+  outcome: SearchOutcome;
+  durationMs: number;
+  embedMs?: number;
+  queryMs?: number;
+  resultCount?: number;
+  query?: string;
+};
+
+/**
+ * The wire shape. Every field is always present: a log query that has to know
+ * which keys exist for which outcome is a log query nobody writes.
+ */
+export type SearchEvent = {
+  event: 'search.request';
+  outcome: SearchOutcome;
+  duration_ms: number;
+  latency_bucket: string;
+  embed_ms: number;
+  query_ms: number;
+  result_count: number;
+  query_prefix: string;
+  query_chars: number;
+};
+
+export function buildSearchEvent(input: SearchEventInput): SearchEvent {
+  const { query_prefix, query_chars } = boundQueryText(input.query ?? '');
+
+  return {
+    event: 'search.request',
+    outcome: input.outcome,
+    duration_ms: input.durationMs,
+    latency_bucket: latencyBucket(input.durationMs),
+    embed_ms: input.embedMs ?? 0,
+    query_ms: input.queryMs ?? 0,
+    result_count: input.resultCount ?? 0,
+    query_prefix,
+    query_chars,
+  };
+}
