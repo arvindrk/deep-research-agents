@@ -113,3 +113,37 @@ describe('buildSearchEvent', () => {
     assert.equal(event.query_prefix, '');
   });
 });
+
+describe('search events as published', () => {
+  const CREDENTIAL_SHAPES = [
+    /postgres(ql)?:\/\//,
+    /gh[pousr]_[A-Za-z0-9]{30,}/,
+    /sk-[A-Za-z0-9_-]{20,}/,
+    /AKIA[0-9A-Z]{16}/,
+    /xox[baprs]-/,
+  ];
+
+  it('never serializes a vector or an embedding key', () => {
+    const serialized = JSON.stringify(
+      buildSearchEvent({
+        outcome: 'ok',
+        durationMs: 90,
+        resultCount: 3,
+        query: 'vector search for climate',
+      }),
+    );
+    assert.doesNotMatch(serialized, /embedding/);
+    assert.doesNotMatch(serialized, /\[-?\d+\.\d+,/);
+  });
+
+  it('never serializes credential-shaped text from the query box', () => {
+    const pasted =
+      'postgresql://user:hunter2@db.example.com/app sk-abcdefghijklmnopqrstuvwxyz123456';
+    const serialized = JSON.stringify(
+      buildSearchEvent({ outcome: 'ok', durationMs: 5, query: pasted }),
+    );
+    for (const shape of CREDENTIAL_SHAPES) {
+      assert.doesNotMatch(serialized, shape, shape.source);
+    }
+  });
+});
