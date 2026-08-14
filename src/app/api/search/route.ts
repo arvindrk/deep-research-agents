@@ -36,6 +36,7 @@ export async function GET(request: Request): Promise<Response> {
 
   const { query, limit } = parsed.value;
 
+  const embedStartedAt = Date.now();
   let embedding: number[];
   try {
     embedding = await embedText(query);
@@ -44,18 +45,25 @@ export async function GET(request: Request): Promise<Response> {
       buildSearchEvent({
         outcome: 'embed_unavailable',
         durationMs: Date.now() - startedAt,
+        embedMs: Date.now() - embedStartedAt,
         query,
       }),
     );
     return NextResponse.json(EMBED_UNAVAILABLE, { status: 502 });
   }
+  const embedMs = Date.now() - embedStartedAt;
 
+  const queryStartedAt = Date.now();
   const result = await searchCompanies(query, embedding, limit);
+  const queryMs = Date.now() - queryStartedAt;
+
   if (!result.success) {
     emitSearchEvent(
       buildSearchEvent({
         outcome: 'search_failed',
         durationMs: Date.now() - startedAt,
+        embedMs,
+        queryMs,
         query,
       }),
     );
@@ -66,6 +74,8 @@ export async function GET(request: Request): Promise<Response> {
     buildSearchEvent({
       outcome: 'ok',
       durationMs: Date.now() - startedAt,
+      embedMs,
+      queryMs,
       resultCount: result.data.length,
       query,
     }),
