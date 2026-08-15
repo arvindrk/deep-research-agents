@@ -19,3 +19,30 @@ export function isTransientDatabaseError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return TRANSIENT_ERROR_PATTERNS.some((pattern) => pattern.test(message));
 }
+
+/** Attempts include the first try, so 3 allows at most two retries. */
+export const RETRY_ATTEMPTS = 3;
+export const RETRY_BASE_DELAY_MS = 50;
+export const RETRY_MAX_DELAY_MS = 500;
+
+/**
+ * Exponential backoff with jitter, where the jitter is an argument. A schedule
+ * that reads its own random source cannot be locked by an eval, and unjittered
+ * retries from many instances arrive in the same millisecond.
+ *
+ * `jitter` is in [0, 1). The delay lands in [ceiling / 2, ceiling).
+ */
+export function backoffDelayMs(attempt: number, jitter: number): number {
+  if (!Number.isInteger(attempt) || attempt < 1) {
+    throw new Error('attempt must be an integer >= 1');
+  }
+  if (!(jitter >= 0 && jitter < 1)) {
+    throw new Error('jitter must be in [0, 1)');
+  }
+
+  const ceiling = Math.min(
+    RETRY_BASE_DELAY_MS * 2 ** (attempt - 1),
+    RETRY_MAX_DELAY_MS,
+  );
+  return Math.round(ceiling * (0.5 + 0.5 * jitter));
+}
