@@ -1,5 +1,5 @@
 import { getDBClient } from '../client';
-import { STATEMENT_TIMEOUT_MS } from '../resilience';
+import { STATEMENT_TIMEOUT_MS, withRetry } from '../resilience';
 import {
   assertEmbeddingDimensions,
   type CompanyEmbeddingFields,
@@ -30,15 +30,17 @@ export type CompanyEmbeddingSource = {
 export async function getCompanyById(id: string): Promise<QueryResult<Company>> {
   try {
     const sql = getDBClient();
-    const results = await sql`
-      SELECT 
-        id, source, source_id, source_url, name, slug, website, logo_url,
-        one_liner, long_description, tags, industries, regions, batch,
-        team_size, founded_at, stage, status, is_hiring, is_nonprofit,
-        all_locations, source_metadata, created_at, updated_at, last_synced_at
-      FROM companies
-      WHERE id = ${id}
-    `;
+    const results = await withRetry(
+      () => sql`
+        SELECT 
+          id, source, source_id, source_url, name, slug, website, logo_url,
+          one_liner, long_description, tags, industries, regions, batch,
+          team_size, founded_at, stage, status, is_hiring, is_nonprofit,
+          all_locations, source_metadata, created_at, updated_at, last_synced_at
+        FROM companies
+        WHERE id = ${id}
+      `,
+    );
 
     if (results.length === 0) {
       return { success: false, error: 'Company not found' };
