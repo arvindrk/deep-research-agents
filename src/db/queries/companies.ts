@@ -191,11 +191,9 @@ export async function searchCompanies(
     );
 
     return { success: true, data: results as SearchResult[] };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+  } catch {
+    // Driver text names columns, hosts, and timeouts. Callers get none of it.
+    return { success: false, error: 'Search query failed' };
   }
 }
 
