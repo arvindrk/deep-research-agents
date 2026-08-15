@@ -165,10 +165,11 @@ export async function searchCompanies(
     // `SET` takes no bound parameter, and over the HTTP driver each statement
     // is its own transaction, so a separate SET never reached this query.
     // set_config with is_local = true, in one transaction, does.
-    const [, , results] = await sql.transaction([
-      sql`SELECT set_config('hnsw.ef_search', ${String(HNSW_EF_SEARCH)}, true)`,
-      sql`SELECT set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
-      sql`
+    const [, , results] = await withRetry(() =>
+      sql.transaction([
+        sql`SELECT set_config('hnsw.ef_search', ${String(HNSW_EF_SEARCH)}, true)`,
+        sql`SELECT set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
+        sql`
       SELECT 
         id, source, source_id, source_url, name, slug, website, logo_url,
         one_liner, long_description, tags, industries, regions, batch,
@@ -185,8 +186,9 @@ export async function searchCompanies(
         OR similarity(name, ${query}) >= ${minNameTrigram}
       ORDER BY relevance_score DESC
       LIMIT ${limit}
-    `,
-    ]);
+        `,
+      ]),
+    );
 
     return { success: true, data: results as SearchResult[] };
   } catch (error) {
