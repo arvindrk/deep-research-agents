@@ -6,6 +6,7 @@ import {
   isTransientDatabaseError,
   RETRY_BASE_DELAY_MS,
   RETRY_MAX_DELAY_MS,
+  withRetry,
 } from '@/db/resilience';
 
 describe('isTransientDatabaseError', () => {
@@ -72,5 +73,73 @@ describe('backoffDelayMs', () => {
     assert.throws(() => backoffDelayMs(1.5, 0));
     assert.throws(() => backoffDelayMs(1, 1));
     assert.throws(() => backoffDelayMs(1, -0.1));
+  });
+});
+
+describe('withRetry', () => {
+  const collectSleeps = () => {
+    const slept: number[] = [];
+    return {
+      slept,
+      sleep: async (ms: number) => {
+        slept.push(ms);
+      },
+    };
+  };
+
+  it('returns the first success without sleeping', async () => {
+    const { slept, sleep } = collectSleeps();
+    const result = await withRetry(async () => 'ok', { sleep, jitter: () => 0 });
+    assert.equal(result, 'ok');
+    assert.deepEqual(slept, []);
+  });
+
+  it('recovers when a transient failure is followed by a success', async () => {
+    const { slept, sleep } = collectSleeps();
+    let calls = 0;
+    const result = await withRetry(
+      async () => {
+        calls += 1;
+        if (calls === 1) throw new Error('fetch failed');
+        return calls;
+      },
+      { sleep, jitter: () => 0 },
+    );
+    assert.equal(result, 2);
+    assert.equal(slept.length, 1);
+  });
+
+  it('gives up after the attempt budget and rethrows the last failure', async () => {
+    const { slept, sleep } = collectSleeps();
+    let calls = 0;
+    await assert.rejects(
+      withRetry(
+        async () => {
+          calls += 1;
+          throw new Error('connection terminated');
+        },
+        { attempts: 3, sleep, jitter: () => 0 },
+      ),
+      /connection terminated/,
+    );
+    assert.equal(calls, 3, 'attempts include the first try');
+    assert.equal(slept.length, 2, 'no sleep after the final attempt');
+  });
+
+  it('does not retry a permanent failure', async () => {
+    const { slept, sleep } = collectSleeps();
+    let calls = 0;
+    await assert.rejects(
+      withRetry(
+        async () => {
+          calls += 1;
+          throw new Error('syntax error at or near "SELCT"');
+        },
+        { sleep, jitter: () => 0 },
+      ),
+      /syntax error/,
+    );
+    assert.equal(calls, 1);
+    assert.deepEqual(slept, []);
   });
 });
