@@ -154,14 +154,17 @@ export async function searchCompanies(
   try {
     const sql = getDBClient();
 
-    await sql`SET hnsw.ef_search = ${HNSW_EF_SEARCH}`;
-
     const embeddingJSON = JSON.stringify(embedding);
 
     const { semantic, nameTrigram, fullText } = HYBRID_SEARCH_WEIGHTS;
     const { minSemantic, minNameTrigram } = HYBRID_SEARCH_FILTERS;
 
-    const results = await sql`
+    // `SET` takes no bound parameter, and over the HTTP driver each statement
+    // is its own transaction, so a separate SET never reached this query.
+    // set_config with is_local = true, in one transaction, does.
+    const [, results] = await sql.transaction([
+      sql`SELECT set_config('hnsw.ef_search', ${String(HNSW_EF_SEARCH)}, true)`,
+      sql`
       SELECT 
         id, source, source_id, source_url, name, slug, website, logo_url,
         one_liner, long_description, tags, industries, regions, batch,
@@ -178,7 +181,8 @@ export async function searchCompanies(
         OR similarity(name, ${query}) >= ${minNameTrigram}
       ORDER BY relevance_score DESC
       LIMIT ${limit}
-    `;
+    `,
+    ]);
 
     return { success: true, data: results as SearchResult[] };
   } catch (error) {
