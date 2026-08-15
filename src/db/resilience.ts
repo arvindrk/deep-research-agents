@@ -46,3 +46,37 @@ export function backoffDelayMs(attempt: number, jitter: number): number {
   );
   return Math.round(ceiling * (0.5 + 0.5 * jitter));
 }
+
+export type RetryOptions = {
+  attempts?: number;
+  sleep?: (ms: number) => Promise<void>;
+  jitter?: () => number;
+};
+
+const defaultSleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Runs `operation`, retrying only transient failures. Sleep and jitter are
+ * injectable so the loop is evaluable without a clock or a random source.
+ * A permanent failure is rethrown on the first attempt, unchanged.
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  options: RetryOptions = {},
+): Promise<T> {
+  const attempts = options.attempts ?? RETRY_ATTEMPTS;
+  const sleep = options.sleep ?? defaultSleep;
+  const jitter = options.jitter ?? Math.random;
+
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (attempt >= attempts || !isTransientDatabaseError(error)) {
+        throw error;
+      }
+      await sleep(backoffDelayMs(attempt, jitter()));
+    }
+  }
+}
