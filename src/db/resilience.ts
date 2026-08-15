@@ -20,6 +20,13 @@ export function isTransientDatabaseError(error: unknown): boolean {
   return TRANSIENT_ERROR_PATTERNS.some((pattern) => pattern.test(message));
 }
 
+/**
+ * Upper bound for a single search query. A hybrid scan that has not returned by
+ * now will not return usefully, and holding the request open costs a connection
+ * the next request needs.
+ */
+export const STATEMENT_TIMEOUT_MS = 5_000;
+
 /** Attempts include the first try, so 3 allows at most two retries. */
 export const RETRY_ATTEMPTS = 3;
 export const RETRY_BASE_DELAY_MS = 50;
