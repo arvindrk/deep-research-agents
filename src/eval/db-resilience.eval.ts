@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { isTransientDatabaseError } from '@/db/resilience';
+import {
+  backoffDelayMs,
+  isTransientDatabaseError,
+  RETRY_BASE_DELAY_MS,
+  RETRY_MAX_DELAY_MS,
+} from '@/db/resilience';
 
 describe('isTransientDatabaseError', () => {
   it('recognises the failures worth retrying', () => {
@@ -37,5 +42,35 @@ describe('isTransientDatabaseError', () => {
     assert.equal(isTransientDatabaseError('fetch failed'), true);
     assert.equal(isTransientDatabaseError(null), false);
     assert.equal(isTransientDatabaseError(undefined), false);
+  });
+});
+
+describe('backoffDelayMs', () => {
+  it('grows with the attempt until it hits the cap', () => {
+    const noJitter = 0;
+    assert.equal(backoffDelayMs(1, noJitter), RETRY_BASE_DELAY_MS / 2);
+    assert.ok(backoffDelayMs(2, noJitter) > backoffDelayMs(1, noJitter));
+    assert.ok(backoffDelayMs(3, noJitter) > backoffDelayMs(2, noJitter));
+  });
+
+  it('never exceeds the cap, whatever the attempt or the jitter', () => {
+    for (let attempt = 1; attempt <= 20; attempt += 1) {
+      for (const jitter of [0, 0.25, 0.5, 0.999]) {
+        const delay = backoffDelayMs(attempt, jitter);
+        assert.ok(delay <= RETRY_MAX_DELAY_MS, `attempt ${attempt}`);
+        assert.ok(delay >= RETRY_BASE_DELAY_MS / 2, `attempt ${attempt}`);
+      }
+    }
+  });
+
+  it('is monotonic in the jitter it is given', () => {
+    assert.ok(backoffDelayMs(2, 0.9) > backoffDelayMs(2, 0.1));
+  });
+
+  it('rejects an attempt or jitter it cannot schedule', () => {
+    assert.throws(() => backoffDelayMs(0, 0));
+    assert.throws(() => backoffDelayMs(1.5, 0));
+    assert.throws(() => backoffDelayMs(1, 1));
+    assert.throws(() => backoffDelayMs(1, -0.1));
   });
 });
