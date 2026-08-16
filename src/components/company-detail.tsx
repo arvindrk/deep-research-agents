@@ -11,20 +11,8 @@ import {
 } from '@/components/ui/card';
 import type { Company } from '@/db/types';
 import { formatBatch } from '@/lib/format-batch';
+import { httpUrl } from '@/lib/safe-url';
 import { cn } from '@/lib/utils';
-
-function safeHttpUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      return parsed.href;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
 
 function formatSyncedAt(value: Date | string): string {
   const date = value instanceof Date ? value : new Date(value);
@@ -40,7 +28,7 @@ interface CompanyDetailProps {
 }
 
 export function CompanyDetail({ company }: CompanyDetailProps) {
-  const websiteHref = safeHttpUrl(company.website);
+  const websiteHref = httpUrl(company.website);
   const description = company.long_description ?? company.one_liner;
   const tags = company.tags ?? [];
   const industries = company.industries ?? [];
