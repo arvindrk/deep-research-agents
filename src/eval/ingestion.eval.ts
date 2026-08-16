@@ -5,9 +5,11 @@ import {
   contentChecksum,
   embeddingTextChecksum,
 } from '@/lib/ingestion/checksum';
+import { decideRefresh, type StoredCompany } from '@/lib/ingestion/refresh-plan';
 import {
   parseSourceCompany,
   type CompanyContent,
+  type SourceCompanyRecord,
 } from '@/lib/ingestion/source-record';
 
 const minimal = {
@@ -156,5 +158,60 @@ describe('embeddingTextChecksum', () => {
         JSON.stringify(change),
       );
     }
+  });
+});
+
+describe('decideRefresh', () => {
+  const incoming = (overrides: Partial<CompanyContent> = {}): SourceCompanyRecord => ({
+    source: 'yc',
+    source_id: 'acme-1',
+    ...content(overrides),
+  });
+
+  const stored = (overrides: Partial<CompanyContent> = {}): StoredCompany => ({
+    id: 'company-1',
+    ...content(overrides),
+  });
+
+  it('inserts and embeds a record it has never seen', () => {
+    assert.deepEqual(decideRefresh(null, incoming()), {
+      action: 'insert',
+      reembed: true,
+      reason: 'not ingested yet',
+    });
+  });
+
+  it('updates and re-embeds when the embedded text changed', () => {
+    const decision = decideRefresh(stored(), incoming({ one_liner: 'New pitch' }));
+    assert.equal(decision.action, 'update');
+    assert.equal(decision.reembed, true);
+  });
+
+  it('updates without re-embedding when only metadata changed', () => {
+    for (const change of [
+      { team_size: 40 },
+      { is_hiring: false },
+      { all_locations: 'Berlin, DE' },
+      { status: 'acquired' },
+    ] as Partial<CompanyContent>[]) {
+      const decision = decideRefresh(stored(), incoming(change));
+      assert.equal(decision.action, 'update', JSON.stringify(change));
+      assert.equal(decision.reembed, false, JSON.stringify(change));
+    }
+  });
+
+  it('only touches an unchanged record, so a re-run writes no content', () => {
+    const decision = decideRefresh(stored(), incoming());
+    assert.deepEqual(decision, {
+      action: 'touch',
+      reembed: false,
+      reason: 'unchanged',
+    });
+  });
+
+  it('is idempotent: the same input decides the same way every time', () => {
+    const first = decideRefresh(stored(), incoming({ batch: 'S22' }));
+    const second = decideRefresh(stored(), incoming({ batch: 'S22' }));
+    assert.deepEqual(first, second);
   });
 });
