@@ -5,7 +5,13 @@ import {
   contentChecksum,
   embeddingTextChecksum,
 } from '@/lib/ingestion/checksum';
-import { decideRefresh, type StoredCompany } from '@/lib/ingestion/refresh-plan';
+import {
+  decideRefresh,
+  nextCursor,
+  recordsAfterCursor,
+  sortBySourceId,
+  type StoredCompany,
+} from '@/lib/ingestion/refresh-plan';
 import {
   parseSourceCompany,
   type CompanyContent,
@@ -213,5 +219,54 @@ describe('decideRefresh', () => {
     const first = decideRefresh(stored(), incoming({ batch: 'S22' }));
     const second = decideRefresh(stored(), incoming({ batch: 'S22' }));
     assert.deepEqual(first, second);
+  });
+});
+
+describe('resuming a run', () => {
+  const page = (...ids: string[]): SourceCompanyRecord[] =>
+    ids.map((source_id) => ({ source: 'yc', source_id, ...content() }));
+
+  it('walks records in a stable order whatever the source sent', () => {
+    assert.deepEqual(
+      sortBySourceId(page('c', 'a', 'b')).map((r) => r.source_id),
+      ['a', 'b', 'c'],
+    );
+  });
+
+  it('starts from the beginning without a cursor', () => {
+    assert.equal(recordsAfterCursor(page('a', 'b'), null).length, 2);
+  });
+
+  it('excludes the record the cursor names, so it is never done twice', () => {
+    assert.deepEqual(
+      recordsAfterCursor(page('a', 'b', 'c'), 'a').map((r) => r.source_id),
+      ['b', 'c'],
+    );
+  });
+
+  it('finishes empty when the cursor is past the last record', () => {
+    assert.deepEqual(recordsAfterCursor(page('a', 'b'), 'z'), []);
+  });
+
+  it('advances the cursor to the last record it finished', () => {
+    assert.equal(nextCursor(page('a', 'c', 'b'), null), 'c');
+  });
+
+  it('keeps the cursor when a page turns out to be empty', () => {
+    assert.equal(nextCursor([], 'a'), 'a');
+  });
+
+  it('reaches the same place whether it runs in one pass or two', () => {
+    const all = page('a', 'b', 'c', 'd');
+    const onePass = recordsAfterCursor(all, null).map((r) => r.source_id);
+
+    const firstHalf = recordsAfterCursor(all, null).slice(0, 2);
+    const resumed = recordsAfterCursor(all, nextCursor(firstHalf, null));
+    const twoPasses = [
+      ...firstHalf.map((r) => r.source_id),
+      ...resumed.map((r) => r.source_id),
+    ];
+
+    assert.deepEqual(twoPasses, onePass);
   });
 });
