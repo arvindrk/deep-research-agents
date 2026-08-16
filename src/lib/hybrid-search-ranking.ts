@@ -18,7 +18,12 @@ export const HYBRID_SEARCH_WEIGHTS = {
   fullText: 0.1,
 } as const;
 
-export type HybridSearchWeights = typeof HYBRID_SEARCH_WEIGHTS;
+/** Structural weight shape; product values stay on HYBRID_SEARCH_WEIGHTS. */
+export type HybridSearchWeights = {
+  readonly semantic: number;
+  readonly nameTrigram: number;
+  readonly fullText: number;
+};
 
 /** Inclusion thresholds from searchCompanies WHERE. */
 export const HYBRID_SEARCH_FILTERS = {
@@ -26,7 +31,10 @@ export const HYBRID_SEARCH_FILTERS = {
   minNameTrigram: 0.3,
 } as const;
 
-export type HybridSearchFilters = typeof HYBRID_SEARCH_FILTERS;
+export type HybridSearchFilters = {
+  readonly minSemantic: number;
+  readonly minNameTrigram: number;
+};
 
 /** Per-row component scores as produced by the SQL expressions above. */
 export type HybridComponentScores = {
