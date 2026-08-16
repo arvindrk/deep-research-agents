@@ -59,18 +59,19 @@ const DEFAULT_STATUS = 'unknown';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const text = (value: unknown): string | null => {
+/** Trimmed string, or null when there is nothing usable there. */
+export const nullableText = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
 
 /** Trimmed, de-duplicated, empties dropped. Order is the source's. */
-const textList = (value: unknown): string[] => {
+export const textList = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
   const unique = new Set<string>();
   for (const entry of value) {
-    const item = text(entry);
+    const item = nullableText(entry);
     if (item) unique.add(item);
   }
   return [...unique];
@@ -93,9 +94,9 @@ export function parseSourceCompany(raw: unknown): SourceParseResult {
     return { ok: false, error: 'record is not an object' };
   }
 
-  const source = text(raw.source);
-  const sourceId = text(raw.source_id);
-  const name = text(raw.name);
+  const source = nullableText(raw.source);
+  const sourceId = nullableText(raw.source_id);
+  const name = nullableText(raw.name);
 
   if (!source) return { ok: false, error: 'source is missing' };
   if (!sourceId) return { ok: false, error: 'source_id is missing' };
@@ -110,18 +111,18 @@ export function parseSourceCompany(raw: unknown): SourceParseResult {
       source_url: httpUrl(raw.source_url),
       website: httpUrl(raw.website),
       logo_url: httpUrl(raw.logo_url),
-      one_liner: text(raw.one_liner),
-      long_description: text(raw.long_description),
+      one_liner: nullableText(raw.one_liner),
+      long_description: nullableText(raw.long_description),
       tags: textList(raw.tags),
       industries: textList(raw.industries),
       regions: textList(raw.regions),
-      batch: text(raw.batch),
-      stage: text(raw.stage),
-      status: text(raw.status) ?? DEFAULT_STATUS,
+      batch: nullableText(raw.batch),
+      stage: nullableText(raw.stage),
+      status: nullableText(raw.status) ?? DEFAULT_STATUS,
       team_size: count(raw.team_size),
       is_hiring: flag(raw.is_hiring),
       is_nonprofit: flag(raw.is_nonprofit),
-      all_locations: text(raw.all_locations),
+      all_locations: nullableText(raw.all_locations),
     },
   };
 }

@@ -8,6 +8,8 @@ import {
   HYBRID_SEARCH_FILTERS,
   HYBRID_SEARCH_WEIGHTS,
 } from '@/lib/hybrid-search-ranking';
+import type { StoredCompany } from '@/lib/ingestion/refresh-plan';
+import { nullableText, textList } from '@/lib/ingestion/source-record';
 import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
 
 export { HYBRID_SEARCH_WEIGHTS };
@@ -287,4 +289,63 @@ export function toEmbeddingFields(
     batch: row.batch,
     stage: row.stage,
   };
+}
+
+/**
+ * Rows cross a runtime boundary, so they are mapped field by field rather than
+ * cast: `team_size` arrives as a numeric string from some drivers, and a null
+ * text column must not become the string "null".
+ */
+function toStoredCompany(row: Record<string, unknown>): StoredCompany {
+  return {
+    id: String(row.id),
+    name: nullableText(row.name) ?? '',
+    source_url: nullableText(row.source_url),
+    website: nullableText(row.website),
+    logo_url: nullableText(row.logo_url),
+    one_liner: nullableText(row.one_liner),
+    long_description: nullableText(row.long_description),
+    tags: textList(row.tags),
+    industries: textList(row.industries),
+    regions: textList(row.regions),
+    batch: nullableText(row.batch),
+    stage: nullableText(row.stage),
+    status: nullableText(row.status) ?? 'unknown',
+    team_size: row.team_size == null ? null : Number(row.team_size),
+    is_hiring: row.is_hiring === true,
+    is_nonprofit: row.is_nonprofit === true,
+    all_locations: nullableText(row.all_locations),
+  };
+}
+
+/**
+ * The stored content for one source identity, or null when this source record
+ * has never been ingested. Ingestion compares this against the incoming record
+ * to decide whether anything needs writing.
+ */
+export async function getCompanyBySource(
+  source: string,
+  sourceId: string,
+): Promise<QueryResult<StoredCompany | null>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        SELECT
+          id, name, source_url, website, logo_url, one_liner, long_description,
+          tags, industries, regions, batch, stage, status, team_size,
+          is_hiring, is_nonprofit, all_locations
+        FROM companies
+        WHERE source = ${source} AND source_id = ${sourceId}
+        LIMIT 1
+      `,
+    );
+
+    return {
+      success: true,
+      data: results.length === 0 ? null : toStoredCompany(results[0]),
+    };
+  } catch {
+    return { success: false, error: 'Failed to read company by source' };
+  }
 }
