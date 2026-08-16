@@ -23,12 +23,15 @@ import {
   decideRefresh,
   nextCursor,
   recordsAfterCursor,
+  type RefreshDecision,
+  type StoredCompany,
 } from '../src/lib/ingestion/refresh-plan';
 import {
   parseSourceCompany,
   type SourceCompanyRecord,
 } from '../src/lib/ingestion/source-record';
 import { refreshCompanyEmbedding } from '../src/lib/refresh-company-embedding';
+import type { QueryResult } from '../src/db/types';
 
 type CliOptions = {
   file: string;
@@ -109,6 +112,23 @@ function readRecords(file: string): SourceCompanyRecord[] {
   return records;
 }
 
+/**
+ * A null stored company means the row is not there, whatever the decision said,
+ * so inserting is the only correct action rather than updating a missing id.
+ */
+async function applyDecision(
+  decision: RefreshDecision,
+  stored: StoredCompany | null,
+  record: SourceCompanyRecord,
+): Promise<QueryResult<{ id: string }>> {
+  if (stored === null || decision.action === 'insert') {
+    return insertCompanyFromSource(record);
+  }
+  return decision.action === 'update'
+    ? updateCompanyFromSource(stored.id, record)
+    : touchCompanySyncedAt(stored.id);
+}
+
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
 
@@ -147,12 +167,7 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const written =
-      decision.action === 'insert'
-        ? await insertCompanyFromSource(record)
-        : decision.action === 'update'
-          ? await updateCompanyFromSource(stored.data?.id ?? '', record)
-          : await touchCompanySyncedAt(stored.data?.id ?? '');
+    const written = await applyDecision(decision, stored.data, record);
 
     if (!written.success) {
       console.error(`failed ${record.source_id}: ${written.error}`);
