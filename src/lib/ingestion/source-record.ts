@@ -20,6 +20,30 @@ export type CompanyContent = {
   all_locations: string | null;
 };
 
+/**
+ * Every field a source owns, and the only fields a checksum may consider. The
+ * wrapper types add `id` or `source_id`; hashing those would make every stored
+ * record look different from every incoming one.
+ */
+export const COMPANY_CONTENT_KEYS = [
+  'name',
+  'source_url',
+  'website',
+  'logo_url',
+  'one_liner',
+  'long_description',
+  'tags',
+  'industries',
+  'regions',
+  'batch',
+  'stage',
+  'status',
+  'team_size',
+  'is_hiring',
+  'is_nonprofit',
+  'all_locations',
+] as const satisfies readonly (keyof CompanyContent)[];
+
 /** One company as a source describes it, after validation. */
 export type SourceCompanyRecord = CompanyContent & {
   source: string;

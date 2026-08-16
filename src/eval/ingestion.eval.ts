@@ -13,6 +13,7 @@ import {
   type StoredCompany,
 } from '@/lib/ingestion/refresh-plan';
 import {
+  COMPANY_CONTENT_KEYS,
   parseSourceCompany,
   type CompanyContent,
   type SourceCompanyRecord,
@@ -138,6 +139,22 @@ describe('contentChecksum', () => {
         JSON.stringify(change),
       );
     }
+  });
+});
+
+describe('COMPANY_CONTENT_KEYS', () => {
+  it('covers every field a source owns and nothing else', () => {
+    assert.deepEqual(
+      [...COMPANY_CONTENT_KEYS].sort(),
+      Object.keys(content()).sort(),
+      'the checksum key list drifted from CompanyContent',
+    );
+  });
+
+  it('ignores the identity fields the wrapper types add', () => {
+    const stored = { id: 'company-1', ...content() };
+    const incoming = { source: 'yc', source_id: 'acme-1', ...content() };
+    assert.equal(contentChecksum(stored), contentChecksum(incoming));
   });
 });
 

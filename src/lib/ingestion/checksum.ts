@@ -1,19 +1,17 @@
 import { createHash } from 'node:crypto';
 
 import { buildCompanyEmbeddingText } from '../company-embedding';
-import type { CompanyContent } from './source-record';
+import { COMPANY_CONTENT_KEYS, type CompanyContent } from './source-record';
 
 /**
  * Order-independent canonical form: two sources that list the same tags in a
  * different order describe the same company, and should not look like a change.
  */
 function canonical(content: CompanyContent): string {
-  const entries = Object.entries(content)
-    .map(([key, value]): [string, unknown] => [
-      key,
-      Array.isArray(value) ? [...value].sort() : value,
-    ])
-    .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
+  const entries = COMPANY_CONTENT_KEYS.map((key): [string, unknown] => {
+    const value = content[key];
+    return [key, Array.isArray(value) ? [...value].sort() : value];
+  });
 
   return JSON.stringify(entries);
 }
