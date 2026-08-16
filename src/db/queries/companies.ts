@@ -9,7 +9,11 @@ import {
   HYBRID_SEARCH_WEIGHTS,
 } from '@/lib/hybrid-search-ranking';
 import type { StoredCompany } from '@/lib/ingestion/refresh-plan';
-import { nullableText, textList } from '@/lib/ingestion/source-record';
+import {
+  nullableText,
+  textList,
+  type SourceCompanyRecord,
+} from '@/lib/ingestion/source-record';
 import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
 
 export { HYBRID_SEARCH_WEIGHTS };
@@ -347,5 +351,108 @@ export async function getCompanyBySource(
     };
   } catch {
     return { success: false, error: 'Failed to read company by source' };
+  }
+}
+
+/** Insert one source record. `last_synced_at` is set by the same statement. */
+export async function insertCompanyFromSource(
+  record: SourceCompanyRecord,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        INSERT INTO companies (
+          source, source_id, source_url, name, website, logo_url, one_liner,
+          long_description, tags, industries, regions, batch, team_size, stage,
+          status, is_hiring, is_nonprofit, all_locations, last_synced_at
+        ) VALUES (
+          ${record.source}, ${record.source_id}, ${record.source_url},
+          ${record.name}, ${record.website}, ${record.logo_url},
+          ${record.one_liner}, ${record.long_description}, ${record.tags},
+          ${record.industries}, ${record.regions}, ${record.batch},
+          ${record.team_size}, ${record.stage}, ${record.status},
+          ${record.is_hiring}, ${record.is_nonprofit}, ${record.all_locations},
+          now()
+        )
+        RETURNING id
+      `,
+    );
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to insert company from source' };
+  }
+}
+
+/**
+ * Overwrite stored content for one company. The embedding is left alone: it is
+ * refreshed separately, and only when the embedded text actually changed.
+ */
+export async function updateCompanyFromSource(
+  id: string,
+  record: SourceCompanyRecord,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET
+          source_url = ${record.source_url},
+          name = ${record.name},
+          website = ${record.website},
+          logo_url = ${record.logo_url},
+          one_liner = ${record.one_liner},
+          long_description = ${record.long_description},
+          tags = ${record.tags},
+          industries = ${record.industries},
+          regions = ${record.regions},
+          batch = ${record.batch},
+          team_size = ${record.team_size},
+          stage = ${record.stage},
+          status = ${record.status},
+          is_hiring = ${record.is_hiring},
+          is_nonprofit = ${record.is_nonprofit},
+          all_locations = ${record.all_locations},
+          updated_at = now(),
+          last_synced_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
+
+    if (results.length === 0) {
+      return { success: false, error: 'Company not found' };
+    }
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to update company from source' };
+  }
+}
+
+/** Record that a company was seen unchanged, without rewriting its content. */
+export async function touchCompanySyncedAt(
+  id: string,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET last_synced_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
+
+    if (results.length === 0) {
+      return { success: false, error: 'Company not found' };
+    }
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to update company sync time' };
   }
 }
