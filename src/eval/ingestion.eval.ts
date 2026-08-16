@@ -1,13 +1,40 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { parseSourceCompany } from '@/lib/ingestion/source-record';
+import {
+  contentChecksum,
+  embeddingTextChecksum,
+} from '@/lib/ingestion/checksum';
+import {
+  parseSourceCompany,
+  type CompanyContent,
+} from '@/lib/ingestion/source-record';
 
 const minimal = {
   source: 'yc',
   source_id: 'acme-1',
   name: 'Acme',
 };
+
+const content = (overrides: Partial<CompanyContent> = {}): CompanyContent => ({
+  name: 'Acme',
+  source_url: 'https://example.com/acme',
+  website: 'https://acme.test/',
+  logo_url: null,
+  one_liner: 'Rockets for roadrunners',
+  long_description: null,
+  tags: ['ai', 'fintech'],
+  industries: ['software'],
+  regions: ['americas'],
+  batch: 'W21',
+  stage: 'seed',
+  status: 'active',
+  team_size: 12,
+  is_hiring: true,
+  is_nonprofit: false,
+  all_locations: 'San Francisco, CA',
+  ...overrides,
+});
 
 describe('parseSourceCompany', () => {
   it('accepts the minimum a source must supply', () => {
@@ -70,5 +97,64 @@ describe('parseSourceCompany', () => {
     const parsed = parseSourceCompany({ ...minimal, status: '   ' });
     assert.ok(parsed.ok);
     assert.equal(parsed.value.status, 'unknown');
+  });
+});
+
+describe('contentChecksum', () => {
+  it('is stable across runs for the same content', () => {
+    assert.equal(contentChecksum(content()), contentChecksum(content()));
+  });
+
+  it('ignores list order and key order', () => {
+    assert.equal(
+      contentChecksum(content()),
+      contentChecksum(content({ tags: ['fintech', 'ai'] })),
+    );
+  });
+
+  it('changes when any owned field changes', () => {
+    const baseline = contentChecksum(content());
+    const changes: Partial<CompanyContent>[] = [
+      { name: 'Acme Inc' },
+      { one_liner: 'Rockets, now for coyotes' },
+      { team_size: 13 },
+      { is_hiring: false },
+      { status: 'acquired' },
+      { website: 'https://acme.example/' },
+      { tags: ['ai'] },
+    ];
+    for (const change of changes) {
+      assert.notEqual(
+        contentChecksum(content(change)),
+        baseline,
+        JSON.stringify(change),
+      );
+    }
+  });
+});
+
+describe('embeddingTextChecksum', () => {
+  it('changes when embedded text changes', () => {
+    assert.notEqual(
+      embeddingTextChecksum(content()),
+      embeddingTextChecksum(content({ one_liner: 'Something else entirely' })),
+    );
+  });
+
+  it('does not change for metadata the embedding never sees', () => {
+    const baseline = embeddingTextChecksum(content());
+    for (const change of [
+      { team_size: 400 },
+      { is_hiring: false },
+      { website: 'https://acme.example/' },
+      { all_locations: 'Berlin, DE' },
+      { status: 'acquired' },
+    ] as Partial<CompanyContent>[]) {
+      assert.equal(
+        embeddingTextChecksum(content(change)),
+        baseline,
+        JSON.stringify(change),
+      );
+    }
   });
 });
