@@ -39,3 +39,39 @@ export function decideRefresh(
 
   return { action: 'touch', reembed: false, reason: 'unchanged' };
 }
+
+/**
+ * A run walks records in `source_id` order and remembers the last one it
+ * finished, so an interrupted run resumes from there instead of from the start.
+ */
+export function sortBySourceId(
+  records: readonly SourceCompanyRecord[],
+): SourceCompanyRecord[] {
+  return [...records].sort((left, right) =>
+    left.source_id < right.source_id
+      ? -1
+      : left.source_id > right.source_id
+        ? 1
+        : 0,
+  );
+}
+
+/** Records still to do, given the last `source_id` a previous run finished. */
+export function recordsAfterCursor(
+  records: readonly SourceCompanyRecord[],
+  cursor: string | null,
+): SourceCompanyRecord[] {
+  const ordered = sortBySourceId(records);
+  return cursor === null
+    ? ordered
+    : ordered.filter((record) => record.source_id > cursor);
+}
+
+/** The cursor to store after finishing `records`, or the one to keep. */
+export function nextCursor(
+  records: readonly SourceCompanyRecord[],
+  cursor: string | null,
+): string | null {
+  const ordered = sortBySourceId(records);
+  return ordered.length === 0 ? cursor : ordered[ordered.length - 1].source_id;
+}
