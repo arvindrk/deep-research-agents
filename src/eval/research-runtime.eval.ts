@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { buildResearchRun, runStatus } from '@/lib/research/run';
+import type { ResearchFinding, SourceOutcome } from '@/lib/research/types';
 import { parseWebsiteFindings } from '@/lib/research/website';
 
 const OBSERVED_AT = '2026-08-17T10:00:00.000Z';
@@ -70,5 +72,88 @@ describe('parseWebsiteFindings', () => {
       ),
       [],
     );
+  });
+});
+
+const finding = (field: string): ResearchFinding => ({
+  source: 'website',
+  field,
+  value: 'value',
+  evidence_url: URL,
+  observed_at: OBSERVED_AT,
+  confidence: 'high',
+});
+
+const ok = (findings: ResearchFinding[]): SourceOutcome => ({
+  status: 'ok',
+  source: 'website',
+  findings,
+});
+
+const failed = (error: string): SourceOutcome => ({
+  status: 'failed',
+  source: 'website',
+  error,
+});
+
+describe('runStatus', () => {
+  it('is complete only when every attempted source succeeded', () => {
+    assert.equal(runStatus([ok([finding('a')])]), 'complete');
+    assert.equal(runStatus([ok([]), ok([finding('a')])]), 'complete');
+  });
+
+  it('is partial when some sources failed', () => {
+    assert.equal(runStatus([ok([finding('a')]), failed('timeout')]), 'partial');
+  });
+
+  it('is failed when every source failed, and when none ran', () => {
+    assert.equal(runStatus([failed('timeout'), failed('403')]), 'failed');
+    assert.equal(runStatus([]), 'failed');
+  });
+
+  it('never calls a run with a failure complete', () => {
+    const mixes: SourceOutcome[][] = [
+      [failed('x')],
+      [ok([]), failed('x')],
+      [failed('x'), ok([finding('a')])],
+    ];
+    for (const outcomes of mixes) {
+      assert.notEqual(runStatus(outcomes), 'complete');
+    }
+  });
+});
+
+describe('buildResearchRun', () => {
+  it('separates what succeeded from what failed', () => {
+    const run = buildResearchRun(
+      'company-1',
+      [ok([finding('a')]), failed('timeout')],
+      OBSERVED_AT,
+    );
+
+    assert.equal(run.status, 'partial');
+    assert.deepEqual(run.succeeded, ['website']);
+    assert.deepEqual(run.failed, [{ source: 'website', error: 'timeout' }]);
+    assert.equal(run.findings.length, 1);
+    assert.equal(run.observed_at, OBSERVED_AT);
+  });
+
+  it('keeps the findings a partial run did gather', () => {
+    const run = buildResearchRun(
+      'company-1',
+      [ok([finding('a'), finding('b')]), failed('timeout')],
+      OBSERVED_AT,
+    );
+    assert.deepEqual(
+      run.findings.map((f) => f.field),
+      ['a', 'b'],
+    );
+  });
+
+  it('records an empty run as failed with no findings', () => {
+    const run = buildResearchRun('company-1', [], OBSERVED_AT);
+    assert.equal(run.status, 'failed');
+    assert.deepEqual(run.findings, []);
+    assert.deepEqual(run.attempted, []);
   });
 });
