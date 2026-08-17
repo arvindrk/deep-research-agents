@@ -2,7 +2,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { buildResearchRun, runStatus } from '@/lib/research/run';
-import type { ResearchFinding, SourceOutcome } from '@/lib/research/types';
+import {
+  runResearch,
+  type ResearchCollector,
+} from '@/lib/research/runtime';
+import type {
+  ResearchFinding,
+  ResearchSubject,
+  SourceOutcome,
+} from '@/lib/research/types';
 import { parseWebsiteFindings } from '@/lib/research/website';
 
 const OBSERVED_AT = '2026-08-17T10:00:00.000Z';
@@ -155,5 +163,90 @@ describe('buildResearchRun', () => {
     assert.equal(run.status, 'failed');
     assert.deepEqual(run.findings, []);
     assert.deepEqual(run.attempted, []);
+  });
+});
+
+describe('runResearch', () => {
+  const subject: ResearchSubject = {
+    id: 'company-1',
+    name: 'Acme',
+    website: 'https://acme.test/',
+  };
+
+  // Every collector here declares the one source that exists today; a second
+  // source id arrives with the second real collector, not before it.
+  const collector = (
+    field: string,
+    behaviour: 'ok' | 'throw' | 'empty',
+  ): ResearchCollector => ({
+    source: 'website',
+    collect: async () => {
+      if (behaviour === 'throw') throw new Error(`${field} unreachable`);
+      return behaviour === 'empty' ? [] : [finding(field)];
+    },
+  });
+
+  it('reports a run where every source worked as complete', async () => {
+    const run = await runResearch(
+      subject,
+      [collector('a', 'ok'), collector('b', 'ok')],
+      OBSERVED_AT,
+    );
+    assert.equal(run.status, 'complete');
+    assert.equal(run.findings.length, 2);
+  });
+
+  it('keeps going when one source throws, and says the run was partial', async () => {
+    const run = await runResearch(
+      subject,
+      [collector('a', 'throw'), collector('b', 'ok')],
+      OBSERVED_AT,
+    );
+    assert.equal(run.status, 'partial');
+    assert.deepEqual(
+      run.findings.map((f) => f.field),
+      ['b'],
+    );
+    assert.equal(run.failed.length, 1);
+    assert.match(run.failed[0].error, /a unreachable/);
+  });
+
+  it('reports a run where everything failed as failed, not empty-complete', async () => {
+    const run = await runResearch(
+      subject,
+      [collector('a', 'throw'), collector('b', 'throw')],
+      OBSERVED_AT,
+    );
+    assert.equal(run.status, 'failed');
+    assert.deepEqual(run.findings, []);
+  });
+
+  it('treats a source with nothing to say as a success', async () => {
+    const run = await runResearch(subject, [collector('a', 'empty')], OBSERVED_AT);
+    assert.equal(run.status, 'complete');
+    assert.deepEqual(run.findings, []);
+  });
+
+  it('bounds what a failing source can write into the record', async () => {
+    const shouty: ResearchCollector = {
+      source: 'website',
+      collect: async () => {
+        throw new Error('x'.repeat(5000));
+      },
+    };
+    const run = await runResearch(subject, [shouty], OBSERVED_AT);
+    assert.equal(run.failed[0].error.length, 200);
+  });
+
+  it('does not throw when a source rejects with something that is not an Error', async () => {
+    const odd: ResearchCollector = {
+      source: 'website',
+      collect: async () => {
+        throw 'nope';
+      },
+    };
+    const run = await runResearch(subject, [odd], OBSERVED_AT);
+    assert.equal(run.status, 'failed');
+    assert.equal(run.failed[0].error, 'source failed');
   });
 });
