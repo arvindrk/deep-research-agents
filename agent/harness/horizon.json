@@ -1,27 +1,26 @@
 {
   "slice": [
-    "hybrid-search-ranking-eval",
     "search-ui",
     "company-ingestion-refresh",
-    "server-render-company-grid"
+    "server-render-company-grid",
+    "research-agent-runtime"
   ],
   "rationale_per_step": {
-    "hybrid-search-ranking-eval": "Lock-after-ship: hermetic ranking over fixed vectors/rows so 0.7/0.2/0.1 weight regressions fail CI (Measurable quality). Next head after hybrid-search-api.",
-    "search-ui": "Shareable URL-driven search surface once ranking eval exists; UI and UX on a working backend.",
+    "search-ui": "URL-driven search surface once ranking is locked; UI and UX and Discovery with low noise on a working, tested backend.",
     "company-ingestion-refresh": "Resumable source refresh + re-embed via refreshCompanyEmbedding; unblocks research-agent-runtime (Evidence-backed intelligence / Reliable autonomous research).",
-    "server-render-company-grid": "Unblocked tech_debt: drop unnecessary client JS on the grid once the hybrid path is moving."
+    "server-render-company-grid": "Unblocked tech_debt: drop unnecessary client JS on the grid once the hybrid path is locked and search UI is in flight or done.",
+    "research-agent-runtime": "Background enrichment runtime the repo is named for; blocked until company-ingestion-refresh completes. Kept on slice as lookahead only."
   },
   "category_mix": {
-    "new_feature": 2,
-    "testing_observability": 1,
+    "new_feature": 3,
     "tech_debt": 1
   },
   "vision_refs": {
-    "hybrid-search-ranking-eval": ["Measurable quality", "Hybrid search"],
     "search-ui": ["UI and UX", "Discovery with low noise"],
     "company-ingestion-refresh": ["Evidence-backed intelligence", "Reliable autonomous research"],
-    "server-render-company-grid": ["UI and UX"]
+    "server-render-company-grid": ["UI and UX"],
+    "research-agent-runtime": ["Agent research", "Reliable autonomous research"]
   },
-  "generated_by_run": "continue-20260812-161258",
-  "notes": "Executor completed hybrid-search-api. Horizon advances past it so completed work is not rescheduled. Next head is hybrid-search-ranking-eval."
+  "generated_by_run": "continue-20260812-164834",
+  "notes": "Executor completed hybrid-search-ranking-eval; advanced past that head. Next is search-ui."
 }
