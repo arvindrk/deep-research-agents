@@ -15,6 +15,7 @@ Not built yet: the search interface, source ingestion and refresh, and the resea
 - **Neon Postgres with `pgvector`** stores company records alongside embeddings
 - **Hybrid search** combines semantic (70%), name trigram (20%), and full-text (10%) scoring
 - **Next.js frontend** renders server-side, with no client-side data fetching
+- **Research runtime** runs one enrichment source per company with per-source failure isolation: a run that loses a source is recorded as partial, never as complete, and a run and its findings are written in one transaction
 - **Source ingestion** is resumable by source id cursor and idempotent per record: unchanged records only have their sync time touched, and re-embedding happens only when the embedded text changed
 - **Resilient reads** retry transient database failures with jittered backoff, bound search with a statement timeout, and never surface driver text to a caller
 - **Search telemetry** emits one structured JSON event per `/api/search` request: outcome, phase timings, latency bucket, result count, and a bounded query prefix with credential-shaped text scrubbed
@@ -62,7 +63,10 @@ Two operator scripts sit outside `verify` and the build, and both take `--dry-ru
 ```bash
 npx tsx scripts/backfill-embeddings.ts --dry-run
 npx tsx scripts/ingest-companies.ts --file=./companies.json --dry-run
+npx tsx scripts/run-research.ts --dry-run --limit=5
 ```
+
+`scripts/run-research.ts` needs the tables in `migrations/0001_company_research.sql`. Migrations are applied by a human; nothing in this repository applies them.
 
 The build runs without `DATABASE_URL` on purpose, so it can never start requiring secrets.
 
