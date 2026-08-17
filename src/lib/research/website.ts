@@ -1,5 +1,8 @@
 import { httpUrl } from '../safe-url';
-import type { ResearchFinding } from './types';
+import type { ResearchFinding, ResearchSubject } from './types';
+
+/** A source that hangs is a source that failed, so requests carry a bound. */
+const FETCH_TIMEOUT_MS = 5_000;
 
 /** Long enough to be useful as evidence, short enough to store and render. */
 const MAX_VALUE_CHARS = 300;
@@ -63,4 +66,28 @@ export function parseWebsiteFindings(
   }
 
   return findings;
+}
+
+/**
+ * The only I/O in this module. A company with no usable website yields no
+ * findings rather than an error: nothing to read is not a failure to read.
+ */
+export async function collectWebsiteFindings(
+  subject: ResearchSubject,
+  observedAt: string,
+): Promise<ResearchFinding[]> {
+  const url = httpUrl(subject.website);
+  if (!url) return [];
+
+  const response = await fetch(url, {
+    redirect: 'follow',
+    headers: { accept: 'text/html' },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Website request failed with status ${response.status}`);
+  }
+
+  return parseWebsiteFindings(await response.text(), url, observedAt);
 }
