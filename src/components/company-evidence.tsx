@@ -75,9 +75,20 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
               <Badge variant="outline" className="text-xs">
                 {FRESHNESS_LABEL[item.freshness]}
               </Badge>
-              <span className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}>
-                {item.age}
-              </span>
+              {item.freshness === 'unknown' ? (
+                <span
+                  className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
+                >
+                  {item.age}
+                </span>
+              ) : (
+                <time
+                  dateTime={item.observed_at}
+                  className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
+                >
+                  {item.age}
+                </time>
+              )}
             </div>
 
             <p className={cn('text-sm', 'text-[var(--color-text-secondary)]')}>
