@@ -230,7 +230,7 @@
   },
   {
     "id": "research-evidence-and-freshness",
-    "status": "pending",
+    "status": "completed",
     "priority": 21,
     "category": "feature_improvement",
     "depends_on": [
@@ -238,7 +238,7 @@
     ],
     "description": "Attach a source and a timestamp to every enriched claim, and surface both in the interface, so a reader can tell what is known, what is inferred, and what is stale.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "research-quality-eval",

@@ -34,6 +34,17 @@ describe('ageInDays', () => {
   });
 });
 
+describe('FRESHNESS_THRESHOLDS_DAYS', () => {
+  it('locks the bands users are shown at 7 and 30 days', () => {
+    assert.deepEqual(FRESHNESS_THRESHOLDS_DAYS, { fresh: 7, aging: 30 });
+  });
+
+  it('keeps the bands ordered and usable', () => {
+    assert.ok(FRESHNESS_THRESHOLDS_DAYS.fresh < FRESHNESS_THRESHOLDS_DAYS.aging);
+    assert.ok(FRESHNESS_THRESHOLDS_DAYS.fresh >= 1);
+  });
+});
+
 describe('freshnessOf', () => {
   it('holds the band on each side of every threshold', () => {
     const { fresh, aging } = FRESHNESS_THRESHOLDS_DAYS;
@@ -47,6 +58,11 @@ describe('freshnessOf', () => {
 
   it('reports an unreadable observation as unknown rather than stale', () => {
     assert.equal(freshnessOf('nonsense', NOW), 'unknown');
+  });
+
+  it('calls a two week old observation aging and a two month old one stale', () => {
+    assert.equal(freshnessOf(daysBefore(14), NOW), 'aging');
+    assert.equal(freshnessOf(daysBefore(60), NOW), 'stale');
   });
 
   it('never calls anything older than the aging threshold fresh', () => {
