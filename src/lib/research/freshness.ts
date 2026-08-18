@@ -34,3 +34,22 @@ export function freshnessOf(observedAt: string, now: Date): Freshness {
   if (age <= FRESHNESS_THRESHOLDS_DAYS.aging) return 'aging';
   return 'stale';
 }
+
+const ago = (count: number, unit: string): string =>
+  `${count} ${unit}${count === 1 ? '' : 's'} ago`;
+
+/**
+ * How old a finding is, in words. Coarse on purpose past a week: "3 weeks ago"
+ * is what a reader can act on, and pretending to more precision than the
+ * collection schedule has would be a lie.
+ */
+export function relativeAge(observedAt: string, now: Date): string {
+  const age = ageInDays(observedAt, now);
+  if (age === null) return 'date unknown';
+  if (age === 0) return 'today';
+  if (age === 1) return 'yesterday';
+  if (age < 7) return ago(age, 'day');
+  if (age < 30) return ago(Math.floor(age / 7), 'week');
+  if (age < 365) return ago(Math.floor(age / 30), 'month');
+  return ago(Math.floor(age / 365), 'year');
+}
