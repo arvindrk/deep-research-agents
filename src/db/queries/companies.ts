@@ -3,16 +3,15 @@ import {
   assertEmbeddingDimensions,
   type CompanyEmbeddingFields,
 } from '@/lib/company-embedding';
+import {
+  HYBRID_SEARCH_FILTERS,
+  HYBRID_SEARCH_WEIGHTS,
+} from '@/lib/hybrid-search-ranking';
 import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
 
-const HNSW_EF_SEARCH = 200;
+export { HYBRID_SEARCH_WEIGHTS };
 
-/** Hybrid ranking weights. Product behaviour; locked by hermetic eval. */
-export const HYBRID_SEARCH_WEIGHTS = {
-  semantic: 0.7,
-  nameTrigram: 0.2,
-  fullText: 0.1,
-} as const;
+const HNSW_EF_SEARCH = 200;
 
 /** Columns needed to compose embedding input; never includes the vector. */
 export type CompanyEmbeddingSource = {
@@ -160,6 +159,7 @@ export async function searchCompanies(
     const embeddingJSON = JSON.stringify(embedding);
 
     const { semantic, nameTrigram, fullText } = HYBRID_SEARCH_WEIGHTS;
+    const { minSemantic, minNameTrigram } = HYBRID_SEARCH_FILTERS;
 
     const results = await sql`
       SELECT 
@@ -174,8 +174,8 @@ export async function searchCompanies(
         ) AS relevance_score
       FROM companies
       WHERE 
-        (1 - (embedding <=> ${embeddingJSON}::vector)) >= 0.25
-        OR similarity(name, ${query}) >= 0.3
+        (1 - (embedding <=> ${embeddingJSON}::vector)) >= ${minSemantic}
+        OR similarity(name, ${query}) >= ${minNameTrigram}
       ORDER BY relevance_score DESC
       LIMIT ${limit}
     `;

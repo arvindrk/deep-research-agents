@@ -162,13 +162,13 @@
   },
   {
     "id": "hybrid-search-ranking-eval",
-    "status": "pending",
+    "status": "completed",
     "priority": 17,
     "category": "testing_observability",
     "depends_on": ["hybrid-search-api"],
     "description": "Lock the hybrid ranking with a hermetic eval over fixed vectors and rows, asserting the ordering the weights are meant to produce. Changing the weights changes what users see, so it must fail loudly rather than pass a build silently.",
     "verify": "npm run eval",
-    "passes": false
+    "passes": true
   },
   {
     "id": "search-ui",

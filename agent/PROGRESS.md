@@ -100,3 +100,16 @@ No canary code was merged.
   - Eval canary: `semantic: 0.5` → weight eval exit 1; empty-query gate disabled → parse eval exit 1; restored → 8/8 pass
   - `npm run verify` → exit 0 (lint, typecheck, 92 evals, build). Route table includes `ƒ /api/search`. Build succeeded without DATABASE_URL or OPENAI_API_KEY.
 - **Human notes:** No new dependencies. Did not implement search-ui or hybrid-search-ranking-eval ranking fixtures. Did not change weight values or `HNSW_EF_SEARCH` (200). SQL shape unchanged except named weight parameters and omitting embedding from SELECT; intended plan still HNSW + trigram filters with LIMIT (no live EXPLAIN without DATABASE_URL).
+
+## continue-20260812-164834 (hybrid-search-ranking-eval)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260812-164834` / `harness/continue-local-20260812-164834`
+- **Task / plan:** `hybrid-search-ranking-eval` / `plan-20260812112008`
+- **What changed:** Pure module `src/lib/hybrid-search-ranking.ts` owns `HYBRID_SEARCH_WEIGHTS` (0.7/0.2/0.1), filter thresholds (minSemantic 0.25, minNameTrigram 0.3), `hybridRelevanceScore`, `passesHybridFilter`, and `rankHybridResults`. `searchCompanies` imports those named constants so SQL thresholds cannot drift. Hermetic eval `src/eval/hybrid-search-ranking.eval.ts` locks fixture order `sem-king > mid > full-boost > name-king`, drops below-threshold noise, and checks weight-swap reorders. Marked feature completed; advanced horizon to search-ui head.
+- **Why:** Hybrid ranking weights are product behaviour; without an ordering eval they can regress while the build stays green.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules` for build)
+  - Canary: set product weights to semantic 0.2 / nameTrigram 0.7 → `npm run eval` exit 1 (4 fails, including `orders fixtures by product weights` actual order `name-king,mid,full-boost,sem-king`); restored → exit 0 (101 pass)
+  - `npm run eval` → exit 0 (101 tests)
+  - `npm run verify` → exit 0 (lint, typecheck, evals, build). Build succeeded without DATABASE_URL.
+- **Human notes:** No new dependencies. Did not implement search-ui, company-ingestion-refresh, or server-render-company-grid. Did not change weight numeric values or `HNSW_EF_SEARCH` (200). No app/route/component changes. No secrets read or written.
