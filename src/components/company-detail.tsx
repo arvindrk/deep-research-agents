@@ -241,7 +241,7 @@ export function CompanyDetail({ company, research }: CompanyDetailProps) {
                 </div>
               </section>
             )}
-            {research && <CompanyEvidence research={research} now={new Date()} />}
+            <CompanyEvidence research={research} now={new Date()} />
           </CardContent>
         </Card>
       </div>

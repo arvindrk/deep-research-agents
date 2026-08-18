@@ -14,7 +14,7 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 };
 
 interface CompanyEvidenceProps {
-  research: StoredResearchRun;
+  research: StoredResearchRun | null;
   /** Passed in so freshness is decided once per request, not per component. */
   now: Date;
 }
@@ -24,8 +24,8 @@ interface CompanyEvidenceProps {
  * what is known, where it came from, and whether it is still true.
  */
 export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
-  const items = toEvidenceItems(research.findings, now);
-  const missing = research.failed.map((failure) => failure.source);
+  const items = research ? toEvidenceItems(research.findings, now) : [];
+  const missing = research?.failed.map((failure) => failure.source) ?? [];
 
   return (
     <section className="space-y-3">
@@ -38,7 +38,7 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
         Research
       </h2>
 
-      {research.status !== 'complete' && (
+      {research && research.status !== 'complete' && (
         <p
           className={cn(
             'rounded-md px-3 py-2 text-xs',
@@ -49,6 +49,14 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
           {research.status === 'failed'
             ? 'The last research run collected nothing. What you see below is from earlier runs, if anything.'
             : `This research run was partial: ${missing.join(', ')} did not report. What is shown is what was collected.`}
+        </p>
+      )}
+
+      {items.length === 0 && (
+        <p className={cn('text-sm', 'text-[var(--color-text-tertiary)]')}>
+          {research
+            ? 'The last research run found nothing to report for this company.'
+            : 'No research has run for this company yet.'}
         </p>
       )}
 
