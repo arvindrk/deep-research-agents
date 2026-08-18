@@ -5,6 +5,7 @@ import {
   ageInDays,
   FRESHNESS_THRESHOLDS_DAYS,
   freshnessOf,
+  relativeAge,
 } from '@/lib/research/freshness';
 
 const NOW = new Date('2026-08-18T12:00:00.000Z');
@@ -51,6 +52,32 @@ describe('freshnessOf', () => {
   it('never calls anything older than the aging threshold fresh', () => {
     for (let days = FRESHNESS_THRESHOLDS_DAYS.aging + 1; days < 120; days += 7) {
       assert.equal(freshnessOf(daysBefore(days), NOW), 'stale', `${days} days`);
+    }
+  });
+});
+
+describe('relativeAge', () => {
+  it('names the days a reader counts individually', () => {
+    assert.equal(relativeAge(daysBefore(0), NOW), 'today');
+    assert.equal(relativeAge(daysBefore(1), NOW), 'yesterday');
+    assert.equal(relativeAge(daysBefore(3), NOW), '3 days ago');
+  });
+
+  it('gets coarser as the observation gets older', () => {
+    assert.equal(relativeAge(daysBefore(7), NOW), '1 week ago');
+    assert.equal(relativeAge(daysBefore(21), NOW), '3 weeks ago');
+    assert.equal(relativeAge(daysBefore(30), NOW), '1 month ago');
+    assert.equal(relativeAge(daysBefore(200), NOW), '6 months ago');
+    assert.equal(relativeAge(daysBefore(400), NOW), '1 year ago');
+  });
+
+  it('says so when it cannot read the date', () => {
+    assert.equal(relativeAge('whenever', NOW), 'date unknown');
+  });
+
+  it('never renders a bare number without a unit', () => {
+    for (let days = 0; days < 400; days += 1) {
+      assert.match(relativeAge(daysBefore(days), NOW), /today|yesterday|ago/);
     }
   });
 });
