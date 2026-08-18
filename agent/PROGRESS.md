@@ -113,3 +113,15 @@ No canary code was merged.
   - `npm run eval` → exit 0 (101 tests)
   - `npm run verify` → exit 0 (lint, typecheck, evals, build). Build succeeded without DATABASE_URL.
 - **Human notes:** No new dependencies. Did not implement search-ui, company-ingestion-refresh, or server-render-company-grid. Did not change weight numeric values or `HNSW_EF_SEARCH` (200). No app/route/component changes. No secrets read or written.
+
+## continue-20260818-141816 (search-ui)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260818-141816` / `harness/continue-local-20260818-141816`
+- **Task / plan:** `search-ui` / `plan-20260818085015`
+- **What changed:** Pure `src/lib/search-ui.ts` for `q` normalization, shareable paths, and browse/results/empty/error surface selection. Native GET `SearchForm` writes `q` into the URL. Home Server Component reads awaited `searchParams`, embeds via `embedText`, ranks via `searchCompanies`, strips vectors with `toPublicSearchResults`, and renders `SearchEmpty` / `SearchError` or the existing `CompanyGrid`. Loading skeleton includes a search bar; root error copy broadened slightly. Hermetic `src/eval/search-ui.eval.ts`. Marked feature completed; advanced horizon past search-ui.
+- **Why:** Hybrid search was API-complete and ranking-locked but had no user surface; Discovery stayed unreachable from the UI.
+- **Commands:**
+  - `npm ci` (worktree had no `node_modules`)
+  - Eval canary: `SEARCH_QUERY_PARAM = 'query'` → search-ui eval exit 1 (1 fail); restored → 8/8 pass
+  - `npm run verify` → exit 0 (lint, typecheck, 109 evals, build). Route table still includes `ƒ /` and `ƒ /api/search`. Build succeeded without DATABASE_URL or OPENAI_API_KEY.
+- **Human notes:** No new dependencies. Did not modify ranking SQL, `HYBRID_SEARCH_WEIGHTS`, `HNSW_EF_SEARCH`, or `/api/search` (aside from shared lib reuse already in place). Primary listing does not client-fetch `/api/search`. Live search against a DB was not exercised in this worktree (no secrets). Horizon next: company-ingestion-refresh.
