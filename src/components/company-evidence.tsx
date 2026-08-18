@@ -1,9 +1,9 @@
 import { ExternalLink } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import type { StoredResearchRun } from '@/db/queries/research';
 import { toEvidenceItems } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
-import type { ResearchFinding } from '@/lib/research/types';
 import { cn } from '@/lib/utils';
 
 const FRESHNESS_LABEL: Record<Freshness, string> = {
@@ -14,7 +14,7 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 };
 
 interface CompanyEvidenceProps {
-  findings: readonly ResearchFinding[];
+  research: StoredResearchRun;
   /** Passed in so freshness is decided once per request, not per component. */
   now: Date;
 }
@@ -23,8 +23,9 @@ interface CompanyEvidenceProps {
  * Enriched claims with the source and the age of each one, so a reader can tell
  * what is known, where it came from, and whether it is still true.
  */
-export function CompanyEvidence({ findings, now }: CompanyEvidenceProps) {
-  const items = toEvidenceItems(findings, now);
+export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
+  const items = toEvidenceItems(research.findings, now);
+  const missing = research.failed.map((failure) => failure.source);
 
   return (
     <section className="space-y-3">
@@ -36,6 +37,20 @@ export function CompanyEvidence({ findings, now }: CompanyEvidenceProps) {
       >
         Research
       </h2>
+
+      {research.status !== 'complete' && (
+        <p
+          className={cn(
+            'rounded-md px-3 py-2 text-xs',
+            'bg-[var(--color-bg-tertiary)]',
+            'text-[var(--color-text-secondary)]'
+          )}
+        >
+          {research.status === 'failed'
+            ? 'The last research run collected nothing. What you see below is from earlier runs, if anything.'
+            : `This research run was partial: ${missing.join(', ')} did not report. What is shown is what was collected.`}
+        </p>
+      )}
 
       <ul className="space-y-3">
         {items.map((item) => (
