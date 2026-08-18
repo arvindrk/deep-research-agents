@@ -172,13 +172,13 @@
   },
   {
     "id": "search-ui",
-    "status": "pending",
+    "status": "completed",
     "priority": 18,
     "category": "new_feature",
     "depends_on": ["hybrid-search-api"],
     "description": "Add the search surface: an input that drives a server-rendered result set, keeps the query in the URL so results are shareable, and has real empty, loading, and error states. Reuse the existing card and design tokens.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "company-ingestion-refresh",

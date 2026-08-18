@@ -57,7 +57,7 @@ export default function Loading() {
   return (
     <div className={cn('min-h-screen', 'bg-[var(--color-bg-primary)]')}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <header className="mb-12">
+        <header className="mb-8">
           <div className="mb-4 flex items-center justify-between">
             <div
               className={cn(
@@ -74,10 +74,30 @@ export default function Loading() {
           </div>
           <div
             className={cn(
-              'h-4 w-80 max-w-full animate-pulse rounded',
+              'mb-6 h-4 w-80 max-w-full animate-pulse rounded',
               'bg-[var(--color-bg-tertiary)]'
             )}
           />
+          <div
+            className={cn(
+              'mb-8 flex flex-col gap-3 sm:flex-row sm:items-center'
+            )}
+            aria-busy="true"
+            aria-label="Loading search"
+          >
+            <div
+              className={cn(
+                'h-10 w-full flex-1 animate-pulse rounded-md',
+                'bg-[var(--color-bg-tertiary)]'
+              )}
+            />
+            <div
+              className={cn(
+                'h-10 w-24 shrink-0 animate-pulse rounded-md',
+                'bg-[var(--color-bg-tertiary)]'
+              )}
+            />
+          </div>
         </header>
 
         <div
