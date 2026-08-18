@@ -22,7 +22,7 @@ export default function Error({
             Something went wrong
           </h1>
           <p className={cn('mb-8', 'text-[var(--color-text-secondary)]')}>
-            We could not load companies right now. Please try again.
+            We could not load this page right now. Please try again.
           </p>
           <Button type="button" onClick={reset}>
             Try again
