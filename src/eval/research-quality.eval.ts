@@ -7,6 +7,9 @@ import {
   fieldCoverage,
   freshnessMix,
   partialShare,
+  QUALITY_BAR,
+  qualityReport,
+  qualityViolations,
   staleShare,
 } from '@/lib/research/quality';
 import type { ResearchFinding } from '@/lib/research/types';
@@ -145,5 +148,74 @@ describe('staleShare', () => {
 
   it('is zero for no runs', () => {
     assert.equal(staleShare([], NOW), 0);
+  });
+});
+
+describe('qualityReport', () => {
+  it('counts runs and findings alongside the measures', () => {
+    const report = qualityReport(
+      [
+        run('a', [finding('website_title'), finding('website_description')]),
+        run('b', [finding('website_title')], 'partial'),
+      ],
+      NOW,
+    );
+
+    assert.equal(report.runs, 2);
+    assert.equal(report.findings, 3);
+    assert.equal(report.fieldCoverage.website_title, 1);
+    assert.equal(report.partialShare, 0.5);
+  });
+});
+
+describe('qualityViolations', () => {
+  const healthy = [
+    run('a', [finding('website_title'), finding('website_description')]),
+    run('b', [finding('website_title'), finding('website_description')]),
+    run('c', [finding('website_title'), finding('website_description')]),
+  ];
+
+  it('reports nothing for a corpus that clears the bar', () => {
+    assert.deepEqual(qualityViolations(qualityReport(healthy, NOW)), []);
+  });
+
+  it('names the field whose coverage fell', () => {
+    const degraded = [
+      run('a', [finding('website_title')]),
+      run('b', [finding('website_title')]),
+      run('c', [finding('website_title')]),
+    ];
+    const violations = qualityViolations(qualityReport(degraded, NOW));
+    assert.equal(violations.length, 1);
+    assert.match(violations[0], /website_description coverage 0\.00 is below/);
+  });
+
+  it('reports staleness and partial runs separately', () => {
+    const stale = healthy.map((entry) => ({
+      ...entry,
+      findings: entry.findings.map((f) => ({
+        ...f,
+        observed_at: daysBefore(200),
+      })),
+      status: 'partial' as const,
+    }));
+
+    const violations = qualityViolations(qualityReport(stale, NOW));
+    assert.ok(violations.some((line) => line.startsWith('stale share')));
+    assert.ok(violations.some((line) => line.startsWith('partial share')));
+  });
+
+  it('says so rather than passing vacuously on an empty corpus', () => {
+    assert.deepEqual(qualityViolations(qualityReport([], NOW)), [
+      'no research runs to measure',
+    ]);
+  });
+
+  it('holds the bar itself to the values users are promised', () => {
+    assert.deepEqual(QUALITY_BAR, {
+      minFieldCoverage: 0.6,
+      maxStaleShare: 0.25,
+      maxPartialShare: 0.34,
+    });
   });
 });
