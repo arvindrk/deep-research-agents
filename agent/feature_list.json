@@ -242,7 +242,7 @@
   },
   {
     "id": "research-quality-eval",
-    "status": "pending",
+    "status": "completed",
     "priority": 22,
     "category": "testing_observability",
     "depends_on": [
@@ -250,7 +250,7 @@
     ],
     "description": "Measure research coverage and freshness with a hermetic eval over recorded fixtures, so quality is demonstrable in CI rather than asserted, and a regression in enrichment shows up as a failure.",
     "verify": "npm run eval",
-    "passes": false
+    "passes": true
   },
   {
     "id": "search-observability",
