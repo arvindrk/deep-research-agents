@@ -1,3 +1,4 @@
+import { freshnessOf, type Freshness } from './freshness';
 import type { ResearchRun } from './run';
 
 /** Fields a researched company is expected to have. One per shipped collector. */
@@ -41,4 +42,25 @@ export function fieldCoverage(
   }
 
   return coverage;
+}
+
+/** How many findings sit in each freshness band, across every run. */
+export function freshnessMix(
+  runs: readonly ResearchRun[],
+  now: Date,
+): Record<Freshness, number> {
+  const mix: Record<Freshness, number> = {
+    fresh: 0,
+    aging: 0,
+    stale: 0,
+    unknown: 0,
+  };
+
+  for (const run of runs) {
+    for (const finding of run.findings) {
+      mix[freshnessOf(finding.observed_at, now)] += 1;
+    }
+  }
+
+  return mix;
 }
