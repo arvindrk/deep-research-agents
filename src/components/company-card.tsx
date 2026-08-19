@@ -1,22 +1,19 @@
-'use client';
-
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CompanyLogo } from '@/components/company-logo';
 import type { Company } from '@/db/types';
+import { overflowTagLabel, pickDisplayTags } from '@/lib/company-tags';
 import { formatBatch } from '@/lib/format-batch';
 import { Building2, MapPin } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
 
 interface CompanyCardProps {
   company: Company;
 }
 
 export function CompanyCard({ company }: CompanyCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const displayTags = company.tags.slice(0, 3);
-  const hasMoreTags = company.tags.length > 3;
+  const displayTags = pickDisplayTags(company.tags);
+  const overflowLabel = overflowTagLabel(company.tags);
 
   return (
     <Link
@@ -31,14 +28,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {company.logo_url ? (
                 <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  <Image
-                    src={imageError ? '/yc.png' : company.logo_url}
-                    alt={`${company.name} logo`}
-                    width={48}
-                    height={48}
-                    className={`object-contain ${imageError ? 'grayscale opacity-60' : ''}`}
-                    onError={() => setImageError(true)}
-                  />
+                  <CompanyLogo src={company.logo_url} name={company.name} size={48} />
                 </div>
               ) : (
                 <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
@@ -78,9 +68,9 @@ export function CompanyCard({ company }: CompanyCardProps) {
                   {tag}
                 </Badge>
               ))}
-              {hasMoreTags && (
+              {overflowLabel && (
                 <Badge variant="outline" className="text-xs">
-                  +{company.tags.length - 3}
+                  {overflowLabel}
                 </Badge>
               )}
             </div>

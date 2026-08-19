@@ -14,7 +14,9 @@
     "status": "completed",
     "priority": 2,
     "category": "testing_observability",
-    "depends_on": ["verifiable-baseline"],
+    "depends_on": [
+      "verifiable-baseline"
+    ],
     "description": "Add the glob-discovered eval runner over src/eval/**/*.eval.ts, extract batch formatting and pagination windowing into pure modules, and lock both with hermetic evals.",
     "verify": "npm run eval",
     "passes": true
@@ -24,7 +26,9 @@
     "status": "completed",
     "priority": 3,
     "category": "dx_infra",
-    "depends_on": ["validator-engine"],
+    "depends_on": [
+      "validator-engine"
+    ],
     "description": "Add AGENTS.md, the always-on rule set under .agents/rules, and a manifest eval that fails when a rule is unindexed or a documented link does not resolve.",
     "verify": "npm run eval",
     "passes": true
@@ -34,7 +38,9 @@
     "status": "completed",
     "priority": 4,
     "category": "dx_infra",
-    "depends_on": ["repo-constitution"],
+    "depends_on": [
+      "repo-constitution"
+    ],
     "description": "Add the durable harness state the planner reads and writes: vision, category weights, feature list, progress log, config, horizon, and the context refresh script, with a schema eval enforcing the feature list invariants.",
     "verify": "npm run eval",
     "passes": true
@@ -44,7 +50,9 @@
     "status": "completed",
     "priority": 5,
     "category": "dx_infra",
-    "depends_on": ["harness-state"],
+    "depends_on": [
+      "harness-state"
+    ],
     "description": "Add the planner, executor, and validator prompt personas plus a contract eval asserting each prompt still emits the artifact schema the orchestration layer parses.",
     "verify": "npm run eval",
     "passes": true
@@ -54,7 +62,9 @@
     "status": "completed",
     "priority": 6,
     "category": "dx_infra",
-    "depends_on": ["harness-prompts"],
+    "depends_on": [
+      "harness-prompts"
+    ],
     "description": "Add the merge watcher, worktree continuation, provider adapters, and pre-push guards that turn a merge to main into a reviewed draft pull request.",
     "verify": "npm run lint:shell && npm run watch:dry-run",
     "passes": true
@@ -64,7 +74,9 @@
     "status": "completed",
     "priority": 7,
     "category": "testing_observability",
-    "depends_on": ["harness-orchestration"],
+    "depends_on": [
+      "harness-orchestration"
+    ],
     "description": "Add a zero-dependency reporter over the run event stream so a continuation can be inspected after the fact by run, by feature, or as a summary.",
     "verify": "npm run eval",
     "passes": true
@@ -74,7 +86,9 @@
     "status": "completed",
     "priority": 8,
     "category": "dx_infra",
-    "depends_on": ["harness-orchestration"],
+    "depends_on": [
+      "harness-orchestration"
+    ],
     "description": "Add dependency audit, secret scanning, and code scanning workflows, the manual continuation fallback, the autonomy model document, and a branch ruleset staged for later application.",
     "verify": "npm run verify",
     "passes": true
@@ -84,12 +98,14 @@
     "status": "completed",
     "priority": 9,
     "category": "dx_infra",
-    "depends_on": ["harness-observability", "supply-chain-hardening"],
+    "depends_on": [
+      "harness-observability",
+      "supply-chain-hardening"
+    ],
     "description": "Seed the product roadmap from the vision into this file and set the opening horizon slice so the planner has real product work to select from on its first run.",
     "verify": "npm run eval",
     "passes": true
   },
-
   {
     "id": "company-detail-route",
     "status": "completed",
@@ -122,20 +138,22 @@
   },
   {
     "id": "server-render-company-grid",
-    "status": "pending",
+    "status": "completed",
     "priority": 13,
     "category": "tech_debt",
     "depends_on": [],
     "description": "Remove the 'use client' directive from the company grid. It holds no state, runs no effect, and touches no browser API, so it ships client JavaScript for markup the server could render. Keep the card on the client, since it owns image error state.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "route-loading-and-error-states",
     "status": "completed",
     "priority": 14,
     "category": "feature_improvement",
-    "depends_on": ["company-detail-route"],
+    "depends_on": [
+      "company-detail-route"
+    ],
     "description": "Add loading and error boundaries for the listing and detail routes. A failed database call currently renders an inline error block on the listing and nothing at all on the detail route, and there is no loading state while a server component awaits.",
     "verify": "npm run verify",
     "passes": true
@@ -155,7 +173,9 @@
     "status": "completed",
     "priority": 16,
     "category": "new_feature",
-    "depends_on": ["embedding-generation-pipeline"],
+    "depends_on": [
+      "embedding-generation-pipeline"
+    ],
     "description": "Expose hybrid search through a validated route that embeds the query and calls searchCompanies. Validate input at the boundary, bound the result set, and keep the existing semantic, trigram, and full-text weighting behind a single named constant.",
     "verify": "npm run verify",
     "passes": true
@@ -165,7 +185,9 @@
     "status": "completed",
     "priority": 17,
     "category": "testing_observability",
-    "depends_on": ["hybrid-search-api"],
+    "depends_on": [
+      "hybrid-search-api"
+    ],
     "description": "Lock the hybrid ranking with a hermetic eval over fixed vectors and rows, asserting the ordering the weights are meant to produce. Changing the weights changes what users see, so it must fail loudly rather than pass a build silently.",
     "verify": "npm run eval",
     "passes": true
@@ -175,7 +197,9 @@
     "status": "pending",
     "priority": 18,
     "category": "new_feature",
-    "depends_on": ["hybrid-search-api"],
+    "depends_on": [
+      "hybrid-search-api"
+    ],
     "description": "Add the search surface: an input that drives a server-rendered result set, keeps the query in the URL so results are shareable, and has real empty, loading, and error states. Reuse the existing card and design tokens.",
     "verify": "npm run verify",
     "passes": false
@@ -185,7 +209,9 @@
     "status": "pending",
     "priority": 19,
     "category": "new_feature",
-    "depends_on": ["embedding-generation-pipeline"],
+    "depends_on": [
+      "embedding-generation-pipeline"
+    ],
     "description": "Ingest and refresh company records from their source, updating last_synced_at and re-embedding what changed. Must be resumable and idempotent, so a partial run leaves consistent state rather than half-updated rows.",
     "verify": "npm run verify",
     "passes": false
@@ -195,7 +221,9 @@
     "status": "pending",
     "priority": 20,
     "category": "new_feature",
-    "depends_on": ["company-ingestion-refresh"],
+    "depends_on": [
+      "company-ingestion-refresh"
+    ],
     "description": "Add the background research runtime the repository is named for: run an enrichment task per company, persist its output, and degrade gracefully when a source fails. A partial result must be recorded as partial and never read as complete.",
     "verify": "npm run verify",
     "passes": false
@@ -205,7 +233,9 @@
     "status": "pending",
     "priority": 21,
     "category": "feature_improvement",
-    "depends_on": ["research-agent-runtime"],
+    "depends_on": [
+      "research-agent-runtime"
+    ],
     "description": "Attach a source and a timestamp to every enriched claim, and surface both in the interface, so a reader can tell what is known, what is inferred, and what is stale.",
     "verify": "npm run verify",
     "passes": false
@@ -215,7 +245,9 @@
     "status": "pending",
     "priority": 22,
     "category": "testing_observability",
-    "depends_on": ["research-agent-runtime"],
+    "depends_on": [
+      "research-agent-runtime"
+    ],
     "description": "Measure research coverage and freshness with a hermetic eval over recorded fixtures, so quality is demonstrable in CI rather than asserted, and a regression in enrichment shows up as a failure.",
     "verify": "npm run eval",
     "passes": false

@@ -2,25 +2,36 @@
   "slice": [
     "search-ui",
     "company-ingestion-refresh",
-    "server-render-company-grid",
-    "research-agent-runtime"
+    "research-agent-runtime",
+    "research-evidence-and-freshness"
   ],
   "rationale_per_step": {
-    "search-ui": "URL-driven search surface once ranking is locked; UI and UX and Discovery with low noise on a working, tested backend.",
+    "search-ui": "URL-driven search surface on a locked ranking backend; UI and UX and Discovery with low noise. In flight on a continuation branch.",
     "company-ingestion-refresh": "Resumable source refresh + re-embed via refreshCompanyEmbedding; unblocks research-agent-runtime (Evidence-backed intelligence / Reliable autonomous research).",
-    "server-render-company-grid": "Unblocked tech_debt: drop unnecessary client JS on the grid once the hybrid path is locked and search UI is in flight or done.",
-    "research-agent-runtime": "Background enrichment runtime the repo is named for; blocked until company-ingestion-refresh completes. Kept on slice as lookahead only."
+    "research-agent-runtime": "Background enrichment runtime the repo is named for; blocked until company-ingestion-refresh completes.",
+    "research-evidence-and-freshness": "Source and timestamp per claim once the runtime records findings; lookahead only."
   },
   "category_mix": {
     "new_feature": 3,
-    "tech_debt": 1
+    "feature_improvement": 1
   },
   "vision_refs": {
-    "search-ui": ["UI and UX", "Discovery with low noise"],
-    "company-ingestion-refresh": ["Evidence-backed intelligence", "Reliable autonomous research"],
-    "server-render-company-grid": ["UI and UX"],
-    "research-agent-runtime": ["Agent research", "Reliable autonomous research"]
+    "search-ui": [
+      "UI and UX",
+      "Discovery with low noise"
+    ],
+    "company-ingestion-refresh": [
+      "Evidence-backed intelligence",
+      "Reliable autonomous research"
+    ],
+    "research-agent-runtime": [
+      "Agent research",
+      "Reliable autonomous research"
+    ],
+    "research-evidence-and-freshness": [
+      "Evidence-backed intelligence"
+    ]
   },
-  "generated_by_run": "continue-20260812-164834",
-  "notes": "Executor completed hybrid-search-ranking-eval; advanced past that head. Next is search-ui."
+  "generated_by_run": "local-20260813",
+  "notes": "Maintainer-run local session completed server-render-company-grid, so the horizon advances past it. Client rendering is now allowlisted by an eval."
 }
