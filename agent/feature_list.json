@@ -275,5 +275,29 @@
     "description": "Make database access survive a bad minute: retry transient failures with jittered backoff, bound search with a statement timeout, apply the vector index setting inside the query's own transaction rather than a separate statement that never reaches it, and stop returning driver text to callers.",
     "verify": "npm run verify",
     "passes": true
+  },
+  {
+    "id": "research-scheduler",
+    "status": "pending",
+    "priority": 25,
+    "category": "new_feature",
+    "depends_on": [
+      "research-agent-runtime"
+    ],
+    "description": "Run research on a cadence rather than by hand: pick the companies whose newest finding is stale or missing first, cap how many run at once so a schedule cannot become a stampede, and record what was skipped and why.",
+    "verify": "npm run verify",
+    "passes": false
+  },
+  {
+    "id": "research-source-expansion",
+    "status": "pending",
+    "priority": 26,
+    "category": "new_feature",
+    "depends_on": [
+      "research-agent-runtime"
+    ],
+    "description": "Add a second research source so a profile does not rest on one page: collect from a careers or jobs surface, declare it in RESEARCH_SOURCES, and let a run be genuinely partial when one source reports and the other does not.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]
