@@ -157,3 +157,16 @@ No canary code was merged.
   - `npm run verify` → exit 0 (lint, typecheck, 159 evals, build). Build succeeded without `DATABASE_URL`.
   - Eval canary: the decision-matrix eval caught a real bug during this session, where the checksum hashed the wrapper's `id` / `source_id` fields and so no record ever compared as unchanged. Fixed by hashing only `COMPANY_CONTENT_KEYS`, with an eval that fails if that list drifts from `CompanyContent`.
 - **Human notes:** No new dependencies. The insert and update statements could not be run against a live database in this session (no `DATABASE_URL` in the checkout): the column list follows `src/db/types.ts`, and a first live run should use `--dry-run` and then `--max=1`. Insert deliberately does not use `ON CONFLICT`, because no unique index on `(source, source_id)` is asserted anywhere in this repository; the script is a single writer and reads before it writes. `source_metadata`, `slug`, and `founded_at` are left to their column defaults.
+
+## continue-20260820-030733 (research-agent-runtime)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260820-030733` / `harness/continue-local-20260820-030733`
+- **Task / plan:** `research-agent-runtime` / `plan-20260819214110`
+- **What changed:** Added `src/lib/research/` with injectable enrichment steps, `runCompanyResearch`, and a pure `aggregateRunStatus` that yields `complete` | `partial` | `failed` (required failures never become complete). Persistence via `scripts/sql/company_research_runs.sql` (operator apply) and `src/db/queries/research.ts` (`insertResearchRun`, `getResearchRunById`, parameterized, generic errors). Local script `scripts/run-company-research.ts` supports `--company-id`, `--fixture`, and `--dry-run`. Hermetic evals in `src/eval/research.eval.ts`. Marked the feature completed; added pending `research-trigger-runtime` follow-up; advanced horizon past this slice.
+- **Why:** First Agent research / Reliable autonomous research slice. Pattern-matched ingestion (pure modules + writes + dry-run script) instead of Trigger.dev so the build stays secret-free and dependencies stay unchanged.
+- **Commands:**
+  - `node --import tsx --test src/eval/research.eval.ts` → 11 pass
+  - Eval canary: forced `aggregateRunStatus` to always return `complete` → suite failed on partial/failed assertions; restored → 11 pass
+  - `npx tsx scripts/run-company-research.ts --fixture=... --dry-run` → complete when taxonomy present; partial when tags/industries empty
+  - `npm run verify` → exit 0 (lint, typecheck, 170 evals, build). Build succeeded without `DATABASE_URL`. First verify attempt needed `npm ci` in this worktree (no `node_modules`); re-ran clean.
+- **Human notes:** No new dependencies. No Trigger.dev. Did not touch app, components, ingestion, hybrid search, or observability. Apply `scripts/sql/company_research_runs.sql` before a live persist run. Live insert/get not exercised here (no database URL in the session). Evidence UI remains `research-evidence-and-freshness`.
