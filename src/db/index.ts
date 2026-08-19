@@ -22,3 +22,9 @@ export {
   touchCompanySyncedAt,
   type CompanyEmbeddingSource,
 } from './queries/companies';
+export {
+  insertResearchRun,
+  getResearchRunById,
+  type InsertResearchRunInput,
+  type ResearchRunRow,
+} from './queries/research';
