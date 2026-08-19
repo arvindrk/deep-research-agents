@@ -1,15 +1,15 @@
 {
   "slice": [
-    "search-ui",
-    "research-agent-runtime",
     "research-evidence-and-freshness",
-    "research-quality-eval"
+    "research-quality-eval",
+    "search-ui",
+    "research-trigger-runtime"
   ],
   "rationale_per_step": {
-    "search-ui": "URL-driven search surface on a locked ranking backend; UI and UX and Discovery with low noise. In flight on a continuation branch.",
-    "research-agent-runtime": "Unblocked now that ingestion refreshes source records: run one enrichment task per company, persist it, and degrade honestly (Agent research / Reliable autonomous research).",
     "research-evidence-and-freshness": "Source and timestamp per claim once the runtime records findings (Evidence-backed intelligence).",
-    "research-quality-eval": "Coverage and freshness measured over fixtures so enrichment quality is demonstrable in CI (Measurable quality)."
+    "research-quality-eval": "Coverage and freshness measured over fixtures so enrichment quality is demonstrable in CI (Measurable quality).",
+    "search-ui": "Still pending and may be in flight elsewhere; URL-driven search surface on the locked ranking backend (UI and UX / Discovery with low noise).",
+    "research-trigger-runtime": "Optional durable runner follow-up after the pure research runtime; keep Trigger.dev out of the first slice."
   },
   "category_mix": {
     "new_feature": 2,
@@ -17,21 +17,21 @@
     "testing_observability": 1
   },
   "vision_refs": {
-    "search-ui": [
-      "UI and UX",
-      "Discovery with low noise"
-    ],
-    "research-agent-runtime": [
-      "Agent research",
-      "Reliable autonomous research"
-    ],
     "research-evidence-and-freshness": [
       "Evidence-backed intelligence"
     ],
     "research-quality-eval": [
       "Measurable quality"
+    ],
+    "search-ui": [
+      "UI and UX",
+      "Discovery with low noise"
+    ],
+    "research-trigger-runtime": [
+      "Agent research",
+      "Reliable autonomous research"
     ]
   },
-  "generated_by_run": "local-20260816",
-  "notes": "Maintainer-run local session completed company-ingestion-refresh, which unblocks research-agent-runtime. Horizon advances past the completed feature."
+  "generated_by_run": "continue-20260820-030733",
+  "notes": "Executor completed research-agent-runtime. Horizon advanced past it; Trigger.dev wiring recorded as a new pending follow-up rather than implemented here."
 }
