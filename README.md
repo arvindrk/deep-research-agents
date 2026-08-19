@@ -15,6 +15,7 @@ Not built yet: the search interface, source ingestion and refresh, and the resea
 - **Neon Postgres with `pgvector`** stores company records alongside embeddings
 - **Hybrid search** combines semantic (70%), name trigram (20%), and full-text (10%) scoring
 - **Next.js frontend** renders server-side, with no client-side data fetching
+- **Resilient reads** retry transient database failures with jittered backoff, bound search with a statement timeout, and never surface driver text to a caller
 - **Search telemetry** emits one structured JSON event per `/api/search` request: outcome, phase timings, latency bucket, result count, and a bounded query prefix with credential-shaped text scrubbed
 - **Agent harness** under `agent/` plans, implements, validates, and opens pull requests
 

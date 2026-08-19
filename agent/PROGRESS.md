@@ -135,3 +135,14 @@ No canary code was merged.
   - `npm run verify` → exit 0 (lint, typecheck, 123 evals, build). Build succeeded without `DATABASE_URL` or `OPENAI_API_KEY`.
   - Eval canary: widened `MAX_LOGGED_QUERY_CHARS` and dropped a credential pattern → `search-event` eval exit 1; restored → pass.
 - **Human notes:** No new dependencies. Event shape is deliberately fixed across outcomes so log queries do not need per-outcome key knowledge. The query prefix is scrubbed before truncation, so a secret cannot be half-logged. No SQL, schema, or UI changes.
+
+## local-20260815 (db-resilience)
+
+- **Worktree / branch:** local maintainer checkout / `feat/db-resilience`
+- **Task / plan:** `db-resilience` / no planner artifact; maintainer-run session, not a continuation. Feature defined in this run at priority 24.
+- **What changed:** New `src/db/resilience.ts`: narrow transient-failure classification by message shape, a deterministic exponential backoff with injected jitter, `STATEMENT_TIMEOUT_MS`, and `withRetry` with injectable sleep. `getCompanyById` and `searchCompanies` now retry transient failures only. `searchCompanies` applies `hnsw.ef_search` and `statement_timeout` through `set_config(..., true)` inside one `sql.transaction([...])` with the SELECT, and returns a generic `Search query failed` instead of driver text.
+- **Why:** Two real defects, not just hardening. `SET hnsw.ef_search = ${value}` sent the value as a bound parameter, which Postgres rejects for `SET`; and over the Neon HTTP driver each statement is its own transaction, so even valid session settings never reached the following query. A transient network fault also failed the whole request with no retry, and the failure result carried driver text naming columns and hosts.
+- **Commands:**
+  - `npm run verify` → exit 0 (lint, typecheck, 134 evals, build). Build succeeded without `DATABASE_URL`.
+  - Eval canary: made `isTransientDatabaseError` return `true` for everything → `db-resilience` eval exit 1; restored → pass.
+- **Human notes:** No new dependencies. The `set_config` change is the only SQL shape change and could not be run against a live database in this session (no `DATABASE_URL` in the checkout): worth confirming with one live query that `hnsw.ef_search` now shows the intended value via `SHOW hnsw.ef_search` inside the same transaction. Retry is deliberately absent from the listing and count queries; add it only if those show transient failures in the new telemetry.

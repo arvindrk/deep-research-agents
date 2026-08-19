@@ -263,5 +263,17 @@
     "description": "Emit one structured event per search request: outcome, phase timings, latency bucket, result count, and a bounded query prefix. Search can fail in three different ways and none of them are currently visible after the response is sent.",
     "verify": "npm run verify",
     "passes": true
+  },
+  {
+    "id": "db-resilience",
+    "status": "completed",
+    "priority": 24,
+    "category": "maintenance",
+    "depends_on": [
+      "hybrid-search-api"
+    ],
+    "description": "Make database access survive a bad minute: retry transient failures with jittered backoff, bound search with a statement timeout, apply the vector index setting inside the query's own transaction rather than a separate statement that never reaches it, and stop returning driver text to callers.",
+    "verify": "npm run verify",
+    "passes": true
   }
 ]
