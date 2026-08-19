@@ -6,6 +6,8 @@ import {
   EXPECTED_FIELDS,
   fieldCoverage,
   freshnessMix,
+  partialShare,
+  staleShare,
 } from '@/lib/research/quality';
 import type { ResearchFinding } from '@/lib/research/types';
 
@@ -99,5 +101,49 @@ describe('freshnessMix', () => {
       stale: 0,
       unknown: 0,
     });
+  });
+});
+
+describe('partialShare', () => {
+  it('counts anything that is not complete', () => {
+    const runs = [
+      run('a', [finding('website_title')]),
+      run('b', [finding('website_title')], 'partial'),
+      run('c', [], 'failed'),
+    ];
+    assert.equal(partialShare(runs), 2 / 3);
+  });
+
+  it('is zero for no runs and for all-complete runs', () => {
+    assert.equal(partialShare([]), 0);
+    assert.equal(partialShare([run('a', [finding('website_title')])]), 0);
+  });
+});
+
+describe('staleShare', () => {
+  it('counts a profile whose every claim has gone stale', () => {
+    const runs = [
+      run('fresh', [finding('website_title', daysBefore(2))]),
+      run('stale', [finding('website_title', daysBefore(120))]),
+    ];
+    assert.equal(staleShare(runs, NOW), 0.5);
+  });
+
+  it('does not call a profile stale while one claim is current', () => {
+    const runs = [
+      run('mixed', [
+        finding('website_title', daysBefore(120)),
+        finding('website_description', daysBefore(2)),
+      ]),
+    ];
+    assert.equal(staleShare(runs, NOW), 0);
+  });
+
+  it('treats a run that found nothing as stale, not as fresh', () => {
+    assert.equal(staleShare([run('empty', [], 'failed')], NOW), 1);
+  });
+
+  it('is zero for no runs', () => {
+    assert.equal(staleShare([], NOW), 0);
   });
 });
