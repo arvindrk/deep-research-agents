@@ -89,3 +89,28 @@ export function staleShare(runs: readonly ResearchRun[], now: Date): number {
 
   return stale / runs.length;
 }
+
+export type QualityReport = {
+  runs: number;
+  findings: number;
+  fieldCoverage: Record<string, number>;
+  freshness: Record<Freshness, number>;
+  partialShare: number;
+  staleShare: number;
+};
+
+/** One pass over the corpus, so a report is cheap enough to print in CI. */
+export function qualityReport(
+  runs: readonly ResearchRun[],
+  now: Date,
+  fields: readonly string[] = EXPECTED_FIELDS,
+): QualityReport {
+  return {
+    runs: runs.length,
+    findings: runs.reduce((total, run) => total + run.findings.length, 0),
+    fieldCoverage: fieldCoverage(runs, fields),
+    freshness: freshnessMix(runs, now),
+    partialShare: partialShare(runs),
+    staleShare: staleShare(runs, now),
+  };
+}
