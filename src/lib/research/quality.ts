@@ -114,3 +114,41 @@ export function qualityReport(
     staleShare: staleShare(runs, now),
   };
 }
+
+/**
+ * Every way a report falls short of the bar, as readable lines. A list rather
+ * than a boolean: when enrichment regresses, the useful output is which measure
+ * moved and by how much.
+ */
+export function qualityViolations(
+  report: QualityReport,
+  bar: QualityBar = QUALITY_BAR,
+): string[] {
+  const violations: string[] = [];
+
+  if (report.runs === 0) {
+    return ['no research runs to measure'];
+  }
+
+  for (const [field, coverage] of Object.entries(report.fieldCoverage)) {
+    if (coverage < bar.minFieldCoverage) {
+      violations.push(
+        `${field} coverage ${coverage.toFixed(2)} is below ${bar.minFieldCoverage}`,
+      );
+    }
+  }
+
+  if (report.staleShare > bar.maxStaleShare) {
+    violations.push(
+      `stale share ${report.staleShare.toFixed(2)} is above ${bar.maxStaleShare}`,
+    );
+  }
+
+  if (report.partialShare > bar.maxPartialShare) {
+    violations.push(
+      `partial share ${report.partialShare.toFixed(2)} is above ${bar.maxPartialShare}`,
+    );
+  }
+
+  return violations;
+}
