@@ -64,3 +64,28 @@ export function freshnessMix(
 
   return mix;
 }
+
+/** Share of runs that lost at least one source. */
+export function partialShare(runs: readonly ResearchRun[]): number {
+  if (runs.length === 0) return 0;
+  const incomplete = runs.filter((run) => run.status !== 'complete').length;
+  return incomplete / runs.length;
+}
+
+/**
+ * Share of runs whose newest finding is already stale. Measured per run rather
+ * than per finding: a company with ten stale claims is one stale profile, and it
+ * is profiles that users read.
+ */
+export function staleShare(runs: readonly ResearchRun[], now: Date): number {
+  if (runs.length === 0) return 0;
+
+  const stale = runs.filter((run) => {
+    if (run.findings.length === 0) return true;
+    return run.findings.every(
+      (finding) => freshnessOf(finding.observed_at, now) === 'stale',
+    );
+  }).length;
+
+  return stale / runs.length;
+}
