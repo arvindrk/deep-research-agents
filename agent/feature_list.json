@@ -206,7 +206,7 @@
   },
   {
     "id": "company-ingestion-refresh",
-    "status": "pending",
+    "status": "completed",
     "priority": 19,
     "category": "new_feature",
     "depends_on": [
@@ -214,7 +214,7 @@
     ],
     "description": "Ingest and refresh company records from their source, updating last_synced_at and re-embedding what changed. Must be resumable and idempotent, so a partial run leaves consistent state rather than half-updated rows.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "research-agent-runtime",

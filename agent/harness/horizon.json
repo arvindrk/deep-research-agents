@@ -1,28 +1,25 @@
 {
   "slice": [
     "search-ui",
-    "company-ingestion-refresh",
     "research-agent-runtime",
-    "research-evidence-and-freshness"
+    "research-evidence-and-freshness",
+    "research-quality-eval"
   ],
   "rationale_per_step": {
     "search-ui": "URL-driven search surface on a locked ranking backend; UI and UX and Discovery with low noise. In flight on a continuation branch.",
-    "company-ingestion-refresh": "Resumable source refresh + re-embed via refreshCompanyEmbedding; unblocks research-agent-runtime (Evidence-backed intelligence / Reliable autonomous research).",
-    "research-agent-runtime": "Background enrichment runtime the repo is named for; blocked until company-ingestion-refresh completes.",
-    "research-evidence-and-freshness": "Source and timestamp per claim once the runtime records findings; lookahead only."
+    "research-agent-runtime": "Unblocked now that ingestion refreshes source records: run one enrichment task per company, persist it, and degrade honestly (Agent research / Reliable autonomous research).",
+    "research-evidence-and-freshness": "Source and timestamp per claim once the runtime records findings (Evidence-backed intelligence).",
+    "research-quality-eval": "Coverage and freshness measured over fixtures so enrichment quality is demonstrable in CI (Measurable quality)."
   },
   "category_mix": {
-    "new_feature": 3,
-    "feature_improvement": 1
+    "new_feature": 2,
+    "feature_improvement": 1,
+    "testing_observability": 1
   },
   "vision_refs": {
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
-    ],
-    "company-ingestion-refresh": [
-      "Evidence-backed intelligence",
-      "Reliable autonomous research"
     ],
     "research-agent-runtime": [
       "Agent research",
@@ -30,8 +27,11 @@
     ],
     "research-evidence-and-freshness": [
       "Evidence-backed intelligence"
+    ],
+    "research-quality-eval": [
+      "Measurable quality"
     ]
   },
-  "generated_by_run": "local-20260815",
-  "notes": "Maintainer-run local session added and completed db-resilience (new entry, priority 24). It also fixed a latent no-op: hnsw.ef_search was sent as a bound parameter in its own HTTP statement, so it never applied to the search query."
+  "generated_by_run": "local-20260816",
+  "notes": "Maintainer-run local session completed company-ingestion-refresh, which unblocks research-agent-runtime. Horizon advances past the completed feature."
 }

@@ -16,5 +16,9 @@ export {
   listCompaniesMissingEmbeddings,
   updateCompanyEmbedding,
   toEmbeddingFields,
+  getCompanyBySource,
+  insertCompanyFromSource,
+  updateCompanyFromSource,
+  touchCompanySyncedAt,
   type CompanyEmbeddingSource,
 } from './queries/companies';

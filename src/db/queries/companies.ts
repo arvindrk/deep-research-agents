@@ -8,6 +8,12 @@ import {
   HYBRID_SEARCH_FILTERS,
   HYBRID_SEARCH_WEIGHTS,
 } from '@/lib/hybrid-search-ranking';
+import type { StoredCompany } from '@/lib/ingestion/refresh-plan';
+import {
+  nullableText,
+  textList,
+  type SourceCompanyRecord,
+} from '@/lib/ingestion/source-record';
 import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
 
 export { HYBRID_SEARCH_WEIGHTS };
@@ -287,4 +293,166 @@ export function toEmbeddingFields(
     batch: row.batch,
     stage: row.stage,
   };
+}
+
+/**
+ * Rows cross a runtime boundary, so they are mapped field by field rather than
+ * cast: `team_size` arrives as a numeric string from some drivers, and a null
+ * text column must not become the string "null".
+ */
+function toStoredCompany(row: Record<string, unknown>): StoredCompany {
+  return {
+    id: String(row.id),
+    name: nullableText(row.name) ?? '',
+    source_url: nullableText(row.source_url),
+    website: nullableText(row.website),
+    logo_url: nullableText(row.logo_url),
+    one_liner: nullableText(row.one_liner),
+    long_description: nullableText(row.long_description),
+    tags: textList(row.tags),
+    industries: textList(row.industries),
+    regions: textList(row.regions),
+    batch: nullableText(row.batch),
+    stage: nullableText(row.stage),
+    status: nullableText(row.status) ?? 'unknown',
+    team_size: row.team_size == null ? null : Number(row.team_size),
+    is_hiring: row.is_hiring === true,
+    is_nonprofit: row.is_nonprofit === true,
+    all_locations: nullableText(row.all_locations),
+  };
+}
+
+/**
+ * The stored content for one source identity, or null when this source record
+ * has never been ingested. Ingestion compares this against the incoming record
+ * to decide whether anything needs writing.
+ */
+export async function getCompanyBySource(
+  source: string,
+  sourceId: string,
+): Promise<QueryResult<StoredCompany | null>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        SELECT
+          id, name, source_url, website, logo_url, one_liner, long_description,
+          tags, industries, regions, batch, stage, status, team_size,
+          is_hiring, is_nonprofit, all_locations
+        FROM companies
+        WHERE source = ${source} AND source_id = ${sourceId}
+        LIMIT 1
+      `,
+    );
+
+    return {
+      success: true,
+      data: results.length === 0 ? null : toStoredCompany(results[0]),
+    };
+  } catch {
+    return { success: false, error: 'Failed to read company by source' };
+  }
+}
+
+/** Insert one source record. `last_synced_at` is set by the same statement. */
+export async function insertCompanyFromSource(
+  record: SourceCompanyRecord,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        INSERT INTO companies (
+          source, source_id, source_url, name, website, logo_url, one_liner,
+          long_description, tags, industries, regions, batch, team_size, stage,
+          status, is_hiring, is_nonprofit, all_locations, last_synced_at
+        ) VALUES (
+          ${record.source}, ${record.source_id}, ${record.source_url},
+          ${record.name}, ${record.website}, ${record.logo_url},
+          ${record.one_liner}, ${record.long_description}, ${record.tags},
+          ${record.industries}, ${record.regions}, ${record.batch},
+          ${record.team_size}, ${record.stage}, ${record.status},
+          ${record.is_hiring}, ${record.is_nonprofit}, ${record.all_locations},
+          now()
+        )
+        RETURNING id
+      `,
+    );
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to insert company from source' };
+  }
+}
+
+/**
+ * Overwrite stored content for one company. The embedding is left alone: it is
+ * refreshed separately, and only when the embedded text actually changed.
+ */
+export async function updateCompanyFromSource(
+  id: string,
+  record: SourceCompanyRecord,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET
+          source_url = ${record.source_url},
+          name = ${record.name},
+          website = ${record.website},
+          logo_url = ${record.logo_url},
+          one_liner = ${record.one_liner},
+          long_description = ${record.long_description},
+          tags = ${record.tags},
+          industries = ${record.industries},
+          regions = ${record.regions},
+          batch = ${record.batch},
+          team_size = ${record.team_size},
+          stage = ${record.stage},
+          status = ${record.status},
+          is_hiring = ${record.is_hiring},
+          is_nonprofit = ${record.is_nonprofit},
+          all_locations = ${record.all_locations},
+          updated_at = now(),
+          last_synced_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
+
+    if (results.length === 0) {
+      return { success: false, error: 'Company not found' };
+    }
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to update company from source' };
+  }
+}
+
+/** Record that a company was seen unchanged, without rewriting its content. */
+export async function touchCompanySyncedAt(
+  id: string,
+): Promise<QueryResult<{ id: string }>> {
+  try {
+    const sql = getDBClient();
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET last_synced_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
+
+    if (results.length === 0) {
+      return { success: false, error: 'Company not found' };
+    }
+
+    return { success: true, data: { id: String(results[0].id) } };
+  } catch {
+    return { success: false, error: 'Failed to update company sync time' };
+  }
 }
