@@ -32,6 +32,6 @@
       "Evidence-backed intelligence"
     ]
   },
-  "generated_by_run": "local-20260813",
-  "notes": "Maintainer-run local session completed server-render-company-grid, so the horizon advances past it. Client rendering is now allowlisted by an eval."
+  "generated_by_run": "local-20260814",
+  "notes": "Maintainer-run local session added and completed search-observability (new entry, priority 23). Slice unchanged: it holds the product backlog, and telemetry was a prerequisite rather than a queued step."
 }
