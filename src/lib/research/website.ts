@@ -14,13 +14,23 @@ const META_DESCRIPTION =
 const collapse = (value: string): string =>
   value.replace(/\s+/g, ' ').trim().slice(0, MAX_VALUE_CHARS);
 
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+};
+
+/**
+ * One pass, so nothing is unescaped twice: replacing `&amp;` first would turn
+ * `&amp;lt;` into `<`, which is text the page had deliberately escaped.
+ */
 const decodeEntities = (value: string): string =>
-  value
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
+  value.replace(
+    /&(?:amp|lt|gt|quot|#39);/g,
+    (entity) => ENTITIES[entity] ?? entity,
+  );
 
 /**
  * Pure extraction from a fetched page. Regex rather than a parser: two fields

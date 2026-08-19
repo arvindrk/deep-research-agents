@@ -53,6 +53,15 @@ describe('parseWebsiteFindings', () => {
     assert.equal(findings[0].value, 'Acme & Co');
   });
 
+  it('decodes each entity once, so escaped markup stays escaped', () => {
+    const findings = parseWebsiteFindings(
+      page('<title>Acme &amp;lt;b&amp;gt; Co</title>'),
+      URL,
+      OBSERVED_AT,
+    );
+    assert.equal(findings[0].value, 'Acme &lt;b&gt; Co');
+  });
+
   it('bounds a value that a page made enormous', () => {
     const findings = parseWebsiteFindings(
       page(`<title>${'a'.repeat(1000)}</title>`),
