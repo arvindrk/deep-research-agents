@@ -278,7 +278,7 @@
   },
   {
     "id": "research-scheduler",
-    "status": "pending",
+    "status": "completed",
     "priority": 25,
     "category": "new_feature",
     "depends_on": [
@@ -286,7 +286,7 @@
     ],
     "description": "Run research on a cadence rather than by hand: pick the companies whose newest finding is stale or missing first, cap how many run at once so a schedule cannot become a stampede, and record what was skipped and why.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "research-source-expansion",

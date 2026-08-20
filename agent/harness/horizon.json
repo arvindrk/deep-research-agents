@@ -1,25 +1,26 @@
 {
   "slice": [
-    "research-scheduler",
-    "search-ui"
+    "search-ui",
+    "research-careers-quality-fields"
   ],
   "rationale_per_step": {
-    "research-scheduler": "Multi-source honesty now exists (website + careers). Next is cadence: stale-first refreshes with a concurrency cap (Reliable autonomous research / Measurable quality).",
-    "search-ui": "URL-driven search surface on a locked, measured backend (UI and UX / Discovery with low noise). In flight on another branch; remains on the slice until it lands, but must not be selected while excluded."
+    "search-ui": "URL-driven search surface on a locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight elsewhere; keep on the slice, do not select while excluded.",
+    "research-careers-quality-fields": "Lock careers into EXPECTED_FIELDS only after real multi-source runs are recorded into the fixture corpus. Dependency-unblocked, product-blocked until fixtures exist; more scheduled runs help produce those recordings."
   },
   "category_mix": {
-    "new_feature": 2
+    "new_feature": 1,
+    "testing_observability": 1
   },
   "vision_refs": {
-    "research-scheduler": [
-      "Reliable autonomous research",
-      "Measurable quality"
-    ],
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
+    ],
+    "research-careers-quality-fields": [
+      "Measurable quality",
+      "Evidence-backed intelligence"
     ]
   },
-  "generated_by_run": "continue-20260820-232807",
-  "notes": "Executor completed research-source-expansion (website + careers collectors; partial runs are reachable). Horizon advances to research-scheduler; search-ui stays excluded while in flight."
+  "generated_by_run": "continue-20260820-234440",
+  "notes": "Executor completed research-scheduler (stale-first selection, hard cap, skip reasons). Horizon advances past it; search-ui remains excluded/in flight. research-careers-quality-fields stays queued until recorded multi-source fixtures exist."
 }
