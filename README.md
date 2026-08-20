@@ -15,6 +15,7 @@ Not built yet: the search interface, source ingestion and refresh, and the resea
 - **Neon Postgres with `pgvector`** stores company records alongside embeddings
 - **Hybrid search** combines semantic (70%), name trigram (20%), and full-text (10%) scoring
 - **Next.js frontend** renders server-side, with no client-side data fetching
+- **Evidence and freshness** put a source link and an observation age on every enriched claim, banded fresh / aging / stale, so a reader can tell what is current and what is not
 - **Research runtime** runs one enrichment source per company with per-source failure isolation: a run that loses a source is recorded as partial, never as complete, and a run and its findings are written in one transaction
 - **Source ingestion** is resumable by source id cursor and idempotent per record: unchanged records only have their sync time touched, and re-embedding happens only when the embedded text changed
 - **Resilient reads** retry transient database failures with jittered backoff, bound search with a statement timeout, and never surface driver text to a caller

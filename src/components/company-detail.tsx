@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Building2, ExternalLink, MapPin, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CompanyEvidence } from '@/components/company-evidence';
 import { CompanyLogo } from '@/components/company-logo';
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { StoredResearchRun } from '@/db/queries/research';
 import type { Company } from '@/db/types';
 import { formatBatch } from '@/lib/format-batch';
 import { httpUrl } from '@/lib/safe-url';
@@ -25,9 +27,10 @@ function formatSyncedAt(value: Date | string): string {
 
 interface CompanyDetailProps {
   company: Company;
+  research: StoredResearchRun | null;
 }
 
-export function CompanyDetail({ company }: CompanyDetailProps) {
+export function CompanyDetail({ company, research }: CompanyDetailProps) {
   const websiteHref = httpUrl(company.website);
   const description = company.long_description ?? company.one_liner;
   const tags = company.tags ?? [];
@@ -238,6 +241,7 @@ export function CompanyDetail({ company }: CompanyDetailProps) {
                 </div>
               </section>
             )}
+            <CompanyEvidence research={research} now={new Date()} />
           </CardContent>
         </Card>
       </div>

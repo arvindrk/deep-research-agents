@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CompanyDetail } from '@/components/company-detail';
 import { getCompanyById } from '@/db/queries/companies';
+import { getLatestResearchRun } from '@/db/queries/research';
 import { cn } from '@/lib/utils';
 
 interface PageProps {
@@ -26,7 +27,13 @@ export async function generateMetadata({
 
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const result = await getCompanyById(id);
+
+  // Independent reads: the research query does not need the company row, so
+  // waiting for one before starting the other would just add a round trip.
+  const [result, research] = await Promise.all([
+    getCompanyById(id),
+    getLatestResearchRun(id),
+  ]);
 
   if (!result.success) {
     if (result.error === 'Company not found') {
@@ -55,5 +62,12 @@ export default async function CompanyDetailPage({ params }: PageProps) {
     );
   }
 
-  return <CompanyDetail company={result.data} />;
+  // A missing research table or a failed read is not a broken profile: the
+  // section simply reports that nothing has been researched yet.
+  return (
+    <CompanyDetail
+      company={result.data}
+      research={research.success ? research.data : null}
+    />
+  );
 }
