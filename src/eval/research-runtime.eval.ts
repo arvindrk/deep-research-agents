@@ -182,8 +182,8 @@ describe('runResearch', () => {
     website: 'https://acme.test/',
   };
 
-  // Every collector here declares the one source that exists today; a second
-  // source id arrives with the second real collector, not before it.
+  // Collectors in this suite stay on `website` so they exercise failure
+  // isolation without depending on how many real sources are registered.
   const collector = (
     field: string,
     behaviour: 'ok' | 'throw' | 'empty',
