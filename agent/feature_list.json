@@ -218,7 +218,7 @@
   },
   {
     "id": "research-agent-runtime",
-    "status": "pending",
+    "status": "completed",
     "priority": 20,
     "category": "new_feature",
     "depends_on": [
@@ -226,7 +226,7 @@
     ],
     "description": "Add the background research runtime the repository is named for: run an enrichment task per company, persist its output, and degrade gracefully when a source fails. A partial result must be recorded as partial and never read as complete.",
     "verify": "npm run verify",
-    "passes": false
+    "passes": true
   },
   {
     "id": "research-evidence-and-freshness",
