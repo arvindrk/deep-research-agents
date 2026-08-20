@@ -1,31 +1,25 @@
 {
   "slice": [
-    "search-ui",
-    "research-source-expansion",
-    "research-scheduler"
+    "research-scheduler",
+    "search-ui"
   ],
   "rationale_per_step": {
-    "search-ui": "URL-driven search surface on a locked, measured backend; UI and UX and Discovery with low noise. In flight on a continuation branch.",
-    "research-source-expansion": "One collector means a profile rests on one page, and a run can never be genuinely partial. A second source is what makes the partial path real (Agent research).",
-    "research-scheduler": "Research is manual today. The quality bar now measures staleness, so the scheduler has a target to optimise: refresh what is stale first (Reliable autonomous research / Measurable quality)."
+    "research-scheduler": "Multi-source honesty now exists (website + careers). Next is cadence: stale-first refreshes with a concurrency cap (Reliable autonomous research / Measurable quality).",
+    "search-ui": "URL-driven search surface on a locked, measured backend (UI and UX / Discovery with low noise). In flight on another branch; remains on the slice until it lands, but must not be selected while excluded."
   },
   "category_mix": {
-    "new_feature": 3
+    "new_feature": 2
   },
   "vision_refs": {
-    "search-ui": [
-      "UI and UX",
-      "Discovery with low noise"
-    ],
-    "research-source-expansion": [
-      "Agent research",
-      "Evidence-backed intelligence"
-    ],
     "research-scheduler": [
       "Reliable autonomous research",
       "Measurable quality"
+    ],
+    "search-ui": [
+      "UI and UX",
+      "Discovery with low noise"
     ]
   },
-  "generated_by_run": "local-20260819",
-  "notes": "Maintainer-run local session completed research-quality-eval and closed out the seeded product backlog except search-ui, which is in flight. Two new features were queued so the planner has real, unblocked work rather than an empty list."
+  "generated_by_run": "continue-20260820-232807",
+  "notes": "Executor completed research-source-expansion (website + careers collectors; partial runs are reachable). Horizon advances to research-scheduler; search-ui stays excluded while in flight."
 }

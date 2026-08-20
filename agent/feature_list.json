@@ -290,13 +290,26 @@
   },
   {
     "id": "research-source-expansion",
-    "status": "pending",
+    "status": "completed",
     "priority": 26,
     "category": "new_feature",
     "depends_on": [
       "research-agent-runtime"
     ],
     "description": "Add a second research source so a profile does not rest on one page: collect from a careers or jobs surface, declare it in RESEARCH_SOURCES, and let a run be genuinely partial when one source reports and the other does not.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-careers-quality-fields",
+    "status": "pending",
+    "priority": 27,
+    "category": "testing_observability",
+    "depends_on": [
+      "research-source-expansion",
+      "research-quality-eval"
+    ],
+    "description": "Once real multi-source research runs are recorded into the fixture corpus, extend the quality bar's expected fields to include careers findings so coverage measures the second source rather than only website title and description.",
     "passes": false,
     "verify": "npm run verify"
   }

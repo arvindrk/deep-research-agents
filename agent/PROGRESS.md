@@ -190,3 +190,14 @@ No canary code was merged.
   - `npm run verify` → exit 0 (lint, typecheck, 221 evals, build). Build succeeded without `DATABASE_URL`.
   - Eval canary: dropped `website_description` from the corpus's four complete runs → `research-corpus` eval exit 1 naming the coverage that fell; restored → pass.
 - **Human notes:** No new dependencies. The corpus is synthetic for now: six runs shaped like real ones, with one 403 failure and one profile that only yielded a title. Replace entries with real recordings via the script as soon as `migrations/0001_company_research.sql` is applied and `scripts/run-research.ts` has run; the bar values (coverage 0.6, stale 0.25, partial 0.34) were set to what this corpus actually achieves, so they should be revisited against real data rather than treated as targets. `partial` runs are impossible while only one collector exists, which is why `research-source-expansion` is queued next.
+
+## continue-20260820-232807 (research-source-expansion)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260820-232807` / `harness/continue-local-20260820-232807`
+- **Task / plan:** `research-source-expansion` / `plan-20260820180036`
+- **What changed:** Added `careers` to `RESEARCH_SOURCES` and `DEFAULT_COLLECTORS`. New `src/lib/research/careers.ts` mirrors the website collector: derive `/careers` from `ResearchSubject.website` via `httpUrl`, pure `parseCareersFindings` (title + meta description, entity decode, 300-char bound, no HTML parser), thin `collectCareersFindings` with 5s `AbortSignal.timeout`. Missing or non-http website yields zero findings; non-ok careers HTTP throws so a successful website alone is `partial`. Hermetic `src/eval/research-careers.eval.ts` covers parse, URL safety, null-website collect, and multi-source partial runs. Horizon advanced to `research-scheduler`. Queued follow-up `research-careers-quality-fields` so EXPECTED_FIELDS stay website-only until real multi-source fixtures exist.
+- **Why:** One collector meant a profile rested on one page and a run could never be genuinely partial. A second source makes the honesty path real.
+- **Commands:**
+  - `npm run verify` → exit 0 (lint, typecheck, 233 evals, build). Build succeeded without `DATABASE_URL`.
+  - Eval canary: made `careersPageUrl` return the website without `/careers` → `research-careers` eval 1 fail (`derives /careers from an http website`); restored → 11/11 pass.
+- **Human notes:** No new dependencies; no schema or UI changes. Scripts already use `DEFAULT_COLLECTORS`, so they pick up careers without edits. Live careers pages that 404 will correctly partial the run; companies without a website still complete on empty careers findings. Do not raise EXPECTED_FIELDS for careers until the corpus has recorded multi-source runs.

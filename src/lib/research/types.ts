@@ -1,5 +1,5 @@
 /** Sources the runtime knows how to ask. One entry per collector. */
-export const RESEARCH_SOURCES = ['website'] as const;
+export const RESEARCH_SOURCES = ['website', 'careers'] as const;
 
 export type ResearchSourceId = (typeof RESEARCH_SOURCES)[number];
 

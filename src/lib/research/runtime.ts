@@ -5,6 +5,7 @@ import type {
   ResearchSubject,
   SourceOutcome,
 } from './types';
+import { collectCareersFindings } from './careers';
 import { collectWebsiteFindings } from './website';
 
 /** Bounded so a failing source cannot write an essay into the run record. */
@@ -62,4 +63,5 @@ export async function runResearch(
 /** What the runner asks when no collector list is given. */
 export const DEFAULT_COLLECTORS: readonly ResearchCollector[] = [
   { source: 'website', collect: collectWebsiteFindings },
+  { source: 'careers', collect: collectCareersFindings },
 ];
