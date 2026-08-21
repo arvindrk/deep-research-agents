@@ -1,26 +1,39 @@
 {
   "slice": [
+    "research-careers-quality-fields",
     "search-ui",
-    "research-careers-quality-fields"
+    "research-observability",
+    "research-evidence-source-labels"
   ],
   "rationale_per_step": {
+    "research-careers-quality-fields": "Corpus now has multi-source recordings; extend EXPECTED_FIELDS with careers_title and careers_description so coverage measures the second source.",
     "search-ui": "URL-driven search surface on a locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight elsewhere; keep on the slice, do not select while excluded.",
-    "research-careers-quality-fields": "Lock careers into EXPECTED_FIELDS only after real multi-source runs are recorded into the fixture corpus. Dependency-unblocked, product-blocked until fixtures exist; more scheduled runs help produce those recordings."
+    "research-observability": "Emit one structured event per research run (status, sources attempted/failed, schedule skip reasons, timings) mirroring search-observability, so unattended research is inspectable after the fact.",
+    "research-evidence-source-labels": "Feature improvement: surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names."
   },
   "category_mix": {
+    "testing_observability": 1,
     "new_feature": 1,
-    "testing_observability": 1
+    "feature_improvement": 1
   },
   "vision_refs": {
+    "research-careers-quality-fields": [
+      "Measurable quality",
+      "Evidence-backed intelligence"
+    ],
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
     ],
-    "research-careers-quality-fields": [
-      "Measurable quality",
-      "Evidence-backed intelligence"
+    "research-observability": [
+      "Reliable autonomous research",
+      "Measurable quality"
+    ],
+    "research-evidence-source-labels": [
+      "Evidence-backed intelligence",
+      "UI and UX"
     ]
   },
-  "generated_by_run": "continue-20260820-234440",
-  "notes": "Executor completed research-scheduler (stale-first selection, hard cap, skip reasons). Horizon advances past it; search-ui remains excluded/in flight. research-careers-quality-fields stays queued until recorded multi-source fixtures exist."
+  "generated_by_run": "continue-20260821-155625",
+  "notes": "Executor completed research-multi-source-corpus. research-observability and research-evidence-source-labels remain lookahead definitions only until added to feature_list.json."
 }
