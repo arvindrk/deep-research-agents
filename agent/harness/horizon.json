@@ -35,5 +35,5 @@
     ]
   },
   "generated_by_run": "continue-20260821-155625",
-  "notes": "Executor completed research-multi-source-corpus. research-observability and research-evidence-source-labels remain lookahead definitions only until added to feature_list.json."
+  "notes": "Executor completed research-multi-source-corpus and registered research-observability plus research-evidence-source-labels in feature_list.json so the horizon only references real features."
 }

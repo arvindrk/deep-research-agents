@@ -212,3 +212,14 @@ No canary code was merged.
   - Eval canary: temporarily ignored the selection cap so `selected` could exceed `limit` → schedule evals failed (cap and zero-limit cases); restored → pass.
   - `npm run verify` → exit 0 (lint, typecheck, 238 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
 - **Human notes:** No new dependencies; no Trigger.dev; collectors and EXPECTED_FIELDS unchanged. Intended EXPLAIN for the schedule query: index on `company_research_findings (company_id, observed_at DESC)` plus companies PK; LATERAL one row per company; outer LIMIT bounds the page. Migrations still human-applied; live schedule needs `DATABASE_URL` and applied DDL like the previous research script.
+
+## continue-20260821-155625 (research-multi-source-corpus)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260821-155625` / `harness/continue-local-20260821-155625`
+- **Task / plan:** `research-multi-source-corpus` / `plan-20260821102846`
+- **What changed:** Grew `src/eval/fixtures/research-runs.json` with fixture-company-7 (complete website+careers, including careers_title and careers_description) and fixture-company-8 (partial: website succeeded, careers 404). Tightened `src/eval/research-corpus.eval.ts` so attempted/succeeded/failed/finding sources must be members of RESEARCH_SOURCES, and locked the presence of one complete multi-source run plus one careers-failed partial. EXPECTED_FIELDS and QUALITY_BAR left unchanged (partialShare 2/8 = 0.25 under maxPartialShare 0.34). Horizon advanced; registered research-observability and research-evidence-source-labels in feature_list so the horizon only references real features; careers-quality-fields now depends on research-multi-source-corpus.
+- **Why:** CI was measuring a website-only corpus after DEFAULT_COLLECTORS already includes careers. Honest multi-source fixtures unlock careers quality fields without inventing coverage.
+- **Commands:**
+  - Eval canary: dropped careers from fixture-company-7 attempted/succeeded → corpus eval failed (`corpus lacks a complete website+careers run`); restored → pass.
+  - `npm run verify` → exit 0 (lint, typecheck, 239 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
+- **Human notes:** No new dependencies; no collector/runtime/UI/SQL changes; no QUALITY_BAR or EXPECTED_FIELDS edits. Next natural task is research-careers-quality-fields.
