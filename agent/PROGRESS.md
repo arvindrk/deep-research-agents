@@ -201,3 +201,14 @@ No canary code was merged.
   - `npm run verify` → exit 0 (lint, typecheck, 233 evals, build). Build succeeded without `DATABASE_URL`.
   - Eval canary: made `careersPageUrl` return the website without `/careers` → `research-careers` eval 1 fail (`derives /careers from an http website`); restored → 11/11 pass.
 - **Human notes:** No new dependencies; no schema or UI changes. Scripts already use `DEFAULT_COLLECTORS`, so they pick up careers without edits. Live careers pages that 404 will correctly partial the run; companies without a website still complete on empty careers findings. Do not raise EXPECTED_FIELDS for careers until the corpus has recorded multi-source runs.
+
+## continue-20260820-234440 (research-scheduler)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260820-234440` / `harness/continue-local-20260820-234440`
+- **Task / plan:** `research-scheduler` / `plan-20260820181605`
+- **What changed:** Added pure `selectResearchSchedule` (clock-injected) that prefers missing then oldest-stale then aging, skips fresh with reason `fresh`, and records `over_cap` past the batch limit. Added `listCompaniesForResearchSchedule`: one parameterized LATERAL newest-finding query, ordered NULLS FIRST / oldest-first, bounded LIMIT. Wired `scripts/run-research.ts` to fetch a capped candidate page, select up to `--limit` (default 10), print skip counts, keep `--dry-run` write-free. Hermetic `src/eval/research-schedule.eval.ts` locks ordering, fresh skips, and the concurrency cap. Horizon advanced past this feature; `search-ui` stays on the slice while excluded.
+- **Why:** Research still ran by hand over arbitrary company pages. Cadence needs stale-first selection and a hard cap so a schedule cannot stampede, with every skip recorded.
+- **Commands:**
+  - Eval canary: temporarily ignored the selection cap so `selected` could exceed `limit` → schedule evals failed (cap and zero-limit cases); restored → pass.
+  - `npm run verify` → exit 0 (lint, typecheck, 238 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
+- **Human notes:** No new dependencies; no Trigger.dev; collectors and EXPECTED_FIELDS unchanged. Intended EXPLAIN for the schedule query: index on `company_research_findings (company_id, observed_at DESC)` plus companies PK; LATERAL one row per company; outer LIMIT bounds the page. Migrations still human-applied; live schedule needs `DATABASE_URL` and applied DDL like the previous research script.

@@ -168,3 +168,66 @@ export async function getLatestResearchRun(
     return { success: false, error: 'Failed to read research for company' };
   }
 }
+
+/** One company plus the observation time of its newest finding, if any. */
+export type CompanyResearchScheduleRow = {
+  id: string;
+  name: string;
+  website: string | null;
+  newest_finding_at: string | null;
+};
+
+/**
+ * Companies ordered for a research cadence: never researched first, then the
+ * oldest newest-finding. One bounded query; the pure scheduler decides fresh
+ * skips and the concurrency cap.
+ *
+ * Intended plan: index on findings (company_id, observed_at DESC) and companies
+ * primary key; LATERAL picks one row per company, outer LIMIT bounds the scan.
+ */
+export async function listCompaniesForResearchSchedule(
+  limit: number,
+): Promise<QueryResult<CompanyResearchScheduleRow[]>> {
+  try {
+    const sql = getDBClient();
+    const bound = Math.max(1, Math.floor(limit));
+
+    const rows = await withRetry(
+      () => sql`
+        SELECT
+          c.id,
+          c.name,
+          c.website,
+          newest.observed_at AS newest_finding_at
+        FROM companies c
+        LEFT JOIN LATERAL (
+          SELECT f.observed_at
+          FROM company_research_findings f
+          WHERE f.company_id = c.id
+          ORDER BY f.observed_at DESC
+          LIMIT 1
+        ) newest ON true
+        ORDER BY newest.observed_at ASC NULLS FIRST, c.id ASC
+        LIMIT ${bound}
+      `,
+    );
+
+    return {
+      success: true,
+      data: rows.map((row) => ({
+        id: String(row.id),
+        name: String(row.name),
+        website: row.website == null ? null : String(row.website),
+        newest_finding_at:
+          row.newest_finding_at == null
+            ? null
+            : asIsoString(row.newest_finding_at),
+      })),
+    };
+  } catch {
+    return {
+      success: false,
+      error: 'Failed to list companies for research schedule',
+    };
+  }
+}
