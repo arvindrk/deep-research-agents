@@ -16,14 +16,20 @@ import type { ResearchFinding } from '@/lib/research/types';
 
 const OBSERVED_AT = '2026-08-19T00:00:00.000Z';
 
-const finding = (field: string, observedAt = OBSERVED_AT): ResearchFinding => ({
-  source: 'website',
-  field,
-  value: `value for ${field}`,
-  evidence_url: 'https://acme.test/',
-  observed_at: observedAt,
-  confidence: 'high',
-});
+const finding = (field: string, observedAt = OBSERVED_AT): ResearchFinding => {
+  const careers = field.startsWith('careers_');
+  return {
+    source: careers ? 'careers' : 'website',
+    field,
+    value: `value for ${field}`,
+    evidence_url: careers ? 'https://acme.test/careers' : 'https://acme.test/',
+    observed_at: observedAt,
+    confidence: 'high',
+  };
+};
+
+const allExpectedFindings = (): ResearchFinding[] =>
+  EXPECTED_FIELDS.map((field) => finding(field));
 
 const run = (
   id: string,
@@ -170,9 +176,9 @@ describe('qualityReport', () => {
 
 describe('qualityViolations', () => {
   const healthy = [
-    run('a', [finding('website_title'), finding('website_description')]),
-    run('b', [finding('website_title'), finding('website_description')]),
-    run('c', [finding('website_title'), finding('website_description')]),
+    run('a', allExpectedFindings()),
+    run('b', allExpectedFindings()),
+    run('c', allExpectedFindings()),
   ];
 
   it('reports nothing for a corpus that clears the bar', () => {
@@ -181,9 +187,21 @@ describe('qualityViolations', () => {
 
   it('names the field whose coverage fell', () => {
     const degraded = [
-      run('a', [finding('website_title')]),
-      run('b', [finding('website_title')]),
-      run('c', [finding('website_title')]),
+      run('a', [
+        finding('website_title'),
+        finding('careers_title'),
+        finding('careers_description'),
+      ]),
+      run('b', [
+        finding('website_title'),
+        finding('careers_title'),
+        finding('careers_description'),
+      ]),
+      run('c', [
+        finding('website_title'),
+        finding('careers_title'),
+        finding('careers_description'),
+      ]),
     ];
     const violations = qualityViolations(qualityReport(degraded, NOW));
     assert.equal(violations.length, 1);
@@ -217,5 +235,14 @@ describe('qualityViolations', () => {
       maxStaleShare: 0.25,
       maxPartialShare: 0.34,
     });
+  });
+
+  it('expects website and careers fields from each shipped collector', () => {
+    assert.deepEqual(EXPECTED_FIELDS, [
+      'website_title',
+      'website_description',
+      'careers_title',
+      'careers_description',
+    ]);
   });
 });
