@@ -223,3 +223,15 @@ No canary code was merged.
   - Eval canary: dropped careers from fixture-company-7 attempted/succeeded → corpus eval failed (`corpus lacks a complete website+careers run`); restored → pass.
   - `npm run verify` → exit 0 (lint, typecheck, 239 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
 - **Human notes:** No new dependencies; no collector/runtime/UI/SQL changes; no QUALITY_BAR or EXPECTED_FIELDS edits. Next natural task is research-careers-quality-fields.
+
+## continue-20260821-173238 (research-careers-quality-fields)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260821-173238` / `harness/continue-local-20260821-173238`
+- **Task / plan:** `research-careers-quality-fields` / `plan-20260821120344`
+- **What changed:** Extended `EXPECTED_FIELDS` to `website_title`, `website_description`, `careers_title`, `careers_description`. Upgraded fixture-company-1..4 from complete website-only to complete website+careers (careers findings with `/careers` evidence URLs), keeping fixture-company-7 multi-source complete and fixture-company-8 careers-failed partial. Locked the four-field list and QUALITY_BAR thresholds in `research-quality.eval.ts`; asserted careers coverage >= 0.6 in `research-corpus.eval.ts`. Horizon advanced past this feature. Careers fieldCoverage on the corpus is 5/8 (0.625); partialShare remains 2/8 (0.25).
+- **Why:** Multi-source fixtures already existed but CI still measured website-only coverage. Extending the bar locks the second source without loosening thresholds.
+- **Commands:**
+  - Eval canary (fixtures): stripped careers from fixture-company-1 → corpus eval failed (`careers_* coverage 0.50 is below 0.6`); restored → pass.
+  - Eval canary (EXPECTED_FIELDS): dropped careers fields → quality eval failed (`expects website and careers fields`); restored → pass.
+  - `npm run verify` → exit 0 (lint, typecheck, 241 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no collector/runtime/UI/SQL changes; QUALITY_BAR numeric thresholds unchanged. Next natural slice head is search-ui (still excluded in-flight) or research-observability.

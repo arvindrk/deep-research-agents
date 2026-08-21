@@ -135,4 +135,16 @@ describe('recorded research corpus', () => {
       );
     }
   });
+
+  it('holds careers coverage at the same bar as website fields', () => {
+    const report = qualityReport(corpus.runs, recordedAt);
+    assert.ok(
+      (report.fieldCoverage.careers_title ?? 0) >= 0.6,
+      `careers_title coverage ${report.fieldCoverage.careers_title}`,
+    );
+    assert.ok(
+      (report.fieldCoverage.careers_description ?? 0) >= 0.6,
+      `careers_description coverage ${report.fieldCoverage.careers_description}`,
+    );
+  });
 });

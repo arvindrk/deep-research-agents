@@ -302,7 +302,7 @@
   },
   {
     "id": "research-careers-quality-fields",
-    "status": "pending",
+    "status": "completed",
     "priority": 27,
     "category": "testing_observability",
     "depends_on": [
@@ -311,7 +311,7 @@
       "research-multi-source-corpus"
     ],
     "description": "Once real multi-source research runs are recorded into the fixture corpus, extend the quality bar's expected fields to include careers findings so coverage measures the second source rather than only website title and description.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {
