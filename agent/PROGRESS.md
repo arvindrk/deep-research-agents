@@ -235,3 +235,14 @@ No canary code was merged.
   - Eval canary (EXPECTED_FIELDS): dropped careers fields → quality eval failed (`expects website and careers fields`); restored → pass.
   - `npm run verify` → exit 0 (lint, typecheck, 241 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no collector/runtime/UI/SQL changes; QUALITY_BAR numeric thresholds unchanged. Next natural slice head is search-ui (still excluded in-flight) or research-observability.
+
+## continue-20260821-222428 (research-observability)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260821-222428` / `harness/continue-local-20260821-222428`
+- **Task / plan:** `research-observability` / `plan-20260821165802`
+- **What changed:** Added pure `buildResearchRunEvent` / `buildResearchScheduleEvent` in `src/lib/observability/research-event.ts`, reused `latencyBucket` from search-event, extended `emit.ts` with `emitResearchEvent`. Wired `scripts/run-research.ts` to emit one schedule summary after selection (skip reason counts only) and one run event per company (status, source id lists, findings_count, duration_ms, latency_bucket). Hermetic `src/eval/research-event.eval.ts` locks key shape across ResearchRunStatus, ScheduleSkipReason keys, and no credential/embedding/finding leakage. Horizon advanced past this feature.
+- **Why:** research-scheduler shipped without structured events; unattended research needs the same inspectability search already has.
+- **Commands:**
+  - Eval canary: removed `findings_count` from the run builder → shape lock failed (`event shape drifts between statuses`); restored → 6/6 pass.
+  - `npm run verify` → exit 0 (lint, typecheck, 247 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
+- **Human notes:** No new dependencies; did not touch collectors, QUALITY_BAR, EXPECTED_FIELDS, SEARCH_OUTCOMES, hybrid weights, or research run/schedule pure modules. Failed sources logged as source ids only (no Error stacks). Next natural slice head is search-ui (still excluded in-flight) or research-evidence-source-labels.

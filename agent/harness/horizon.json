@@ -1,17 +1,14 @@
 {
   "slice": [
     "search-ui",
-    "research-observability",
     "research-evidence-source-labels"
   ],
   "rationale_per_step": {
     "search-ui": "URL-driven search surface on a locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight elsewhere; keep on the slice, do not select while excluded.",
-    "research-observability": "Emit one structured event per research run (status, sources attempted/failed, schedule skip reasons, timings) mirroring search-observability, so unattended research is inspectable after the fact.",
-    "research-evidence-source-labels": "Feature improvement: surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names."
+    "research-evidence-source-labels": "Feature improvement: surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names. Next open correction for feature_improvement underweight after observability shipped."
   },
   "category_mix": {
     "new_feature": 1,
-    "testing_observability": 1,
     "feature_improvement": 1
   },
   "vision_refs": {
@@ -19,15 +16,11 @@
       "UI and UX",
       "Discovery with low noise"
     ],
-    "research-observability": [
-      "Reliable autonomous research",
-      "Measurable quality"
-    ],
     "research-evidence-source-labels": [
       "Evidence-backed intelligence",
       "UI and UX"
     ]
   },
-  "generated_by_run": "continue-20260821-173238",
-  "notes": "Executor completed research-careers-quality-fields: EXPECTED_FIELDS now includes careers_title and careers_description; corpus careers coverage is 5/8 (0.625). Horizon advanced. search-ui remains excluded in-flight."
+  "generated_by_run": "continue-20260821-222428",
+  "notes": "Executor completed research-observability: structured research.run and research.schedule events mirror search-observability. Horizon advanced. search-ui remains excluded in-flight; research-evidence-source-labels is next open product/feature_improvement slot."
 }
