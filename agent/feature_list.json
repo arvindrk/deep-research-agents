@@ -329,7 +329,7 @@
   },
   {
     "id": "research-observability",
-    "status": "pending",
+    "status": "completed",
     "priority": 29,
     "category": "testing_observability",
     "depends_on": [
@@ -337,7 +337,7 @@
       "search-observability"
     ],
     "description": "Emit one structured event per research run (status, sources attempted and failed, schedule skip reasons, timings) mirroring search-observability, so unattended research is inspectable after the fact.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {

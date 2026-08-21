@@ -17,6 +17,11 @@ import {
   insertResearchRun,
   listCompaniesForResearchSchedule,
 } from '../src/db/queries/research';
+import { emitResearchEvent } from '../src/lib/observability/emit';
+import {
+  buildResearchRunEvent,
+  buildResearchScheduleEvent,
+} from '../src/lib/observability/research-event';
 import { selectResearchSchedule } from '../src/lib/research/schedule';
 import { DEFAULT_COLLECTORS, runResearch } from '../src/lib/research/runtime';
 import type { ResearchSubject } from '../src/lib/research/types';
@@ -90,6 +95,18 @@ async function main(): Promise<void> {
     options.limit,
   );
 
+  const skipCounts = { fresh: 0, over_cap: 0 };
+  for (const skip of schedule.skipped) {
+    skipCounts[skip.reason] += 1;
+  }
+
+  emitResearchEvent(
+    buildResearchScheduleEvent({
+      selectedCount: schedule.selected.length,
+      skipCounts,
+    }),
+  );
+
   const byId = new Map(page.data.map((row) => [row.id, row]));
   const observedAt = now.toISOString();
   const counts = {
@@ -110,9 +127,23 @@ async function main(): Promise<void> {
       website: company.website,
     };
 
+    const startedMs = Date.now();
     const run = await runResearch(subject, DEFAULT_COLLECTORS, observedAt);
+    const durationMs = Date.now() - startedMs;
     counts[run.status] += 1;
     counts.findings += run.findings.length;
+
+    emitResearchEvent(
+      buildResearchRunEvent({
+        status: run.status,
+        companyId: company.id,
+        attempted: run.attempted,
+        succeeded: run.succeeded,
+        failed: run.failed.map((failure) => failure.source),
+        findingsCount: run.findings.length,
+        durationMs,
+      }),
+    );
 
     const detail = run.failed.map((failure) => failure.error).join('; ');
     console.log(
@@ -128,11 +159,6 @@ async function main(): Promise<void> {
       console.error(`could not record ${company.id}: ${written.error}`);
       counts.unwritten += 1;
     }
-  }
-
-  const skipCounts = { fresh: 0, over_cap: 0 };
-  for (const skip of schedule.skipped) {
-    skipCounts[skip.reason] += 1;
   }
 
   console.log(
