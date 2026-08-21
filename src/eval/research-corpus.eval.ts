@@ -10,6 +10,7 @@ import {
   qualityReport,
   qualityViolations,
 } from '@/lib/research/quality';
+import { RESEARCH_SOURCES } from '@/lib/research/types';
 
 const FIXTURE = join(
   process.cwd(),
@@ -40,9 +41,30 @@ describe('recorded research corpus', () => {
   });
 
   it('holds only runs the runtime could actually have produced', () => {
+    const knownSources = new Set<string>(RESEARCH_SOURCES);
+
     for (const run of corpus.runs) {
       assert.ok(['complete', 'partial', 'failed'].includes(run.status), run.company_id);
       assert.ok(run.attempted.length > 0, `${run.company_id} attempted nothing`);
+
+      for (const source of run.attempted) {
+        assert.ok(
+          knownSources.has(source),
+          `${run.company_id} attempted unknown source ${source}`,
+        );
+      }
+      for (const source of run.succeeded) {
+        assert.ok(
+          knownSources.has(source),
+          `${run.company_id} succeeded unknown source ${source}`,
+        );
+      }
+      for (const failure of run.failed) {
+        assert.ok(
+          knownSources.has(failure.source),
+          `${run.company_id} failed unknown source ${failure.source}`,
+        );
+      }
 
       if (run.status === 'complete') {
         assert.deepEqual(run.failed, [], `${run.company_id} is complete with failures`);
@@ -54,6 +76,10 @@ describe('recorded research corpus', () => {
       }
 
       for (const finding of run.findings) {
+        assert.ok(
+          knownSources.has(finding.source),
+          `${run.company_id} has finding from unknown source ${finding.source}`,
+        );
         assert.ok(finding.value.length > 0, `${run.company_id} has an empty value`);
         assert.equal(
           httpUrl(finding.evidence_url),
@@ -66,6 +92,28 @@ describe('recorded research corpus', () => {
         );
       }
     }
+  });
+
+  it('records at least one complete multi-source run and one careers-failed partial', () => {
+    const multiComplete = corpus.runs.some(
+      (run) =>
+        run.status === 'complete' &&
+        run.attempted.includes('website') &&
+        run.attempted.includes('careers') &&
+        run.succeeded.includes('website') &&
+        run.succeeded.includes('careers') &&
+        run.findings.some((finding) => finding.field === 'careers_title') &&
+        run.findings.some((finding) => finding.field === 'careers_description'),
+    );
+    assert.ok(multiComplete, 'corpus lacks a complete website+careers run');
+
+    const careersPartial = corpus.runs.some(
+      (run) =>
+        run.status === 'partial' &&
+        run.succeeded.includes('website') &&
+        run.failed.some((failure) => failure.source === 'careers'),
+    );
+    assert.ok(careersPartial, 'corpus lacks a careers-failed partial');
   });
 
   it('meets the research quality bar', () => {

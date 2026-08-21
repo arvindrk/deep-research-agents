@@ -307,9 +307,48 @@
     "category": "testing_observability",
     "depends_on": [
       "research-source-expansion",
-      "research-quality-eval"
+      "research-quality-eval",
+      "research-multi-source-corpus"
     ],
     "description": "Once real multi-source research runs are recorded into the fixture corpus, extend the quality bar's expected fields to include careers findings so coverage measures the second source rather than only website title and description.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-multi-source-corpus",
+    "status": "completed",
+    "priority": 28,
+    "category": "testing_observability",
+    "depends_on": [
+      "research-source-expansion",
+      "research-quality-eval"
+    ],
+    "description": "Grow the research quality fixture corpus with multi-source runs shaped like what DEFAULT_COLLECTORS produce: website plus careers findings on complete runs, and at least one genuine partial where careers fails while website succeeds (so partialShare reflects two-source honesty). Keep EXPECTED_FIELDS as website_title and website_description only; do not raise the careers coverage bar yet. Adjust QUALITY_BAR only if the new mix would fail the existing website bar for reasons other than careers coverage. Optionally tighten the corpus shape eval so attempted and succeeded sources are members of RESEARCH_SOURCES. This recording unlocks research-careers-quality-fields.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-observability",
+    "status": "pending",
+    "priority": 29,
+    "category": "testing_observability",
+    "depends_on": [
+      "research-scheduler",
+      "search-observability"
+    ],
+    "description": "Emit one structured event per research run (status, sources attempted and failed, schedule skip reasons, timings) mirroring search-observability, so unattended research is inspectable after the fact.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-evidence-source-labels",
+    "status": "pending",
+    "priority": 30,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-source-expansion"
+    ],
+    "description": "Surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names.",
     "passes": false,
     "verify": "npm run verify"
   }

@@ -134,6 +134,76 @@
       ],
       "observed_at": "2026-08-19T00:00:00.000Z",
       "findings": []
+    },
+    {
+      "company_id": "fixture-company-7",
+      "status": "complete",
+      "attempted": ["website", "careers"],
+      "succeeded": ["website", "careers"],
+      "failed": [],
+      "observed_at": "2026-08-17T14:08:41.000Z",
+      "findings": [
+        {
+          "source": "website",
+          "field": "website_title",
+          "value": "Kiln Ledger - books that close themselves",
+          "evidence_url": "https://kilnledger.test/",
+          "observed_at": "2026-08-17T14:08:41.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "website",
+          "field": "website_description",
+          "value": "Month-end close for multi-entity SaaS finance teams.",
+          "evidence_url": "https://kilnledger.test/",
+          "observed_at": "2026-08-17T14:08:41.000Z",
+          "confidence": "medium"
+        },
+        {
+          "source": "careers",
+          "field": "careers_title",
+          "value": "Careers at Kiln Ledger",
+          "evidence_url": "https://kilnledger.test/careers",
+          "observed_at": "2026-08-17T14:08:41.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "careers",
+          "field": "careers_description",
+          "value": "Build the close that finance actually trusts.",
+          "evidence_url": "https://kilnledger.test/careers",
+          "observed_at": "2026-08-17T14:08:41.000Z",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "company_id": "fixture-company-8",
+      "status": "partial",
+      "attempted": ["website", "careers"],
+      "succeeded": ["website"],
+      "failed": [
+        { "source": "careers", "error": "Careers request failed with status 404" }
+      ],
+      "observed_at": "2026-08-15T20:33:09.000Z",
+      "findings": [
+        {
+          "source": "website",
+          "field": "website_title",
+          "value": "Marrow Bio",
+          "evidence_url": "https://marrowbio.test/",
+          "observed_at": "2026-08-15T20:33:09.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "website",
+          "field": "website_description",
+          "value": "Cell therapy manufacturing software for GMP suites.",
+          "evidence_url": "https://marrowbio.test/",
+          "observed_at": "2026-08-15T20:33:09.000Z",
+          "confidence": "medium"
+        }
+      ]
     }
   ]
 }
