@@ -2,7 +2,12 @@ import { freshnessOf, type Freshness } from './freshness';
 import type { ResearchRun } from './run';
 
 /** Fields a researched company is expected to have. One per shipped collector. */
-export const EXPECTED_FIELDS = ['website_title', 'website_description'] as const;
+export const EXPECTED_FIELDS = [
+  'website_title',
+  'website_description',
+  'careers_title',
+  'careers_description',
+] as const;
 
 /**
  * The bar CI holds enrichment to. These are product values: loosening one is a

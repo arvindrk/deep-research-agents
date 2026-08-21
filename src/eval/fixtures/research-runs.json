@@ -5,8 +5,8 @@
     {
       "company_id": "fixture-company-1",
       "status": "complete",
-      "attempted": ["website"],
-      "succeeded": ["website"],
+      "attempted": ["website", "careers"],
+      "succeeded": ["website", "careers"],
       "failed": [],
       "observed_at": "2026-08-18T06:12:04.000Z",
       "findings": [
@@ -25,14 +25,30 @@
           "evidence_url": "https://northwind-analytics.test/",
           "observed_at": "2026-08-18T06:12:04.000Z",
           "confidence": "medium"
+        },
+        {
+          "source": "careers",
+          "field": "careers_title",
+          "value": "Careers at Northwind Analytics",
+          "evidence_url": "https://northwind-analytics.test/careers",
+          "observed_at": "2026-08-18T06:12:04.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "careers",
+          "field": "careers_description",
+          "value": "Help warehouses see query cost before it runs.",
+          "evidence_url": "https://northwind-analytics.test/careers",
+          "observed_at": "2026-08-18T06:12:04.000Z",
+          "confidence": "medium"
         }
       ]
     },
     {
       "company_id": "fixture-company-2",
       "status": "complete",
-      "attempted": ["website"],
-      "succeeded": ["website"],
+      "attempted": ["website", "careers"],
+      "succeeded": ["website", "careers"],
       "failed": [],
       "observed_at": "2026-08-16T09:41:37.000Z",
       "findings": [
@@ -51,14 +67,30 @@
           "evidence_url": "https://halyard-robotics.test/",
           "observed_at": "2026-08-16T09:41:37.000Z",
           "confidence": "medium"
+        },
+        {
+          "source": "careers",
+          "field": "careers_title",
+          "value": "Careers at Halyard Robotics",
+          "evidence_url": "https://halyard-robotics.test/careers",
+          "observed_at": "2026-08-16T09:41:37.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "careers",
+          "field": "careers_description",
+          "value": "Build autonomous inspection for working ports.",
+          "evidence_url": "https://halyard-robotics.test/careers",
+          "observed_at": "2026-08-16T09:41:37.000Z",
+          "confidence": "medium"
         }
       ]
     },
     {
       "company_id": "fixture-company-3",
       "status": "complete",
-      "attempted": ["website"],
-      "succeeded": ["website"],
+      "attempted": ["website", "careers"],
+      "succeeded": ["website", "careers"],
       "failed": [],
       "observed_at": "2026-08-13T18:03:22.000Z",
       "findings": [
@@ -77,14 +109,30 @@
           "evidence_url": "https://cedarandpine.test/",
           "observed_at": "2026-08-13T18:03:22.000Z",
           "confidence": "medium"
+        },
+        {
+          "source": "careers",
+          "field": "careers_title",
+          "value": "Careers at Cedar & Pine",
+          "evidence_url": "https://cedarandpine.test/careers",
+          "observed_at": "2026-08-13T18:03:22.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "careers",
+          "field": "careers_description",
+          "value": "Build scheduling and billing for dental practices.",
+          "evidence_url": "https://cedarandpine.test/careers",
+          "observed_at": "2026-08-13T18:03:22.000Z",
+          "confidence": "medium"
         }
       ]
     },
     {
       "company_id": "fixture-company-4",
       "status": "complete",
-      "attempted": ["website"],
-      "succeeded": ["website"],
+      "attempted": ["website", "careers"],
+      "succeeded": ["website", "careers"],
       "failed": [],
       "observed_at": "2026-08-10T11:27:58.000Z",
       "findings": [
@@ -101,6 +149,22 @@
           "field": "website_description",
           "value": "Floor plans from a phone camera in under a minute.",
           "evidence_url": "https://tessellate.test/",
+          "observed_at": "2026-08-10T11:27:58.000Z",
+          "confidence": "medium"
+        },
+        {
+          "source": "careers",
+          "field": "careers_title",
+          "value": "Careers at Tessellate",
+          "evidence_url": "https://tessellate.test/careers",
+          "observed_at": "2026-08-10T11:27:58.000Z",
+          "confidence": "high"
+        },
+        {
+          "source": "careers",
+          "field": "careers_description",
+          "value": "Turn a phone camera into a floor plan in under a minute.",
+          "evidence_url": "https://tessellate.test/careers",
           "observed_at": "2026-08-10T11:27:58.000Z",
           "confidence": "medium"
         }
