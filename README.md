@@ -1,3 +1,5 @@
+
+
 # Deep Research Agents
 
 An AI-powered research system that discovers, enriches, and surfaces insights about companies. A Next.js frontend renders results server-side from Neon Serverless Postgres, with vector embeddings for semantic search.
@@ -26,6 +28,7 @@ Not built yet: the search interface, source ingestion and refresh, and the resea
 ## Tech stack
 
 - **Framework**: Next.js 16 (App Router, React Server Components), React 19
+- **Runtime**: Node.js 22+
 - **Database**: Neon Serverless Postgres with `pgvector`
 - **Styling**: Tailwind CSS v4 with Linear design tokens
 - **UI**: shadcn/ui, Radix, lucide-react
