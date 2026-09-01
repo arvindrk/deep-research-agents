@@ -235,3 +235,14 @@ No canary code was merged.
   - Eval canary (EXPECTED_FIELDS): dropped careers fields → quality eval failed (`expects website and careers fields`); restored → pass.
   - `npm run verify` → exit 0 (lint, typecheck, 241 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no collector/runtime/UI/SQL changes; QUALITY_BAR numeric thresholds unchanged. Next natural slice head is search-ui (still excluded in-flight) or research-observability.
+
+## continue-20260905-174425 (research-evidence-source-labels)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-174425` / `harness/continue-local-20260905-174425`
+- **Task / plan:** `research-evidence-source-labels` / `plan-20260905121620`
+- **What changed:** `EvidenceItem` now carries `source` (ResearchSourceId) and `sourceLabel` from a closed map (`Website`, `Careers`). `toEvidenceItems` copies `finding.source` through. `CompanyEvidence` renders the collector with a secondary Badge beside freshness. Extended `research-evidence.eval.ts` for website vs careers labels and kept unsafe URL href-null cases with label still present. Marked the feature completed; advanced horizon to research-observability then search-ui.
+- **Why:** Findings already stored ResearchSourceId but the evidence mapping and UI dropped it, so readers had to infer the collector from field names.
+- **Commands:**
+  - Eval canary: dropped `source` / `sourceLabel` from `toEvidenceItems` → research-evidence eval failed (undefined vs Website/Careers); restored → 8/8 pass on that file.
+  - `npm run verify` → exit 0 (lint, typecheck, 242 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
+- **Human notes:** No new dependencies; no collector/runtime/SQL/API changes. `company-evidence.tsx` remains a Server Component. Next slice head is research-observability (often excluded in-flight) or search-ui.
