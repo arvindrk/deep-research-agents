@@ -351,5 +351,17 @@
     "description": "Surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "research-evidence-confidence",
+    "status": "completed",
+    "priority": 31,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-evidence-source-labels"
+    ],
+    "description": "Carry FindingConfidence through toEvidenceItems onto each EvidenceItem with a closed human-readable label (High / Medium / Low), and render it as a secondary Badge on each evidence row beside the collector and freshness badges.",
+    "passes": true,
+    "verify": "npm run verify"
   }
 ]
