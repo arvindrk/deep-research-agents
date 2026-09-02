@@ -1,11 +1,22 @@
 import { httpUrl } from '../safe-url';
 import { freshnessOf, relativeAge, type Freshness } from './freshness';
-import type { ResearchFinding, ResearchSourceId } from './types';
+import type {
+  FindingConfidence,
+  ResearchFinding,
+  ResearchSourceId,
+} from './types';
 
 /** Closed map: only known ResearchSourceId members become collector badges. */
 const SOURCE_LABEL: Record<ResearchSourceId, string> = {
   website: 'Website',
   careers: 'Careers',
+};
+
+/** Closed map: FindingConfidence → reader-facing strength label. */
+const CONFIDENCE_LABEL: Record<FindingConfidence, string> = {
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
 };
 
 export type EvidenceItem = {
@@ -14,6 +25,8 @@ export type EvidenceItem = {
   value: string;
   source: ResearchSourceId;
   sourceLabel: string;
+  confidence: FindingConfidence;
+  confidenceLabel: string;
   href: string | null;
   observed_at: string;
   freshness: Freshness;
@@ -52,6 +65,8 @@ export function toEvidenceItems(
       value: finding.value,
       source: finding.source,
       sourceLabel: SOURCE_LABEL[finding.source],
+      confidence: finding.confidence,
+      confidenceLabel: CONFIDENCE_LABEL[finding.confidence],
       href: httpUrl(finding.evidence_url),
       observed_at: finding.observed_at,
       freshness: freshnessOf(finding.observed_at, now),

@@ -75,6 +75,9 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
               <Badge variant="secondary" className="text-xs">
                 {item.sourceLabel}
               </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {item.confidenceLabel}
+              </Badge>
               <Badge variant="outline" className="text-xs">
                 {FRESHNESS_LABEL[item.freshness]}
               </Badge>
