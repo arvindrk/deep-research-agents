@@ -363,5 +363,17 @@
     "description": "Carry FindingConfidence through toEvidenceItems onto each EvidenceItem with a closed human-readable label (High / Medium / Low), and render it as a secondary Badge on each evidence row beside the collector and freshness badges.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "research-evidence-run-honesty",
+    "status": "pending",
+    "priority": 32,
+    "category": "maintenance",
+    "depends_on": [
+      "research-evidence-and-freshness"
+    ],
+    "description": "Fix the company Research section so a failed latest run never claims findings come from earlier runs (the detail page only loads getLatestResearchRun), and surface the latest run status plus observed_at with closed reader labels (Complete / Partial / Failed) so a reader can tell what this run actually is without decoding a misleading banner. Extract pure status-label and notice-copy helpers, lock them with a hermetic eval, keep CompanyEvidence a Server Component.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]
