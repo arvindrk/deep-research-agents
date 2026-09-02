@@ -4,6 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import type { StoredResearchRun } from '@/db/queries/research';
 import { toEvidenceItems } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
+import {
+  researchRunNoticeCopy,
+  researchRunStatusLabel,
+} from '@/lib/research/run-summary';
 import { cn } from '@/lib/utils';
 
 const FRESHNESS_LABEL: Record<Freshness, string> = {
@@ -26,6 +30,9 @@ interface CompanyEvidenceProps {
 export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
   const items = research ? toEvidenceItems(research.findings, now) : [];
   const missing = research?.failed.map((failure) => failure.source) ?? [];
+  const notice = research
+    ? researchRunNoticeCopy(research.status, missing)
+    : null;
 
   return (
     <section className="space-y-3">
@@ -38,7 +45,21 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
         Research
       </h2>
 
-      {research && research.status !== 'complete' && (
+      {research && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {researchRunStatusLabel(research.status)}
+          </Badge>
+          <time
+            dateTime={research.observed_at}
+            className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
+          >
+            {research.observed_at}
+          </time>
+        </div>
+      )}
+
+      {notice && (
         <p
           className={cn(
             'rounded-md px-3 py-2 text-xs',
@@ -46,9 +67,7 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
             'text-[var(--color-text-secondary)]'
           )}
         >
-          {research.status === 'failed'
-            ? 'The last research run collected nothing. What you see below is from earlier runs, if anything.'
-            : `This research run was partial: ${missing.join(', ')} did not report. What is shown is what was collected.`}
+          {notice}
         </p>
       )}
 
