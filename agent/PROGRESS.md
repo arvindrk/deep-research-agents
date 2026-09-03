@@ -268,3 +268,15 @@ No canary code was merged.
   - Eval canary: reinjected the old "earlier runs" failed sentence → research-run-summary eval failed (`failed notice must not mention earlier runs`); restored → 5/5 pass on that file.
   - First `npm run verify` after empty `node_modules`: lint/typecheck/248 evals green; build failed resolving `next` (missing install). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 248 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no collector/runtime/SQL/API/QUALITY_BAR changes. `company-evidence.tsx` remains a Server Component (no `use client`). Did not implement research-observability, search-ui, or research-agent-runtime.
+
+## continue-20260905-184728 (ingestion-source-unique-constraint)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-184728` / `harness/continue-local-20260905-184728`
+- **Task / plan:** `ingestion-source-unique-constraint` / `plan-20260905132049`
+- **What changed:** Added human-applied `migrations/0002_companies_source_unique.sql` (`CREATE UNIQUE INDEX` on `companies (source, source_id)` with a pre-apply duplicate check comment). Changed `insertCompanyFromSource` to `INSERT ... ON CONFLICT (source, source_id) DO NOTHING RETURNING id`, falling back to parameterized `getCompanyBySource` when no row is returned. Locked both with hermetic `src/eval/ingestion-source-unique.eval.ts`. Registered and completed the feature (priority 33); registered pending `research-run-history` (priority 34) so the horizon resolves; advanced horizon past uniqueness.
+- **Why:** Ingestion already treated `(source, source_id)` as identity without a DB unique constraint, so concurrent inserts could duplicate. Asserting uniqueness closes that reliability gap.
+- **Commands:**
+  - Eval canary (insert): removed `ON CONFLICT (source, source_id) DO NOTHING` → uniqueness eval failed (`insert must target ON CONFLICT`); restored → pass.
+  - Eval canary (migration): changed index columns to `(source)` only → uniqueness eval failed (`UNIQUE INDEX ON companies (source, source_id)`); restored → pass.
+  - `npm run verify` → exit 0 (lint, typecheck, 250 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** Migration was not applied to any live database in this run. Before apply, run the duplicate check in the migration comment. Intended EXPLAIN for the insert path: unique index lookup on `(source, source_id)` for conflict detection (Index Scan / unique index), then either RETURNING the inserted id or a parameterized `getCompanyBySource` `WHERE source = $1 AND source_id = $2 LIMIT 1` using the same unique index. No live EXPLAIN captured (no secrets / no DB in worktree). No new dependencies; no refresh-plan, collectors, UI, hybrid weights, or QUALITY_BAR changes.
