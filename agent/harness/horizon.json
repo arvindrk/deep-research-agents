@@ -21,6 +21,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260905-181432",
-  "notes": "Executor completed research-evidence-confidence: EvidenceItem carries confidence and confidenceLabel; UI Badge shows High/Medium/Low. Horizon advanced past that feature. research-observability and search-ui remain queued behind open PRs."
+  "generated_by_run": "continue-20260905-183316",
+  "notes": "Executor completed research-evidence-run-honesty: failed-run copy no longer claims earlier-run findings; Research UI shows Complete/Partial/Failed plus observed_at via pure helpers locked by research-run-summary.eval.ts. Horizon advanced past that feature. research-observability and search-ui remain queued behind open PRs."
 }

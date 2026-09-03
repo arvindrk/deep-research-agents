@@ -257,3 +257,14 @@ No canary code was merged.
   - Eval canary: dropped `confidence` / `confidenceLabel` from `toEvidenceItems` → research-evidence eval failed (undefined vs High/Medium); restored → 9/9 pass on that file.
   - `npm run verify` → exit 0 (lint, typecheck, 243 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
 - **Human notes:** No new dependencies; no collector/runtime/SQL/API changes. `company-evidence.tsx` remains a Server Component. Next slice head is research-observability (often excluded in-flight) or search-ui.
+
+## continue-20260905-183316 (research-evidence-run-honesty)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-183316` / `harness/continue-local-20260905-183316`
+- **Task / plan:** `research-evidence-run-honesty` / `plan-20260905130652`
+- **What changed:** Added pure helpers `researchRunStatusLabel` and `researchRunNoticeCopy` in `src/lib/research/run-summary.ts` (closed Complete / Partial / Failed labels; failed notice describes only the latest run). `CompanyEvidence` now shows latest run status Badge plus `observed_at`, and uses the helpers for banner copy. Locked helpers in `src/eval/research-run-summary.eval.ts`. Registered then completed the feature in `feature_list.json`; advanced horizon past it to research-observability then search-ui.
+- **Why:** Failed-run UI claimed findings may come from earlier runs while the detail page only loads `getLatestResearchRun`, so the banner was dishonest.
+- **Commands:**
+  - Eval canary: reinjected the old "earlier runs" failed sentence → research-run-summary eval failed (`failed notice must not mention earlier runs`); restored → 5/5 pass on that file.
+  - First `npm run verify` after empty `node_modules`: lint/typecheck/248 evals green; build failed resolving `next` (missing install). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 248 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no collector/runtime/SQL/API/QUALITY_BAR changes. `company-evidence.tsx` remains a Server Component (no `use client`). Did not implement research-observability, search-ui, or research-agent-runtime.
