@@ -280,3 +280,14 @@ No canary code was merged.
   - Eval canary (migration): changed index columns to `(source)` only → uniqueness eval failed (`UNIQUE INDEX ON companies (source, source_id)`); restored → pass.
   - `npm run verify` → exit 0 (lint, typecheck, 250 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** Migration was not applied to any live database in this run. Before apply, run the duplicate check in the migration comment. Intended EXPLAIN for the insert path: unique index lookup on `(source, source_id)` for conflict detection (Index Scan / unique index), then either RETURNING the inserted id or a parameterized `getCompanyBySource` `WHERE source = $1 AND source_id = $2 LIMIT 1` using the same unique index. No live EXPLAIN captured (no secrets / no DB in worktree). No new dependencies; no refresh-plan, collectors, UI, hybrid weights, or QUALITY_BAR changes.
+
+## continue-20260905-190419 (research-run-history)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-190419` / `harness/continue-local-20260905-190419`
+- **Task / plan:** `research-run-history` / `plan-20260905133609`
+- **What changed:** Added `getRecentResearchRuns` (LIMIT 2, findings in one parameterized query for those run ids). Pure helpers `selectDisplayedResearchFindings`, extended `researchRunNoticeCopy`, and `buildResearchSectionModel` surface earlier findings only when the latest run failed and a prior run has findings; Failed badge and observed_at stay on the latest run. Company detail page loads recent runs; CompanyEvidence remains a Server Component. Hermetic `src/eval/research-run-history.eval.ts` locks failed+prior, failed+no-prior, partial, and complete. Marked feature completed; advanced horizon to research-observability then search-ui.
+- **Why:** After research-evidence-run-honesty, a failed latest banner could not honestly show earlier findings because the page never loaded prior runs.
+- **Commands:**
+  - Eval canary: replaced failed-with-history notice sentence with the no-findings sentence → research-run-history eval failed (`/earlier run/i`); restored → pass.
+  - First `npm run verify` after empty/broken `node_modules`: lint/typecheck/258 evals green; build failed resolving `next`. `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 258 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no collector/runtime/write-path/migration/hybrid/QUALITY_BAR/search-ui/observability changes. Intended EXPLAIN for runs: Index Scan on `company_research_runs_company_observed_idx` (`company_id`, `observed_at DESC`) with LIMIT 2. Findings: Index/Bitmap on `run_id` (FK) for the one or two selected ids; no N+1. No live EXPLAIN (no secrets / no DB in worktree). Next slice head is research-observability (often excluded) or search-ui.

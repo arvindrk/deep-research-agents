@@ -45,7 +45,7 @@ describe('researchRunNoticeCopy', () => {
       ['website'] as ResearchSourceId[],
       ['website', 'careers'] as ResearchSourceId[],
     ]) {
-      const notice = researchRunNoticeCopy('failed', failed);
+      const notice = researchRunNoticeCopy('failed', failed, false);
       assert.ok(notice, `expected notice for failed with ${failed.join(',')}`);
       assert.equal(
         /earlier/i.test(notice),

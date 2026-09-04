@@ -5,7 +5,7 @@ import type { StoredResearchRun } from '@/db/queries/research';
 import { toEvidenceItems } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
 import {
-  researchRunNoticeCopy,
+  buildResearchSectionModel,
   researchRunStatusLabel,
 } from '@/lib/research/run-summary';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,8 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 };
 
 interface CompanyEvidenceProps {
-  research: StoredResearchRun | null;
+  /** Newest-first runs (typically latest plus one prior). */
+  researchRuns: StoredResearchRun[];
   /** Passed in so freshness is decided once per request, not per component. */
   now: Date;
 }
@@ -27,12 +28,18 @@ interface CompanyEvidenceProps {
  * Enriched claims with the source and the age of each one, so a reader can tell
  * what is known, where it came from, and whether it is still true.
  */
-export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
-  const items = research ? toEvidenceItems(research.findings, now) : [];
-  const missing = research?.failed.map((failure) => failure.source) ?? [];
-  const notice = research
-    ? researchRunNoticeCopy(research.status, missing)
-    : null;
+export function CompanyEvidence({ researchRuns, now }: CompanyEvidenceProps) {
+  const section = buildResearchSectionModel(
+    researchRuns.map((run) => ({
+      status: run.status,
+      observed_at: run.observed_at,
+      findings: run.findings,
+      failedSources: run.failed.map((failure) => failure.source),
+    })),
+  );
+  const items = toEvidenceItems(section.findings, now);
+  const notice = section.notice;
+  const latest = section.latest;
 
   return (
     <section className="space-y-3">
@@ -45,16 +52,16 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
         Research
       </h2>
 
-      {research && (
+      {latest && (
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="text-xs">
-            {researchRunStatusLabel(research.status)}
+            {researchRunStatusLabel(latest.status)}
           </Badge>
           <time
-            dateTime={research.observed_at}
+            dateTime={latest.observed_at}
             className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
           >
-            {research.observed_at}
+            {latest.observed_at}
           </time>
         </div>
       )}
@@ -73,7 +80,7 @@ export function CompanyEvidence({ research, now }: CompanyEvidenceProps) {
 
       {items.length === 0 && (
         <p className={cn('text-sm', 'text-[var(--color-text-tertiary)]')}>
-          {research
+          {latest
             ? 'The last research run found nothing to report for this company.'
             : 'No research has run for this company yet.'}
         </p>

@@ -390,14 +390,14 @@
   },
   {
     "id": "research-run-history",
-    "status": "pending",
+    "status": "completed",
     "priority": 34,
     "category": "feature_improvement",
     "depends_on": [
       "research-evidence-run-honesty"
     ],
     "description": "Load prior research runs for a company so a failed latest run can honestly surface earlier findings when they exist, instead of only showing the latest run. Keep status honesty from research-evidence-run-honesty; extend the data loaded for the Research section without inventing findings the store does not have.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CompanyDetail } from '@/components/company-detail';
 import { getCompanyById } from '@/db/queries/companies';
-import { getLatestResearchRun } from '@/db/queries/research';
+import { getRecentResearchRuns } from '@/db/queries/research';
 import { cn } from '@/lib/utils';
 
 interface PageProps {
@@ -32,7 +32,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
   // waiting for one before starting the other would just add a round trip.
   const [result, research] = await Promise.all([
     getCompanyById(id),
-    getLatestResearchRun(id),
+    getRecentResearchRuns(id),
   ]);
 
   if (!result.success) {
@@ -67,7 +67,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
   return (
     <CompanyDetail
       company={result.data}
-      research={research.success ? research.data : null}
+      researchRuns={research.success ? research.data : []}
     />
   );
 }
