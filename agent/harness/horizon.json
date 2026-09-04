@@ -1,18 +1,15 @@
 {
   "slice": [
     "research-observability",
-    "search-ui",
-    "research-run-history"
+    "search-ui"
   ],
   "rationale_per_step": {
-    "research-observability": "Emit structured research.run and research.schedule events mirroring search-observability. Keep queued while PR #42 is open; prefer next when free for Reliable autonomous research / Measurable quality.",
-    "search-ui": "URL-driven search surface on a locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight elsewhere (PR #27); keep on the slice, do not select while excluded.",
-    "research-run-history": "Follow-up after research-evidence-run-honesty: load prior runs so a failed latest run can honestly surface earlier findings when they exist. Feature_improvement / Evidence-backed intelligence. Queued after uniqueness closed; do not select while observability and search-ui PRs remain open if category mix is already heavy on feature_improvement."
+    "research-observability": "Highest testing_observability follow-on once PR #42 clears or is free to re-select. Mirrors search-observability for research.run / research.schedule. Keep queued; do not select while excluded.",
+    "search-ui": "URL-driven search surface on locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight (PR #27); keep on the slice, do not select while excluded."
   },
   "category_mix": {
     "testing_observability": 1,
-    "new_feature": 1,
-    "feature_improvement": 1
+    "new_feature": 1
   },
   "vision_refs": {
     "research-observability": [
@@ -22,12 +19,8 @@
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
-    ],
-    "research-run-history": [
-      "Evidence-backed intelligence",
-      "Reliable autonomous research"
     ]
   },
-  "generated_by_run": "continue-20260905-184728",
-  "notes": "Executor completed ingestion-source-unique-constraint. Horizon advanced past it. research-observability and search-ui remain queued behind open PRs; research-run-history registered pending for horizon resolution."
+  "generated_by_run": "continue-20260905-190419",
+  "notes": "Executor completed research-run-history. Horizon advanced past it; research-observability and search-ui remain in-flight exclusions."
 }
