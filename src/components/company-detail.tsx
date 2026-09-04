@@ -28,9 +28,15 @@ function formatSyncedAt(value: Date | string): string {
 interface CompanyDetailProps {
   company: Company;
   researchRuns: StoredResearchRun[];
+  /** False when getRecentResearchRuns failed; distinct from success with zero runs. */
+  researchHistoryOk: boolean;
 }
 
-export function CompanyDetail({ company, researchRuns }: CompanyDetailProps) {
+export function CompanyDetail({
+  company,
+  researchRuns,
+  researchHistoryOk,
+}: CompanyDetailProps) {
   const websiteHref = httpUrl(company.website);
   const description = company.long_description ?? company.one_liner;
   const tags = company.tags ?? [];
@@ -241,7 +247,11 @@ export function CompanyDetail({ company, researchRuns }: CompanyDetailProps) {
                 </div>
               </section>
             )}
-            <CompanyEvidence researchRuns={researchRuns} now={new Date()} />
+            <CompanyEvidence
+              researchRuns={researchRuns}
+              researchHistoryOk={researchHistoryOk}
+              now={new Date()}
+            />
           </CardContent>
         </Card>
       </div>
