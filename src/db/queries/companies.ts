@@ -116,24 +116,26 @@ export async function getCompaniesWithOffset(
 ): Promise<QueryResult<Company[]>> {
   try {
     const sql = getDBClient();
-    
-    const results = await sql`
-      SELECT 
-        id, source, source_id, source_url, name, slug, website, logo_url,
-        one_liner, long_description, tags, industries, regions, batch,
-        team_size, founded_at, stage, status, is_hiring, is_nonprofit,
-        all_locations, source_metadata, created_at, updated_at, last_synced_at
-      FROM companies
-      ORDER BY id
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `;
+
+    const results = await withRetry(
+      () => sql`
+        SELECT 
+          id, source, source_id, source_url, name, slug, website, logo_url,
+          one_liner, long_description, tags, industries, regions, batch,
+          team_size, founded_at, stage, status, is_hiring, is_nonprofit,
+          all_locations, source_metadata, created_at, updated_at, last_synced_at
+        FROM companies
+        ORDER BY id
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `,
+    );
 
     return { success: true, data: results as Company[] };
-  } catch (error) {
+  } catch {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: 'Failed to list companies',
     };
   }
 }
@@ -141,16 +143,18 @@ export async function getCompaniesWithOffset(
 export async function getCompanyCount(): Promise<QueryResult<number>> {
   try {
     const sql = getDBClient();
-    const results = await sql`
-      SELECT COUNT(*) as count
-      FROM companies
-    `;
+    const results = await withRetry(
+      () => sql`
+        SELECT COUNT(*) as count
+        FROM companies
+      `,
+    );
 
     return { success: true, data: Number(results[0].count) };
-  } catch (error) {
+  } catch {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: 'Failed to count companies',
     };
   }
 }
