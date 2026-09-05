@@ -302,3 +302,14 @@ No canary code was merged.
   - Eval canary: load-failure path returned `RESEARCH_EMPTY_HISTORY_COPY` → honesty eval failed (expected load-failure string); restored → pass.
   - First `npm run verify`: lint/typecheck/262 evals green; build failed resolving `next` (broken node_modules). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 262 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no SQL, collectors, write paths, hybrid weights, QUALITY_BAR, search-ui, or observability changes. Failure copy is closed and generic (no driver/`QueryResult.error` interpolation). Next slice head is research-observability (often excluded) or search-ui.
+
+## continue-20260905-194053 (listing-db-resilience)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-194053` / `harness/continue-local-20260905-194053`
+- **Task / plan:** `listing-db-resilience` / `plan-20260905194344`
+- **What changed:** Wrapped `getAllCompanies` (both cursor branches), `getCompaniesWithOffset`, and `getCompanyCount` with existing `withRetry` around the sql tagged-template promises only. Catch paths now return closed generic QueryResult errors (`Failed to list companies` / `Failed to count companies`) instead of driver `error.message`. Hermetic `src/eval/listing-db-resilience.eval.ts` locks those wrappers. Marked feature completed; advanced horizon to embedding-coverage-eval then excluded heads.
+- **Why:** db-resilience deferred listing/count retries; browse pagination still failed hard on transient Neon faults and could leak driver text.
+- **Commands:**
+  - Eval canary: restored `error.message` in `getCompanyCount` catch → listing-db-resilience eval failed; restored → pass. Renamed `withRetry` in `getCompaniesWithOffset` → eval failed; restored → pass.
+  - First `npm run verify`: lint/typecheck/264 evals green; build failed resolving `next` (broken node_modules). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 264 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; SQL SELECT/ORDER/LIMIT/OFFSET/cursor shapes unchanged; HYBRID_SEARCH_WEIGHTS / HNSW_EF_SEARCH / searchCompanies untouched; no UI edits. Intended EXPLAIN for offset listing remains `ORDER BY id LIMIT/OFFSET` (id index / ordered scan); count is `COUNT(*)` on companies; cursor listing stays `WHERE id > $cursor ORDER BY id LIMIT`. No live EXPLAIN (no secrets / no DB in worktree). Next slice head is embedding-coverage-eval.
