@@ -342,14 +342,14 @@
   },
   {
     "id": "research-evidence-source-labels",
-    "status": "pending",
+    "status": "completed",
     "priority": 30,
     "category": "feature_improvement",
     "depends_on": [
       "research-source-expansion"
     ],
     "description": "Surface the collector name on each evidence row so readers can tell website claims from careers claims without decoding field names.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]
