@@ -62,12 +62,13 @@ export default async function CompanyDetailPage({ params }: PageProps) {
     );
   }
 
-  // A missing research table or a failed read is not a broken profile: the
-  // section simply reports that nothing has been researched yet.
+  // Profile still renders when research history fails; the section must show a
+  // load-failure state, not collapse that into "never researched".
   return (
     <CompanyDetail
       company={result.data}
       researchRuns={research.success ? research.data : []}
+      researchHistoryOk={research.success}
     />
   );
 }
