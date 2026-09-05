@@ -1,14 +1,19 @@
 {
   "slice": [
     "research-observability",
-    "search-ui"
+    "search-ui",
+    "listing-db-resilience",
+    "embedding-coverage-eval"
   ],
   "rationale_per_step": {
-    "research-observability": "Highest testing_observability follow-on once PR #42 clears or is free to re-select. Mirrors search-observability for research.run / research.schedule. Keep queued; do not select while excluded.",
-    "search-ui": "URL-driven search surface on locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight (PR #27); keep on the slice, do not select while excluded."
+    "research-observability": "Highest testing_observability follow-on once PR #42 clears. Mirrors search-observability for research.run / research.schedule. Keep queued; do not select while excluded.",
+    "search-ui": "URL-driven search surface on locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight (PR #27); keep on the slice, do not select while excluded.",
+    "listing-db-resilience": "db-resilience deliberately skipped listing/count retries. Extending withRetry there advances browse-path reliability once honesty is done and excluded heads clear.",
+    "embedding-coverage-eval": "Hermetic or fixture-backed measure of embedding coverage so hybrid search readiness is measurable. testing_observability / Measurable quality + Hybrid search."
   },
   "category_mix": {
-    "testing_observability": 1,
+    "maintenance": 1,
+    "testing_observability": 2,
     "new_feature": 1
   },
   "vision_refs": {
@@ -19,8 +24,16 @@
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
+    ],
+    "listing-db-resilience": [
+      "UI and UX",
+      "Reliable autonomous research"
+    ],
+    "embedding-coverage-eval": [
+      "Hybrid search",
+      "Measurable quality"
     ]
   },
-  "generated_by_run": "continue-20260905-190419",
-  "notes": "Executor completed research-run-history. Horizon advanced past it; research-observability and search-ui remain in-flight exclusions."
+  "generated_by_run": "continue-20260905-191905",
+  "notes": "Executor completed research-read-failure-honesty and advanced the slice past it. Registered pending listing-db-resilience and embedding-coverage-eval so horizon ids resolve. research-observability and search-ui remain excluded while their PRs are open."
 }
