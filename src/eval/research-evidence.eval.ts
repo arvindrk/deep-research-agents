@@ -34,9 +34,50 @@ describe('toEvidenceItems', () => {
     const [item] = toEvidenceItems([finding()], NOW);
     assert.equal(item.label, 'Website title');
     assert.equal(item.value, 'Acme - rockets for roadrunners');
+    assert.equal(item.source, 'website');
+    assert.equal(item.sourceLabel, 'Website');
     assert.equal(item.href, 'https://acme.test/');
     assert.equal(item.freshness, 'fresh');
     assert.equal(item.age, 'today');
+  });
+
+  it('labels website and careers findings by collector, not field name', () => {
+    const items = toEvidenceItems(
+      [
+        finding({
+          source: 'website',
+          field: 'website_title',
+          value: 'Acme site',
+        }),
+        finding({
+          source: 'careers',
+          field: 'careers_title',
+          value: 'Acme jobs',
+          evidence_url: 'https://acme.test/careers',
+          observed_at: '2026-08-17T09:00:00.000Z',
+        }),
+      ],
+      NOW,
+    );
+    assert.deepEqual(
+      items.map((item) => ({
+        source: item.source,
+        sourceLabel: item.sourceLabel,
+        field: item.field,
+      })),
+      [
+        {
+          source: 'website',
+          sourceLabel: 'Website',
+          field: 'website_title',
+        },
+        {
+          source: 'careers',
+          sourceLabel: 'Careers',
+          field: 'careers_title',
+        },
+      ],
+    );
   });
 
   it('drops a source link that is not http', () => {
@@ -50,6 +91,7 @@ describe('toEvidenceItems', () => {
       const [item] = toEvidenceItems([finding({ evidence_url })], NOW);
       assert.equal(item.href, null, String(evidence_url));
       assert.equal(item.value, finding().value, 'the claim itself survives');
+      assert.equal(item.sourceLabel, 'Website', 'collector label still renders');
     }
   });
 
