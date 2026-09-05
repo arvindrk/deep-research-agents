@@ -291,3 +291,14 @@ No canary code was merged.
   - Eval canary: replaced failed-with-history notice sentence with the no-findings sentence → research-run-history eval failed (`/earlier run/i`); restored → pass.
   - First `npm run verify` after empty/broken `node_modules`: lint/typecheck/258 evals green; build failed resolving `next`. `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 258 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no collector/runtime/write-path/migration/hybrid/QUALITY_BAR/search-ui/observability changes. Intended EXPLAIN for runs: Index Scan on `company_research_runs_company_observed_idx` (`company_id`, `observed_at DESC`) with LIMIT 2. Findings: Index/Bitmap on `run_id` (FK) for the one or two selected ids; no N+1. No live EXPLAIN (no secrets / no DB in worktree). Next slice head is research-observability (often excluded) or search-ui.
+
+## continue-20260905-191905 (research-read-failure-honesty)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-191905` / `harness/continue-local-20260905-191905`
+- **Task / plan:** `research-read-failure-honesty` / `plan-20260905135132`
+- **What changed:** Added pure `researchEmptyStateCopy` plus closed copy constants in `src/lib/research/run-summary.ts`. Company detail page now passes `researchHistoryOk={research.success}` alongside runs (failed reads still pass `[]` but are distinguishable). `CompanyDetail` threads the flag; `CompanyEvidence` uses the helper for empty-state copy and remains a Server Component. Hermetic `src/eval/research-read-failure-honesty.eval.ts` locks empty history vs load failure vs empty findings. Registered and completed the feature; registered pending `listing-db-resilience` and `embedding-coverage-eval` so the horizon resolves; advanced horizon past this feature.
+- **Why:** A failed `getRecentResearchRuns` was collapsed to `[]`, so the Research section lied with "No research has run for this company yet."
+- **Commands:**
+  - Eval canary: load-failure path returned `RESEARCH_EMPTY_HISTORY_COPY` → honesty eval failed (expected load-failure string); restored → pass.
+  - First `npm run verify`: lint/typecheck/262 evals green; build failed resolving `next` (broken node_modules). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 262 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no SQL, collectors, write paths, hybrid weights, QUALITY_BAR, search-ui, or observability changes. Failure copy is closed and generic (no driver/`QueryResult.error` interpolation). Next slice head is research-observability (often excluded) or search-ui.

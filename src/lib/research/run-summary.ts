@@ -25,6 +25,31 @@ export type ResearchSectionModel = {
   notice: string | null;
 };
 
+/** Closed reader copy when research history loaded successfully with zero runs. */
+export const RESEARCH_EMPTY_HISTORY_COPY =
+  'No research has run for this company yet.';
+
+/** Closed reader copy when the research history read failed. Never include driver text. */
+export const RESEARCH_LOAD_FAILURE_COPY =
+  'Unable to load research history for this company. Please try again later.';
+
+/** Closed reader copy when a run exists but produced no findings to show. */
+export const RESEARCH_EMPTY_FINDINGS_COPY =
+  'The last research run found nothing to report for this company.';
+
+/**
+ * Empty-state copy for the Research section. Load failure must never reuse the
+ * never-researched sentence.
+ */
+export function researchEmptyStateCopy(input: {
+  historyLoaded: boolean;
+  hasLatestRun: boolean;
+}): string {
+  if (!input.historyLoaded) return RESEARCH_LOAD_FAILURE_COPY;
+  if (!input.hasLatestRun) return RESEARCH_EMPTY_HISTORY_COPY;
+  return RESEARCH_EMPTY_FINDINGS_COPY;
+}
+
 /** Reader-facing label for the latest research run status. */
 export function researchRunStatusLabel(
   status: ResearchRunStatus,

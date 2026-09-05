@@ -6,6 +6,7 @@ import { toEvidenceItems } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
 import {
   buildResearchSectionModel,
+  researchEmptyStateCopy,
   researchRunStatusLabel,
 } from '@/lib/research/run-summary';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,8 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 interface CompanyEvidenceProps {
   /** Newest-first runs (typically latest plus one prior). */
   researchRuns: StoredResearchRun[];
+  /** False when the research history read failed; distinct from success with []. */
+  researchHistoryOk: boolean;
   /** Passed in so freshness is decided once per request, not per component. */
   now: Date;
 }
@@ -28,7 +31,11 @@ interface CompanyEvidenceProps {
  * Enriched claims with the source and the age of each one, so a reader can tell
  * what is known, where it came from, and whether it is still true.
  */
-export function CompanyEvidence({ researchRuns, now }: CompanyEvidenceProps) {
+export function CompanyEvidence({
+  researchRuns,
+  researchHistoryOk,
+  now,
+}: CompanyEvidenceProps) {
   const section = buildResearchSectionModel(
     researchRuns.map((run) => ({
       status: run.status,
@@ -40,6 +47,10 @@ export function CompanyEvidence({ researchRuns, now }: CompanyEvidenceProps) {
   const items = toEvidenceItems(section.findings, now);
   const notice = section.notice;
   const latest = section.latest;
+  const emptyCopy = researchEmptyStateCopy({
+    historyLoaded: researchHistoryOk,
+    hasLatestRun: latest != null,
+  });
 
   return (
     <section className="space-y-3">
@@ -80,9 +91,7 @@ export function CompanyEvidence({ researchRuns, now }: CompanyEvidenceProps) {
 
       {items.length === 0 && (
         <p className={cn('text-sm', 'text-[var(--color-text-tertiary)]')}>
-          {latest
-            ? 'The last research run found nothing to report for this company.'
-            : 'No research has run for this company yet.'}
+          {emptyCopy}
         </p>
       )}
 
