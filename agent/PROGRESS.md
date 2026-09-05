@@ -246,3 +246,14 @@ No canary code was merged.
   - Eval canary: dropped `source` / `sourceLabel` from `toEvidenceItems` → research-evidence eval failed (undefined vs Website/Careers); restored → 8/8 pass on that file.
   - `npm run verify` → exit 0 (lint, typecheck, 242 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
 - **Human notes:** No new dependencies; no collector/runtime/SQL/API changes. `company-evidence.tsx` remains a Server Component. Next slice head is research-observability (often excluded in-flight) or search-ui.
+
+## continue-20260905-181432 (research-evidence-confidence)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260905-181432` / `harness/continue-local-20260905-181432`
+- **Task / plan:** `research-evidence-confidence` / `plan-20260905124718`
+- **What changed:** `EvidenceItem` now carries `confidence` (FindingConfidence) and `confidenceLabel` from a closed map (`High`, `Medium`, `Low`). `toEvidenceItems` copies `finding.confidence` through. `CompanyEvidence` renders confidence with a secondary Badge beside source and freshness. Extended `research-evidence.eval.ts` for high/medium fixtures and kept unsafe URL href-null cases with confidenceLabel still present. Registered and marked the feature completed; advanced horizon past it to research-observability then search-ui.
+- **Why:** Collectors already store FindingConfidence but the evidence mapping and UI dropped it, so readers could not tell stronger claims from weaker ones beside source and freshness.
+- **Commands:**
+  - Eval canary: dropped `confidence` / `confidenceLabel` from `toEvidenceItems` → research-evidence eval failed (undefined vs High/Medium); restored → 9/9 pass on that file.
+  - `npm run verify` → exit 0 (lint, typecheck, 243 evals, build). Build succeeded without `DATABASE_URL`. Worktree needed `npm ci` once (empty `node_modules`).
+- **Human notes:** No new dependencies; no collector/runtime/SQL/API changes. `company-evidence.tsx` remains a Server Component. Next slice head is research-observability (often excluded in-flight) or search-ui.
