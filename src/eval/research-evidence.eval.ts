@@ -30,12 +30,14 @@ describe('fieldLabel', () => {
 });
 
 describe('toEvidenceItems', () => {
-  it('carries the claim, its source, and its age', () => {
+  it('carries the claim, its source, confidence, and its age', () => {
     const [item] = toEvidenceItems([finding()], NOW);
     assert.equal(item.label, 'Website title');
     assert.equal(item.value, 'Acme - rockets for roadrunners');
     assert.equal(item.source, 'website');
     assert.equal(item.sourceLabel, 'Website');
+    assert.equal(item.confidence, 'high');
+    assert.equal(item.confidenceLabel, 'High');
     assert.equal(item.href, 'https://acme.test/');
     assert.equal(item.freshness, 'fresh');
     assert.equal(item.age, 'today');
@@ -80,6 +82,44 @@ describe('toEvidenceItems', () => {
     );
   });
 
+  it('maps high and medium confidence to closed reader labels', () => {
+    const items = toEvidenceItems(
+      [
+        finding({
+          field: 'website_title',
+          confidence: 'high',
+          observed_at: '2026-08-18T09:00:00.000Z',
+        }),
+        finding({
+          field: 'website_description',
+          confidence: 'medium',
+          value: 'Rockets for roadrunners',
+          observed_at: '2026-08-17T09:00:00.000Z',
+        }),
+      ],
+      NOW,
+    );
+    assert.deepEqual(
+      items.map((item) => ({
+        field: item.field,
+        confidence: item.confidence,
+        confidenceLabel: item.confidenceLabel,
+      })),
+      [
+        {
+          field: 'website_title',
+          confidence: 'high',
+          confidenceLabel: 'High',
+        },
+        {
+          field: 'website_description',
+          confidence: 'medium',
+          confidenceLabel: 'Medium',
+        },
+      ],
+    );
+  });
+
   it('drops a source link that is not http', () => {
     for (const evidence_url of [
       'javascript:alert(1)',
@@ -92,6 +132,7 @@ describe('toEvidenceItems', () => {
       assert.equal(item.href, null, String(evidence_url));
       assert.equal(item.value, finding().value, 'the claim itself survives');
       assert.equal(item.sourceLabel, 'Website', 'collector label still renders');
+      assert.equal(item.confidenceLabel, 'High', 'confidence label still renders');
     }
   });
 
