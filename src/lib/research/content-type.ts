@@ -20,3 +20,12 @@ export function mediaType(header: string | null): string | null {
   const type = header.split(';', 1)[0].trim().toLowerCase();
   return type.length === 0 ? null : type;
 }
+
+/** True only for a declared HTML media type. A missing header is not HTML. */
+export function isHtmlContentType(header: string | null): boolean {
+  const type = mediaType(header);
+  return (
+    type !== null &&
+    RESEARCH_HTML_CONTENT_TYPES.some((allowed) => allowed === type)
+  );
+}
