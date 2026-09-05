@@ -29,3 +29,17 @@ export function isHtmlContentType(header: string | null): boolean {
     RESEARCH_HTML_CONTENT_TYPES.some((allowed) => allowed === type)
   );
 }
+
+/**
+ * Fail the source before the body is read. The message carries the media type
+ * and nothing else: a rejection is stored on the run and rendered to a reader,
+ * so it must not carry the fetched URL.
+ */
+export function assertHtmlResponse(response: Response): void {
+  const header = response.headers.get('content-type');
+  if (!isHtmlContentType(header)) {
+    throw new Error(
+      `Research source returned non-HTML content type "${mediaType(header) ?? 'missing'}"`,
+    );
+  }
+}
