@@ -354,7 +354,11 @@ export async function getCompanyBySource(
   }
 }
 
-/** Insert one source record. `last_synced_at` is set by the same statement. */
+/**
+ * Insert one source record. `last_synced_at` is set by the same statement.
+ * Concurrent inserts for the same (source, source_id) lose via ON CONFLICT and
+ * resolve to the existing row through getCompanyBySource.
+ */
 export async function insertCompanyFromSource(
   record: SourceCompanyRecord,
 ): Promise<QueryResult<{ id: string }>> {
@@ -375,11 +379,23 @@ export async function insertCompanyFromSource(
           ${record.is_hiring}, ${record.is_nonprofit}, ${record.all_locations},
           now()
         )
+        ON CONFLICT (source, source_id) DO NOTHING
         RETURNING id
       `,
     );
 
-    return { success: true, data: { id: String(results[0].id) } };
+    if (results.length > 0) {
+      return { success: true, data: { id: String(results[0].id) } };
+    }
+
+    const existing = await getCompanyBySource(record.source, record.source_id);
+    if (!existing.success) {
+      return { success: false, error: existing.error };
+    }
+    if (!existing.data) {
+      return { success: false, error: 'Failed to insert company from source' };
+    }
+    return { success: true, data: { id: existing.data.id } };
   } catch {
     return { success: false, error: 'Failed to insert company from source' };
   }
