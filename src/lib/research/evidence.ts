@@ -1,11 +1,19 @@
 import { httpUrl } from '../safe-url';
 import { freshnessOf, relativeAge, type Freshness } from './freshness';
-import type { ResearchFinding } from './types';
+import type { ResearchFinding, ResearchSourceId } from './types';
+
+/** Closed map: only known ResearchSourceId members become collector badges. */
+const SOURCE_LABEL: Record<ResearchSourceId, string> = {
+  website: 'Website',
+  careers: 'Careers',
+};
 
 export type EvidenceItem = {
   field: string;
   label: string;
   value: string;
+  source: ResearchSourceId;
+  sourceLabel: string;
   href: string | null;
   observed_at: string;
   freshness: Freshness;
@@ -42,6 +50,8 @@ export function toEvidenceItems(
       field: finding.field,
       label: fieldLabel(finding.field),
       value: finding.value,
+      source: finding.source,
+      sourceLabel: SOURCE_LABEL[finding.source],
       href: httpUrl(finding.evidence_url),
       observed_at: finding.observed_at,
       freshness: freshnessOf(finding.observed_at, now),
