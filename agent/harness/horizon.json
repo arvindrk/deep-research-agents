@@ -1,22 +1,23 @@
 {
   "slice": [
+    "embedding-coverage-eval",
     "research-observability",
-    "search-ui",
-    "listing-db-resilience",
-    "embedding-coverage-eval"
+    "search-ui"
   ],
   "rationale_per_step": {
-    "research-observability": "Highest testing_observability follow-on once PR #42 clears. Mirrors search-observability for research.run / research.schedule. Keep queued; do not select while excluded.",
-    "search-ui": "URL-driven search surface on locked hybrid backend (UI and UX / Discovery with low noise). Unblocked but in-flight (PR #27); keep on the slice, do not select while excluded.",
-    "listing-db-resilience": "db-resilience deliberately skipped listing/count retries. Extending withRetry there advances browse-path reliability once honesty is done and excluded heads clear.",
-    "embedding-coverage-eval": "Hermetic or fixture-backed measure of embedding coverage so hybrid search readiness is measurable. testing_observability / Measurable quality + Hybrid search."
+    "embedding-coverage-eval": "Next after listing resilience. Hermetic coverage measure for Hybrid search readiness / Measurable quality. Prefer once listing retries ship; avoids stacking testing_observability while research-observability PR is open.",
+    "research-observability": "Still highest testing_observability follow-on for research.run / research.schedule. Keep on slice; do not select while PR #42 is open.",
+    "search-ui": "URL-driven search surface on locked hybrid backend (UI and UX / Discovery). Keep on slice; do not select while PR #27 is open."
   },
   "category_mix": {
-    "maintenance": 1,
     "testing_observability": 2,
     "new_feature": 1
   },
   "vision_refs": {
+    "embedding-coverage-eval": [
+      "Hybrid search",
+      "Measurable quality"
+    ],
     "research-observability": [
       "Reliable autonomous research",
       "Measurable quality"
@@ -24,16 +25,8 @@
     "search-ui": [
       "UI and UX",
       "Discovery with low noise"
-    ],
-    "listing-db-resilience": [
-      "UI and UX",
-      "Reliable autonomous research"
-    ],
-    "embedding-coverage-eval": [
-      "Hybrid search",
-      "Measurable quality"
     ]
   },
-  "generated_by_run": "continue-20260905-191905",
-  "notes": "Executor completed research-read-failure-honesty and advanced the slice past it. Registered pending listing-db-resilience and embedding-coverage-eval so horizon ids resolve. research-observability and search-ui remain excluded while their PRs are open."
+  "generated_by_run": "continue-20260905-194053",
+  "notes": "Executor completed listing-db-resilience and advanced the slice past it. embedding-coverage-eval is next. research-observability and search-ui remain excluded while their PRs are open."
 }
