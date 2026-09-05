@@ -399,5 +399,42 @@
     "description": "Load prior research runs for a company so a failed latest run can honestly surface earlier findings when they exist, instead of only showing the latest run. Keep status honesty from research-evidence-run-honesty; extend the data loaded for the Research section without inventing findings the store does not have.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "research-read-failure-honesty",
+    "status": "completed",
+    "priority": 35,
+    "category": "maintenance",
+    "depends_on": [
+      "research-run-history"
+    ],
+    "description": "Fix the company detail Research section so a failed getRecentResearchRuns read never collapses to an empty run list that renders as never-researched. Distinguish load failure from true empty history with closed, generic reader copy that never includes driver or query error text. Thread a success/failure signal through CompanyDetail into CompanyEvidence, keep CompanyEvidence a Server Component, extract pure empty-state copy helpers, and lock them with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "listing-db-resilience",
+    "status": "pending",
+    "priority": 36,
+    "category": "maintenance",
+    "depends_on": [
+      "db-resilience"
+    ],
+    "description": "Extend withRetry to the company listing and count reads (getCompaniesWithOffset, getCompanyCount, getAllCompanies) so browse and pagination degrade gracefully on transient database failures the same way search already does. Do not change SQL shapes, hybrid weights, or UI copy beyond real error states.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "embedding-coverage-eval",
+    "status": "pending",
+    "priority": 37,
+    "category": "testing_observability",
+    "depends_on": [
+      "embedding-generation-pipeline",
+      "hybrid-search-ranking-eval"
+    ],
+    "description": "Add a hermetic or fixture-backed measure of embedding coverage so hybrid search readiness is measurable: how many companies have usable embeddings versus how many would fall back to name/full-text only. Lock the coverage invariant with an eval; do not change embedding generation or hybrid weights.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]
