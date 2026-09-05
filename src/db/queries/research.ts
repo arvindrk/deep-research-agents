@@ -112,14 +112,30 @@ const asFinding = (row: Record<string, unknown>): ResearchFinding | null => {
   };
 };
 
+/** Cap for company detail: latest plus one prior when the latest failed. */
+const RECENT_RESEARCH_RUNS_LIMIT = 2;
+
+const toStoredRun = (
+  run: Record<string, unknown>,
+  findings: ResearchFinding[],
+): StoredResearchRun => ({
+  id: String(run.id),
+  company_id: String(run.company_id),
+  status: asStatus(run.status),
+  attempted: asSourceList(run.attempted),
+  succeeded: asSourceList(run.succeeded),
+  failed: asFailures(run.failed),
+  findings,
+  observed_at: asIsoString(run.observed_at),
+});
+
 /**
- * The most recent run for one company, with the findings that run produced.
- * Returns null when the company has never been researched, which is different
- * from a failed read and is reported differently.
+ * Up to two newest runs for one company, each with that run's findings only.
+ * Bounded LIMIT on runs; findings loaded in one query for those run ids (no N+1).
  */
-export async function getLatestResearchRun(
+export async function getRecentResearchRuns(
   companyId: string,
-): Promise<QueryResult<StoredResearchRun | null>> {
+): Promise<QueryResult<StoredResearchRun[]>> {
   try {
     const sql = getDBClient();
 
@@ -129,44 +145,68 @@ export async function getLatestResearchRun(
         FROM company_research_runs
         WHERE company_id = ${companyId}
         ORDER BY observed_at DESC
-        LIMIT 1
+        LIMIT ${RECENT_RESEARCH_RUNS_LIMIT}
       `,
     );
 
     if (runs.length === 0) {
-      return { success: true, data: null };
+      return { success: true, data: [] };
     }
 
-    const run = runs[0];
-    const runId = String(run.id);
-
-    const findingRows = await withRetry(
-      () => sql`
-        SELECT source, field, value, evidence_url, confidence, observed_at
-        FROM company_research_findings
-        WHERE run_id = ${runId}
-        ORDER BY field
-      `,
+    const runIds = runs.map((run) => String(run.id));
+    const findingRows = await withRetry(() =>
+      runIds.length === 1
+        ? sql`
+            SELECT run_id, source, field, value, evidence_url, confidence, observed_at
+            FROM company_research_findings
+            WHERE run_id = ${runIds[0]}
+            ORDER BY field
+          `
+        : sql`
+            SELECT run_id, source, field, value, evidence_url, confidence, observed_at
+            FROM company_research_findings
+            WHERE run_id = ${runIds[0]} OR run_id = ${runIds[1]}
+            ORDER BY field
+          `,
     );
+
+    const findingsByRun = new Map<string, ResearchFinding[]>();
+    for (const row of findingRows) {
+      const finding = asFinding(row);
+      if (!finding) continue;
+      const runId = String(row.run_id);
+      const list = findingsByRun.get(runId);
+      if (list) {
+        list.push(finding);
+      } else {
+        findingsByRun.set(runId, [finding]);
+      }
+    }
 
     return {
       success: true,
-      data: {
-        id: runId,
-        company_id: String(run.company_id),
-        status: asStatus(run.status),
-        attempted: asSourceList(run.attempted),
-        succeeded: asSourceList(run.succeeded),
-        failed: asFailures(run.failed),
-        findings: findingRows
-          .map(asFinding)
-          .filter((finding): finding is ResearchFinding => finding !== null),
-        observed_at: asIsoString(run.observed_at),
-      },
+      data: runs.map((run) =>
+        toStoredRun(run, findingsByRun.get(String(run.id)) ?? []),
+      ),
     };
   } catch {
     return { success: false, error: 'Failed to read research for company' };
   }
+}
+
+/**
+ * The most recent run for one company, with the findings that run produced.
+ * Returns null when the company has never been researched, which is different
+ * from a failed read and is reported differently.
+ */
+export async function getLatestResearchRun(
+  companyId: string,
+): Promise<QueryResult<StoredResearchRun | null>> {
+  const recent = await getRecentResearchRuns(companyId);
+  if (!recent.success) {
+    return { success: false, error: recent.error };
+  }
+  return { success: true, data: recent.data[0] ?? null };
 }
 
 /** One company plus the observation time of its newest finding, if any. */
