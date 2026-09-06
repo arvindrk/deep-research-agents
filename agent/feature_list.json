@@ -501,7 +501,7 @@
   },
   {
     "id": "research-html-meta-shared",
-    "status": "pending",
+    "status": "completed",
     "priority": 43,
     "category": "tech_debt",
     "depends_on": [
@@ -509,6 +509,19 @@
       "research-fetch-content-type"
     ],
     "description": "Extract the head-parsing layer duplicated verbatim between the website and careers collectors (title and description regexes, the single-pass entity decode, the value collapse and 300 character cap, and the fetch timeout) into one shared module both collectors import. The duplication means a parse fix can land in one source and silently miss the other. No parse behaviour change; lock the shared helpers and the absence of the duplicated literals with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-collector-coverage-eval",
+    "status": "pending",
+    "priority": 44,
+    "category": "testing_observability",
+    "depends_on": [
+      "research-source-expansion",
+      "research-html-meta-shared"
+    ],
+    "description": "Lock the invariant the runtime already assumes: DEFAULT_COLLECTORS covers every member of RESEARCH_SOURCES exactly once, with no collector for a source that is not declared. Adding a source to RESEARCH_SOURCES without a collector currently ships a source that is never attempted, which no eval or type error catches. Add a pure coverage helper and a hermetic eval over the real runtime wiring.",
     "passes": false,
     "verify": "npm run verify"
   }
