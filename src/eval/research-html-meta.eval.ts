@@ -55,3 +55,91 @@ describe('collapseValue', () => {
     assert.equal(collapseValue(long).length, MAX_FINDING_VALUE_CHARS);
   });
 });
+
+describe('headTitle and headDescription', () => {
+  it('reads a title across attributes and newlines', () => {
+    assert.equal(
+      headTitle('<title lang="en">\n  Acme\n  Corp\n</title>'),
+      'Acme Corp',
+    );
+  });
+
+  it('reads a meta description and decodes it', () => {
+    assert.equal(
+      headDescription(
+        '<meta name="description" content="Tools &amp; parts for builders">',
+      ),
+      'Tools & parts for builders',
+    );
+  });
+
+  it('returns an empty string when the field is absent', () => {
+    assert.equal(headTitle('<html><body>no head</body></html>'), '');
+    assert.equal(headDescription('<html><head></head></html>'), '');
+  });
+
+  it('bounds both fields at the shared cap', () => {
+    const long = 'y'.repeat(MAX_FINDING_VALUE_CHARS + 100);
+    assert.equal(headTitle(`<title>${long}</title>`).length, MAX_FINDING_VALUE_CHARS);
+    assert.equal(
+      headDescription(`<meta name="description" content="${long}">`).length,
+      MAX_FINDING_VALUE_CHARS,
+    );
+  });
+});
+
+describe('collector parse output is unchanged by the extraction', () => {
+  const html = [
+    '<html><head>',
+    '<title>  Acme &amp; Co  </title>',
+    '<meta name="description" content="We build &lt;things&gt;">',
+    '</head></html>',
+  ].join('');
+
+  it('still produces website title and description findings', () => {
+    assert.deepEqual(parseWebsiteFindings(html, SITE, OBSERVED_AT), [
+      {
+        source: 'website',
+        field: 'website_title',
+        value: 'Acme & Co',
+        evidence_url: SITE,
+        observed_at: OBSERVED_AT,
+        confidence: 'high',
+      },
+      {
+        source: 'website',
+        field: 'website_description',
+        value: 'We build <things>',
+        evidence_url: SITE,
+        observed_at: OBSERVED_AT,
+        confidence: 'medium',
+      },
+    ]);
+  });
+
+  it('still produces careers title and description findings', () => {
+    assert.deepEqual(parseCareersFindings(html, CAREERS, OBSERVED_AT), [
+      {
+        source: 'careers',
+        field: 'careers_title',
+        value: 'Acme & Co',
+        evidence_url: CAREERS,
+        observed_at: OBSERVED_AT,
+        confidence: 'high',
+      },
+      {
+        source: 'careers',
+        field: 'careers_description',
+        value: 'We build <things>',
+        evidence_url: CAREERS,
+        observed_at: OBSERVED_AT,
+        confidence: 'medium',
+      },
+    ]);
+  });
+
+  it('still yields nothing for an unusable evidence URL', () => {
+    assert.deepEqual(parseWebsiteFindings(html, 'javascript:alert(1)', OBSERVED_AT), []);
+    assert.deepEqual(parseCareersFindings(html, 'not a url', OBSERVED_AT), []);
+  });
+});
