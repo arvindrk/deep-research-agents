@@ -27,3 +27,22 @@ export function decodeHtmlEntities(value: string): string {
 export function collapseValue(value: string): string {
   return value.replace(/\s+/g, ' ').trim().slice(0, MAX_FINDING_VALUE_CHARS);
 }
+
+const TITLE = /<title[^>]*>([\s\S]*?)<\/title>/i;
+const META_DESCRIPTION =
+  /<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i;
+
+/**
+ * Two fields out of a head section, decoded and bounded. Regex rather than a
+ * parser: anything it cannot find is simply not a finding, and an empty string
+ * says exactly that without a caller having to unwrap a null.
+ */
+export function headTitle(html: string): string {
+  const raw = TITLE.exec(html)?.[1];
+  return raw ? collapseValue(decodeHtmlEntities(raw)) : '';
+}
+
+export function headDescription(html: string): string {
+  const raw = META_DESCRIPTION.exec(html)?.[1];
+  return raw ? collapseValue(decodeHtmlEntities(raw)) : '';
+}
