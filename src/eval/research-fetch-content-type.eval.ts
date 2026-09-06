@@ -105,3 +105,32 @@ describe('non-HTML bodies fail the source', () => {
     assert.doesNotMatch(error, /https?:\/\//);
   });
 });
+
+describe('collectors gate on content type before parsing', () => {
+  for (const path of [
+    'src/lib/research/website.ts',
+    'src/lib/research/careers.ts',
+  ]) {
+    const source = read(path);
+
+    it(`${path} calls assertHtmlResponse`, () => {
+      assert.match(source, /assertHtmlResponse\(response\)/);
+      assert.match(source, /from '\.\/content-type'/);
+    });
+
+    it(`${path} gates before it reads the body`, () => {
+      const gate = source.indexOf('assertHtmlResponse(response)');
+      const readBody = source.indexOf('readBoundedResponseText(response)');
+      assert.ok(gate > -1 && readBody > -1);
+      assert.ok(
+        gate < readBody,
+        'the content type gate must run before the body is read',
+      );
+    });
+
+    it(`${path} keeps the public-destination guard and the byte cap`, () => {
+      assert.match(source, /fetchResearchResponse\(/);
+      assert.match(source, /readBoundedResponseText\(/);
+    });
+  }
+});
