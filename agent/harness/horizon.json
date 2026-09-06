@@ -1,28 +1,39 @@
 {
   "slice": [
-    "research-html-meta-shared",
+    "research-collector-coverage-eval",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-html-meta-shared": "Registered this run. The Content-Type gate had to be wired into two collectors that duplicate their whole head-parsing layer; deduplicating it is the cheapest way to stop the next parse fix landing in one source only.",
+    "research-collector-coverage-eval": "Registered this run. Deduplicating the collectors made the runtime wiring the only place a source can go missing, and nothing currently asserts that DEFAULT_COLLECTORS covers RESEARCH_SOURCES.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "maintenance": 1,
     "tech_debt": 1,
-    "testing_observability": 2,
+    "testing_observability": 3,
     "new_feature": 1
   },
   "vision_refs": {
-    "research-html-meta-shared": ["Agent research", "Reliable autonomous research"],
-    "embedding-coverage-eval": ["Hybrid search", "Measurable quality"],
-    "research-observability": ["Reliable autonomous research", "Measurable quality"],
-    "search-ui": ["UI and UX", "Discovery with low noise"]
+    "research-collector-coverage-eval": [
+      "Reliable autonomous research",
+      "Measurable quality"
+    ],
+    "embedding-coverage-eval": [
+      "Hybrid search",
+      "Measurable quality"
+    ],
+    "research-observability": [
+      "Reliable autonomous research",
+      "Measurable quality"
+    ],
+    "search-ui": [
+      "UI and UX",
+      "Discovery with low noise"
+    ]
   },
-  "generated_by_run": "continue-20260906-000000",
-  "notes": "Executor completed research-fetch-content-type and advanced past it. The fetch-hardening chain (body limit, SSRF guard, content type) is closed. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260906-141854",
+  "notes": "Executor completed research-html-meta-shared and advanced past it. Collector head parsing now lives in one module. Remaining heads stay excluded as in-flight."
 }

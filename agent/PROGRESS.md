@@ -379,3 +379,15 @@ No canary code was merged.
   - Eval canary: commented out `assertHtmlResponse(response)` in `website.ts` → 2 failures (wiring and ordering); restored → pass. Added `application/json` to `RESEARCH_HTML_CONTENT_TYPES` → 3 failures (closed list and two rejection cases); restored → 19/19 pass.
   - `npm run verify` → exit 0 (lint, typecheck, 339 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies. A missing `Content-Type` is treated as non-HTML on purpose: an unattended parse of an unknown body is the failure this slice removes. Rejection messages carry the media type only, never the fetched URL, so nothing leaks into a stored run or a rendered notice. No SQL, UI, hybrid weights, `QUALITY_BAR`, or observability changes. Did not implement embedding-coverage-eval, research-observability, or search-ui (all in flight).
+
+## continue-20260906-141854 (research-html-meta-shared)
+
+- **Worktree / branch:** `.harness/worktrees/stack-20260917-2115` / `harness/continue-local-20260906-141854`
+- **Task / plan:** `research-html-meta-shared` / `plan-20260906141854`
+- **What changed:** Added `src/lib/research/html-meta.ts` holding the head-parsing layer both collectors had copied verbatim: `RESEARCH_FETCH_TIMEOUT_MS` (5s), `MAX_FINDING_VALUE_CHARS` (300), `decodeHtmlEntities` (single pass), `collapseValue`, `headTitle`, and `headDescription`. `website.ts` and `careers.ts` now import it and no longer declare the title or description regex, the entity table, their own timeout, or their own value cap. Collector bodies went from 108 and 118 lines to 81 and 91, with 48 shared. Hermetic `src/eval/research-html-meta.eval.ts` locks the bounds, the single-pass decode, the cap, head extraction, that both collectors still produce byte-identical findings, and that neither file carries a duplicate of the extracted literals. Marked the feature completed; registered `research-collector-coverage-eval` (priority 44) and advanced the horizon to it.
+- **Why:** The previous run had to wire one Content-Type gate into two files that duplicated their whole parse layer. That is the shape of defect where a parse fix lands in one source and silently misses the other, and it was about to happen again.
+- **Commands:**
+  - Eval canary: reintroduced a local `TITLE` regex in `careers.ts` → 3 failures (import assertion plus both duplication assertions); restored → 17/17 pass.
+  - `npm run eval` before and after the extraction → 339 evals green both times, which is the no-behaviour-change evidence.
+  - `npm run verify` → exit 0 (lint, typecheck, 356 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies. Pure refactor: same fields, confidences, and evidence URLs, asserted by deep-equality on both collectors' parse output. The fetch path (`fetchResearchResponse`, `assertHtmlResponse`, `readBoundedResponseText`) and `careersPageUrl` are untouched. No SQL, UI, hybrid weights, `QUALITY_BAR`, or observability changes. Did not implement embedding-coverage-eval, research-observability, or search-ui (all in flight).
