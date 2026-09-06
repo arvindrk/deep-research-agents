@@ -143,3 +143,28 @@ describe('collector parse output is unchanged by the extraction', () => {
     assert.deepEqual(parseCareersFindings(html, 'not a url', OBSERVED_AT), []);
   });
 });
+
+describe('collectors no longer carry their own head parser', () => {
+  for (const path of [
+    'src/lib/research/website.ts',
+    'src/lib/research/careers.ts',
+  ]) {
+    const source = read(path);
+
+    it(`${path} imports the shared module`, () => {
+      assert.match(source, /from '\.\/html-meta'/);
+      assert.match(source, /headTitle\(html\)/);
+      assert.match(source, /headDescription\(html\)/);
+      assert.match(source, /AbortSignal\.timeout\(RESEARCH_FETCH_TIMEOUT_MS\)/);
+    });
+
+    it(`${path} declares no duplicate of the extracted literals`, () => {
+      assert.doesNotMatch(source, /<title\[\^>\]/, 'title regex is duplicated');
+      assert.doesNotMatch(source, /name=\\\["'\]description/, 'description regex is duplicated');
+      assert.doesNotMatch(source, /const ENTITIES/, 'entity table is duplicated');
+      assert.doesNotMatch(source, /const FETCH_TIMEOUT_MS/, 'timeout is duplicated');
+      assert.doesNotMatch(source, /const MAX_VALUE_CHARS/, 'value cap is duplicated');
+      assert.doesNotMatch(source, /decodeEntities/, 'entity decode is duplicated');
+    });
+  }
+});
