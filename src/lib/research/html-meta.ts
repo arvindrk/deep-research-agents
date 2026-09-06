@@ -22,3 +22,8 @@ export function decodeHtmlEntities(value: string): string {
     (entity) => ENTITIES[entity] ?? entity,
   );
 }
+
+/** Whitespace collapsed, trimmed, and bounded. Stored and rendered as-is. */
+export function collapseValue(value: string): string {
+  return value.replace(/\s+/g, ' ').trim().slice(0, MAX_FINDING_VALUE_CHARS);
+}
