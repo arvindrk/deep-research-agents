@@ -44,3 +44,43 @@ describe('a declared source with no collector', () => {
     ]);
   });
 });
+
+describe('a source claimed twice', () => {
+  const coverage = collectorCoverage(
+    ['website', 'careers'],
+    [{ source: 'website' }, { source: 'website' }],
+  );
+
+  it('is not counted as covered, and the other source is still missing', () => {
+    assert.deepEqual(coverage.covered, []);
+    assert.deepEqual(coverage.duplicated, ['website']);
+    assert.deepEqual(coverage.missing, ['careers']);
+  });
+
+  it('reports both gaps, because matching array lengths hid them', () => {
+    assert.deepEqual(coverageGaps(coverage), [
+      'declared source "careers" has no collector',
+      'source "website" is claimed by more than one collector',
+    ]);
+  });
+});
+
+describe('a collector for a source nobody declared', () => {
+  const coverage = collectorCoverage(
+    ['website'],
+    [{ source: 'website' }, { source: 'crunchbase' }],
+  );
+
+  it('is reported as undeclared rather than ignored', () => {
+    assert.deepEqual(coverage.covered, ['website']);
+    assert.deepEqual(coverage.undeclared, ['crunchbase']);
+    assert.deepEqual(coverage.missing, []);
+    assert.deepEqual(coverage.duplicated, []);
+  });
+
+  it('names it in the gap report', () => {
+    assert.deepEqual(coverageGaps(coverage), [
+      'collector source "crunchbase" is not declared in RESEARCH_SOURCES',
+    ]);
+  });
+});
