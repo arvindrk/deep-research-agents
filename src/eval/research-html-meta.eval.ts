@@ -14,6 +14,7 @@ import {
   headTitle,
   metaContent,
 } from '@/lib/research/html-meta';
+import { EXPECTED_FIELDS } from '@/lib/research/quality';
 import { parseWebsiteFindings } from '@/lib/research/website';
 
 const REPO_ROOT = process.cwd();
@@ -353,5 +354,37 @@ describe('an Open Graph-only page now produces findings', () => {
 
   it('kept producing nothing for a page with neither', () => {
     assert.deepEqual(parseWebsiteFindings('<html></html>', SITE, OBSERVED_AT), []);
+  });
+});
+
+describe('the fallback adds no new finding fields', () => {
+  const pages = [
+    '<title>Classic</title><meta name="description" content="Classic">',
+    '<meta property="og:title" content="OG"><meta property="og:description" content="OG">',
+    '<title>Classic</title><meta property="og:description" content="OG">',
+    '<html><head></head></html>',
+  ];
+
+  it('keeps every produced field inside EXPECTED_FIELDS', () => {
+    for (const html of pages) {
+      for (const findings of [
+        parseWebsiteFindings(html, SITE, OBSERVED_AT),
+        parseCareersFindings(html, CAREERS, OBSERVED_AT),
+      ]) {
+        for (const finding of findings) {
+          assert.ok(
+            EXPECTED_FIELDS.some((field) => field === finding.field),
+            `unexpected field "${finding.field}": the quality bar would not measure it`,
+          );
+        }
+      }
+    }
+  });
+
+  it('keeps each collector to at most its two fields', () => {
+    for (const html of pages) {
+      assert.ok(parseWebsiteFindings(html, SITE, OBSERVED_AT).length <= 2);
+      assert.ok(parseCareersFindings(html, CAREERS, OBSERVED_AT).length <= 2);
+    }
   });
 });
