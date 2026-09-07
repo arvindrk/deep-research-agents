@@ -84,3 +84,46 @@ describe('a collector for a source nobody declared', () => {
     ]);
   });
 });
+
+describe('coverageGaps', () => {
+  it('is empty only when the wiring is exact', () => {
+    for (const [sources, collectors] of [
+      [[], []],
+      [['website'], [{ source: 'website' }]],
+      [
+        ['website', 'careers'],
+        [{ source: 'careers' }, { source: 'website' }],
+      ],
+    ] as const) {
+      assert.deepEqual(coverageGaps(collectorCoverage(sources, collectors)), []);
+    }
+  });
+
+  it('reports every kind of gap at once', () => {
+    const gaps = coverageGaps(
+      collectorCoverage(
+        ['website', 'careers', 'filings'],
+        [{ source: 'website' }, { source: 'website' }, { source: 'wire' }],
+      ),
+    );
+
+    assert.deepEqual(gaps, [
+      'declared source "careers" has no collector',
+      'declared source "filings" has no collector',
+      'source "website" is claimed by more than one collector',
+      'collector source "wire" is not declared in RESEARCH_SOURCES',
+    ]);
+  });
+
+  it('does not care what order the collectors are declared in', () => {
+    const forward = collectorCoverage(
+      ['website', 'careers'],
+      [{ source: 'website' }, { source: 'careers' }],
+    );
+    const reversed = collectorCoverage(
+      ['website', 'careers'],
+      [{ source: 'careers' }, { source: 'website' }],
+    );
+    assert.deepEqual(forward, reversed);
+  });
+});
