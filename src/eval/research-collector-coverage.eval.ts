@@ -5,7 +5,11 @@ import {
   collectorCoverage,
   coverageGaps,
 } from '@/lib/research/collector-coverage';
-import { DEFAULT_COLLECTORS } from '@/lib/research/runtime';
+import {
+  DEFAULT_COLLECTORS,
+  runResearch,
+  type ResearchCollector,
+} from '@/lib/research/runtime';
 import { RESEARCH_SOURCES } from '@/lib/research/types';
 
 describe('the shipped runtime wiring', () => {
@@ -125,5 +129,48 @@ describe('coverageGaps', () => {
       [{ source: 'careers' }, { source: 'website' }],
     );
     assert.deepEqual(forward, reversed);
+  });
+});
+
+describe('why this invariant needs an eval', () => {
+  const SUBJECT = { id: 'c1', name: 'Acme', website: 'https://acme.test' };
+  const OBSERVED_AT = '2026-09-07T12:00:00.000Z';
+
+  const stub = (source: string): ResearchCollector =>
+    ({
+      source,
+      collect: async () => [
+        {
+          source,
+          field: `${source}_title`,
+          value: 'Acme',
+          evidence_url: 'https://acme.test/',
+          observed_at: OBSERVED_AT,
+          confidence: 'high',
+        },
+      ],
+    }) as ResearchCollector;
+
+  it('records a run with a dropped collector as complete, not partial', async () => {
+    const run = await runResearch(SUBJECT, [stub('website')], OBSERVED_AT);
+
+    assert.equal(run.status, 'complete');
+    assert.deepEqual(run.attempted, ['website']);
+    assert.deepEqual(run.failed, []);
+  });
+
+  it('leaves no trace of the source that was never asked', async () => {
+    const run = await runResearch(SUBJECT, [stub('website')], OBSERVED_AT);
+
+    assert.equal(run.attempted.includes('careers'), false);
+    assert.equal(
+      run.findings.some((finding) => finding.source === 'careers'),
+      false,
+    );
+    assert.deepEqual(
+      coverageGaps(collectorCoverage(RESEARCH_SOURCES, [stub('website')])),
+      ['declared source "careers" has no collector'],
+      'only the coverage check can see this; the run record cannot',
+    );
   });
 });
