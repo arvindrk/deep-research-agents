@@ -29,8 +29,12 @@ export function collapseValue(value: string): string {
 }
 
 const TITLE = /<title[^>]*>([\s\S]*?)<\/title>/i;
-const META_DESCRIPTION =
-  /<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i;
+
+/**
+ * Description keys in precedence order. A page that declares both gets the one
+ * it wrote for search engines, not the one it wrote for link previews.
+ */
+export const DESCRIPTION_META_KEYS = ['description', 'og:description'] as const;
 
 /**
  * Two fields out of a head section, decoded and bounded. Regex rather than a
