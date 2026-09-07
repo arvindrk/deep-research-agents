@@ -82,7 +82,8 @@ export function metaContent(html: string, key: string): string {
  */
 export function headTitle(html: string): string {
   const raw = TITLE.exec(html)?.[1];
-  return raw ? collapseValue(decodeHtmlEntities(raw)) : '';
+  const title = raw ? collapseValue(decodeHtmlEntities(raw)) : '';
+  return title || metaContent(html, 'og:title');
 }
 
 export function headDescription(html: string): string {
