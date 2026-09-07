@@ -26,3 +26,21 @@ describe('the shipped runtime wiring', () => {
     assert.equal(DEFAULT_COLLECTORS.length, RESEARCH_SOURCES.length);
   });
 });
+
+describe('a declared source with no collector', () => {
+  const coverage = collectorCoverage(
+    ['website', 'careers', 'filings'],
+    [{ source: 'website' }, { source: 'careers' }],
+  );
+
+  it('is reported as missing, not as covered', () => {
+    assert.deepEqual(coverage.covered, ['website', 'careers']);
+    assert.deepEqual(coverage.missing, ['filings']);
+  });
+
+  it('names the unreachable source in the gap report', () => {
+    assert.deepEqual(coverageGaps(coverage), [
+      'declared source "filings" has no collector',
+    ]);
+  });
+});
