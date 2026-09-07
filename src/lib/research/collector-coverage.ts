@@ -28,6 +28,8 @@ export function collectorCoverage(
     covered: sources.filter((source) => counts.get(source) === 1),
     missing: sources.filter((source) => !counts.has(source)),
     duplicated: sources.filter((source) => (counts.get(source) ?? 0) > 1),
-    undeclared: [],
+    undeclared: [...counts.keys()].filter(
+      (source) => !sources.includes(source),
+    ),
   };
 }
