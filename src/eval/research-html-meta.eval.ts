@@ -259,3 +259,31 @@ describe('metaContent reads real-world tag shapes', () => {
     assert.equal(metaContent(html, 'og:title'), 'Acme');
   });
 });
+
+describe('the fallback path keeps the shared bounds', () => {
+  it('decodes entities in one pass', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="Tools &amp;lt;things&amp;gt;">',
+      ),
+      'Tools &lt;things&gt;',
+    );
+  });
+
+  it('collapses whitespace in og content', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="  We   build\n  things  ">',
+      ),
+      'We build things',
+    );
+  });
+
+  it('truncates og content at the shared cap', () => {
+    const long = 'z'.repeat(MAX_FINDING_VALUE_CHARS + 100);
+    assert.equal(
+      headDescription(`<meta property="og:description" content="${long}">`).length,
+      MAX_FINDING_VALUE_CHARS,
+    );
+  });
+});
