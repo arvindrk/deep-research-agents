@@ -287,3 +287,71 @@ describe('the fallback path keeps the shared bounds', () => {
     );
   });
 });
+
+describe('title fallback', () => {
+  it('prefers a real <title> over og:title', () => {
+    assert.equal(
+      headTitle('<title>Classic</title><meta property="og:title" content="Open Graph">'),
+      'Classic',
+    );
+  });
+
+  it('falls back to og:title when there is no title element', () => {
+    assert.equal(
+      headTitle('<meta property="og:title" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('falls back when the title element is empty or whitespace', () => {
+    assert.equal(
+      headTitle('<title>   </title><meta property="og:title" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('stays empty when neither is declared', () => {
+    assert.equal(headTitle('<html><head></head></html>'), '');
+  });
+});
+
+describe('an Open Graph-only page now produces findings', () => {
+  const ogOnly = [
+    '<html><head>',
+    '<meta property="og:title" content="Acme &amp; Co">',
+    '<meta property="og:description" content="We build things">',
+    '</head><body></body></html>',
+  ].join('');
+
+  it('yields website title and description findings', () => {
+    assert.deepEqual(
+      parseWebsiteFindings(ogOnly, SITE, OBSERVED_AT).map((finding) => [
+        finding.field,
+        finding.value,
+        finding.confidence,
+      ]),
+      [
+        ['website_title', 'Acme & Co', 'high'],
+        ['website_description', 'We build things', 'medium'],
+      ],
+    );
+  });
+
+  it('yields careers title and description findings', () => {
+    assert.deepEqual(
+      parseCareersFindings(ogOnly, CAREERS, OBSERVED_AT).map((finding) => [
+        finding.field,
+        finding.value,
+        finding.confidence,
+      ]),
+      [
+        ['careers_title', 'Acme & Co', 'high'],
+        ['careers_description', 'We build things', 'medium'],
+      ],
+    );
+  });
+
+  it('kept producing nothing for a page with neither', () => {
+    assert.deepEqual(parseWebsiteFindings('<html></html>', SITE, OBSERVED_AT), []);
+  });
+});
