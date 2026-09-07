@@ -27,7 +27,7 @@ export function collectorCoverage(
   return {
     covered: sources.filter((source) => counts.get(source) === 1),
     missing: sources.filter((source) => !counts.has(source)),
-    duplicated: [],
+    duplicated: sources.filter((source) => (counts.get(source) ?? 0) > 1),
     undeclared: [],
   };
 }
