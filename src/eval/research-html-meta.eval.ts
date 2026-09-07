@@ -210,3 +210,52 @@ describe('description key precedence', () => {
     );
   });
 });
+
+describe('metaContent reads real-world tag shapes', () => {
+  it('does not care which attribute comes first', () => {
+    assert.equal(
+      metaContent('<meta content="Reversed" property="og:description">', 'og:description'),
+      'Reversed',
+    );
+    assert.equal(
+      metaContent('<meta content="Reversed" name="description">', 'description'),
+      'Reversed',
+    );
+  });
+
+  it('accepts single quotes, extra attributes, and spacing', () => {
+    assert.equal(
+      metaContent(
+        "<meta   data-rh='true'  property = 'og:title'   content = 'Acme'  />",
+        'og:title',
+      ),
+      'Acme',
+    );
+  });
+
+  it('matches the key case-insensitively', () => {
+    assert.equal(
+      metaContent('<meta PROPERTY="OG:TITLE" CONTENT="Acme">', 'og:title'),
+      'Acme',
+    );
+  });
+
+  it('does not match a different key that shares a prefix', () => {
+    assert.equal(
+      metaContent('<meta property="og:description:alt" content="No">', 'og:description'),
+      '',
+    );
+  });
+
+  it('returns an empty string when nothing matches', () => {
+    assert.equal(metaContent('<html><head></head></html>', 'description'), '');
+    assert.equal(metaContent('', 'og:title'), '');
+  });
+
+  it('is repeatable, so the global regexes carry no state between calls', () => {
+    const html = '<meta property="og:title" content="Acme">';
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+  });
+});
