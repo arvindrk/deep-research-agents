@@ -33,3 +33,23 @@ export function collectorCoverage(
     ),
   };
 }
+
+/**
+ * Every way the wiring falls short, as readable lines. A list rather than a
+ * boolean: when this fires, the useful output is which source is unreachable.
+ */
+export function coverageGaps(coverage: CollectorCoverage): string[] {
+  const gaps: string[] = [];
+
+  for (const source of coverage.missing) {
+    gaps.push(`declared source "${source}" has no collector`);
+  }
+  for (const source of coverage.duplicated) {
+    gaps.push(`source "${source}" is claimed by more than one collector`);
+  }
+  for (const source of coverage.undeclared) {
+    gaps.push(`collector source "${source}" is not declared in RESEARCH_SOURCES`);
+  }
+
+  return gaps;
+}
