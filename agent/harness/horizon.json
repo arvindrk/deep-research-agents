@@ -1,25 +1,25 @@
 {
   "slice": [
-    "research-collector-coverage-eval",
+    "research-meta-description-fallback",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-collector-coverage-eval": "Registered this run. Deduplicating the collectors made the runtime wiring the only place a source can go missing, and nothing currently asserts that DEFAULT_COLLECTORS covers RESEARCH_SOURCES.",
+    "research-meta-description-fallback": "Registered this run. Coverage is now asserted for sources; the next gap is within a covered source, where a page that ships Open Graph tags instead of classic head tags yields a successful run with no findings.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "tech_debt": 1,
     "testing_observability": 3,
+    "feature_improvement": 1,
     "new_feature": 1
   },
   "vision_refs": {
-    "research-collector-coverage-eval": [
-      "Reliable autonomous research",
-      "Measurable quality"
+    "research-meta-description-fallback": [
+      "Evidence-backed intelligence",
+      "Agent research"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260906-141854",
-  "notes": "Executor completed research-html-meta-shared and advanced past it. Collector head parsing now lives in one module. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260907-043748",
+  "notes": "Executor completed research-collector-coverage-eval and advanced past it. DEFAULT_COLLECTORS is now asserted to cover RESEARCH_SOURCES exactly. Remaining heads stay excluded as in-flight."
 }
