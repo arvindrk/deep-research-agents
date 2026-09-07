@@ -514,7 +514,7 @@
   },
   {
     "id": "research-collector-coverage-eval",
-    "status": "pending",
+    "status": "completed",
     "priority": 44,
     "category": "testing_observability",
     "depends_on": [
@@ -522,6 +522,18 @@
       "research-html-meta-shared"
     ],
     "description": "Lock the invariant the runtime already assumes: DEFAULT_COLLECTORS covers every member of RESEARCH_SOURCES exactly once, with no collector for a source that is not declared. Adding a source to RESEARCH_SOURCES without a collector currently ships a source that is never attempted, which no eval or type error catches. Add a pure coverage helper and a hermetic eval over the real runtime wiring.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-meta-description-fallback",
+    "status": "pending",
+    "priority": 45,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-html-meta-shared"
+    ],
+    "description": "Fall back to og:description and og:title when a page declares no name=\"description\" or no title, so a company whose site ships Open Graph tags instead of classic head tags still produces findings instead of an empty successful run. Keep the shared cap and single-pass decode, tolerate reversed attribute order, and lock the fallback precedence with a hermetic eval.",
     "passes": false,
     "verify": "npm run verify"
   }
