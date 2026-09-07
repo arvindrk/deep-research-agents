@@ -5,12 +5,14 @@ import { describe, it } from 'node:test';
 
 import { parseCareersFindings } from '@/lib/research/careers';
 import {
+  DESCRIPTION_META_KEYS,
   MAX_FINDING_VALUE_CHARS,
   RESEARCH_FETCH_TIMEOUT_MS,
   collapseValue,
   decodeHtmlEntities,
   headDescription,
   headTitle,
+  metaContent,
 } from '@/lib/research/html-meta';
 import { parseWebsiteFindings } from '@/lib/research/website';
 
@@ -167,4 +169,44 @@ describe('collectors no longer carry their own head parser', () => {
       assert.doesNotMatch(source, /decodeEntities/, 'entity decode is duplicated');
     });
   }
+});
+
+describe('description key precedence', () => {
+  it('prefers the search-engine description over the link-preview one', () => {
+    assert.deepEqual([...DESCRIPTION_META_KEYS], ['description', 'og:description']);
+  });
+
+  it('takes name="description" when both are declared', () => {
+    assert.equal(
+      headDescription(
+        '<meta name="description" content="Classic"><meta property="og:description" content="Open Graph">',
+      ),
+      'Classic',
+    );
+  });
+
+  it('takes it even when the og tag comes first in the document', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="Open Graph"><meta name="description" content="Classic">',
+      ),
+      'Classic',
+    );
+  });
+
+  it('falls back to og:description when no description is declared', () => {
+    assert.equal(
+      headDescription('<meta property="og:description" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('skips a matching tag with an empty content attribute', () => {
+    assert.equal(
+      headDescription(
+        '<meta name="description" content=""><meta property="og:description" content="Open Graph">',
+      ),
+      'Open Graph',
+    );
+  });
 });
