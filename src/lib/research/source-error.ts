@@ -16,3 +16,17 @@ export const RESEARCH_FAILURE_REASONS = [
 ] as const;
 
 export type ResearchFailureReason = (typeof RESEARCH_FAILURE_REASONS)[number];
+
+/**
+ * Message shapes the fetch guard throws. Matching on shape is unavoidable
+ * (fetch and URL both throw plain Errors), so the patterns live next to the
+ * closed set they map onto and are locked by an eval that provokes the real
+ * errors rather than restating these strings.
+ */
+const REASON_RULES: readonly {
+  pattern: RegExp;
+  reason: ResearchFailureReason;
+}[] = [
+  { pattern: /research destination (blocked|must be|is not a valid)/i, reason: 'blocked_destination' },
+  { pattern: /redirect/i, reason: 'redirect_failed' },
+];
