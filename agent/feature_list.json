@@ -539,7 +539,7 @@
   },
   {
     "id": "research-canonical-evidence-url",
-    "status": "pending",
+    "status": "completed",
     "priority": 46,
     "category": "feature_improvement",
     "depends_on": [
@@ -547,6 +547,19 @@
       "research-fetch-ssrf-guard"
     ],
     "description": "Point each finding at the page the site itself considers canonical: when a fetched page declares <link rel=\"canonical\"> and it resolves to an http(s) URL on the same host as the request, use it as evidence_url instead of the fetched URL. Reject cross-host, non-http(s), and unparseable canonicals, so a page cannot redirect a readers evidence link somewhere the collector never visited. Lock same-host acceptance and cross-host rejection with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-source-error-reasons",
+    "status": "pending",
+    "priority": 47,
+    "category": "maintenance",
+    "depends_on": [
+      "research-fetch-content-type",
+      "research-agent-runtime"
+    ],
+    "description": "Replace the raw error message a failed source stores on a research run with a closed set of reason codes (blocked destination, timeout, HTTP status, oversize body, non-HTML body, source failed). Collector failures currently persist and render whatever the thrown Error said, which can carry the fetched URL and its query string into the database and onto the company page. Classify at the runtime boundary, keep the closed codes readable, and lock the classification with a hermetic eval.",
     "passes": false,
     "verify": "npm run verify"
   }
