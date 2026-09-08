@@ -27,6 +27,11 @@ const REASON_RULES: readonly {
   pattern: RegExp;
   reason: ResearchFailureReason;
 }[] = [
-  { pattern: /research destination (blocked|must be|is not a valid)/i, reason: 'blocked_destination' },
+  {
+    pattern: /research destination (blocked|must be|is not a valid)/i,
+    reason: 'blocked_destination',
+  },
   { pattern: /redirect/i, reason: 'redirect_failed' },
+  { pattern: /non-HTML content type/i, reason: 'non_html' },
+  { pattern: /body exceeds \d+ bytes/i, reason: 'oversize_body' },
 ];
