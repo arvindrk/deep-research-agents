@@ -34,4 +34,28 @@ const REASON_RULES: readonly {
   { pattern: /redirect/i, reason: 'redirect_failed' },
   { pattern: /non-HTML content type/i, reason: 'non_html' },
   { pattern: /body exceeds \d+ bytes/i, reason: 'oversize_body' },
+  { pattern: /request failed with status \d+/i, reason: 'http_status' },
+  { pattern: /(timed out|timeout|aborted)/i, reason: 'timeout' },
+  {
+    pattern: /(fetch failed|network|econnreset|enotfound|socket hang up)/i,
+    reason: 'network',
+  },
 ];
+
+/**
+ * Classify a thrown value. Anything unrecognised is `source_failed`: the run
+ * still says the source failed, it just does not repeat a message nobody has
+ * checked. A DOMException from AbortSignal.timeout is matched by name, because
+ * its message differs between runtimes.
+ */
+export function researchFailureReason(error: unknown): ResearchFailureReason {
+  if (error instanceof Error && error.name === 'TimeoutError') {
+    return 'timeout';
+  }
+
+  const message = error instanceof Error ? error.message : '';
+  for (const rule of REASON_RULES) {
+    if (rule.pattern.test(message)) return rule.reason;
+  }
+  return 'source_failed';
+}
