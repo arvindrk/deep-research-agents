@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { canonicalEvidenceUrl } from '@/lib/research/canonical';
+import { parseCareersFindings } from '@/lib/research/careers';
+import { parseWebsiteFindings } from '@/lib/research/website';
 
 const FETCHED = 'https://acme.test/index.html?utm_source=x';
 const link = (href: string) => `<link rel="canonical" href="${href}">`;
@@ -97,5 +99,54 @@ describe('anything a reader should not be sent to falls back', () => {
   it('returns null when the fetched URL itself is unusable', () => {
     assert.equal(canonicalEvidenceUrl(link('https://acme.test/'), 'javascript:alert(1)'), null);
     assert.equal(canonicalEvidenceUrl(link('https://acme.test/'), 'not a url'), null);
+  });
+});
+
+describe('collector findings carry the canonical URL', () => {
+  const OBSERVED_AT = '2026-09-08T12:00:00.000Z';
+  const SITE = 'https://acme.test/index.html?ref=hn';
+  const CAREERS = 'https://acme.test/careers?ref=hn';
+  const page = (canonical: string) =>
+    [
+      '<html><head>',
+      `<link rel="canonical" href="${canonical}">`,
+      '<title>Acme</title>',
+      '<meta name="description" content="We build things">',
+      '</head></html>',
+    ].join('');
+
+  it('uses it for every website finding', () => {
+    const findings = parseWebsiteFindings(page('https://acme.test/'), SITE, OBSERVED_AT);
+    assert.equal(findings.length, 2);
+    for (const finding of findings) {
+      assert.equal(finding.evidence_url, 'https://acme.test/');
+    }
+  });
+
+  it('uses it for every careers finding', () => {
+    const findings = parseCareersFindings(page('/jobs'), CAREERS, OBSERVED_AT);
+    assert.equal(findings.length, 2);
+    for (const finding of findings) {
+      assert.equal(finding.evidence_url, 'https://acme.test/jobs');
+    }
+  });
+
+  it('keeps the fetched URL when the canonical points off-host', () => {
+    for (const findings of [
+      parseWebsiteFindings(page('https://evil.test/acme'), SITE, OBSERVED_AT),
+      parseCareersFindings(page('https://evil.test/acme'), CAREERS, OBSERVED_AT),
+    ]) {
+      assert.ok(findings.length > 0);
+      for (const finding of findings) {
+        assert.ok(finding.evidence_url?.startsWith('https://acme.test/'));
+      }
+    }
+  });
+
+  it('still produces no findings when the fetched URL is unusable', () => {
+    assert.deepEqual(
+      parseWebsiteFindings(page('https://acme.test/'), 'javascript:alert(1)', OBSERVED_AT),
+      [],
+    );
   });
 });
