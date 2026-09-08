@@ -2,6 +2,30 @@ import { httpUrl } from '../safe-url';
 import { tagAttributeSets } from './html-meta';
 
 /**
+ * Resolve a declared canonical against the page it came from, and accept it
+ * only when it is http(s) on the same host. Same-host is stricter than the
+ * specification allows, deliberately: a cross-host canonical would put a
+ * reader's only evidence link on a host the collector never visited and the
+ * public-destination guard never saw.
+ */
+function sameHostCanonical(href: string, fetched: string): string | null {
+  let candidate: URL;
+  try {
+    candidate = new URL(href, fetched);
+  } catch {
+    return null;
+  }
+
+  const safe = httpUrl(candidate.href);
+  if (!safe) return null;
+
+  return candidate.hostname.toLowerCase() ===
+    new URL(fetched).hostname.toLowerCase()
+    ? safe
+    : null;
+}
+
+/**
  * The URL the page says it is, when a reader can safely be pointed at it.
  *
  * An evidence link is the only way a reader checks a claim, so it has to land
@@ -22,7 +46,10 @@ export function canonicalEvidenceUrl(
     if (attributes.get('rel')?.trim().toLowerCase() !== 'canonical') continue;
 
     const href = attributes.get('href');
-    if (href) return fetched;
+    if (!href) continue;
+
+    const canonical = sameHostCanonical(href, fetched);
+    if (canonical) return canonical;
   }
 
   return fetched;
