@@ -2,6 +2,21 @@ import { httpUrl } from '../safe-url';
 import { tagAttributeSets } from './html-meta';
 
 /**
+ * Canonical hrefs are absolute in practice, and relative ones start at a path.
+ * Anything else resolves as a relative reference and produces a same-host URL
+ * that never existed: `new URL('ht!tp://%%%', page)` is a path, not an error.
+ * A dead link on the right host is worse evidence than the URL we fetched.
+ */
+function looksLikeUrlReference(href: string): boolean {
+  return (
+    /^https?:\/\//i.test(href) ||
+    href.startsWith('/') ||
+    href.startsWith('./') ||
+    href.startsWith('../')
+  );
+}
+
+/**
  * Resolve a declared canonical against the page it came from, and accept it
  * only when it is http(s) on the same host. Same-host is stricter than the
  * specification allows, deliberately: a cross-host canonical would put a
@@ -9,6 +24,8 @@ import { tagAttributeSets } from './html-meta';
  * public-destination guard never saw.
  */
 function sameHostCanonical(href: string, fetched: string): string | null {
+  if (!looksLikeUrlReference(href)) return null;
+
   let candidate: URL;
   try {
     candidate = new URL(href, fetched);
