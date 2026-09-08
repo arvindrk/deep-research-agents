@@ -1,4 +1,5 @@
 import { httpUrl } from '../safe-url';
+import { canonicalEvidenceUrl } from './canonical';
 import { assertHtmlResponse } from './content-type';
 import { readBoundedResponseText } from './fetch-body';
 import {
@@ -19,7 +20,7 @@ export function parseWebsiteFindings(
   url: string,
   observedAt: string,
 ): ResearchFinding[] {
-  const evidence = httpUrl(url);
+  const evidence = canonicalEvidenceUrl(html, url);
   if (!evidence) return [];
 
   const findings: ResearchFinding[] = [];
