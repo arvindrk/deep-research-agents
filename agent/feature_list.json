@@ -527,13 +527,26 @@
   },
   {
     "id": "research-meta-description-fallback",
-    "status": "pending",
+    "status": "completed",
     "priority": 45,
     "category": "feature_improvement",
     "depends_on": [
       "research-html-meta-shared"
     ],
     "description": "Fall back to og:description and og:title when a page declares no name=\"description\" or no title, so a company whose site ships Open Graph tags instead of classic head tags still produces findings instead of an empty successful run. Keep the shared cap and single-pass decode, tolerate reversed attribute order, and lock the fallback precedence with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-canonical-evidence-url",
+    "status": "pending",
+    "priority": 46,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-meta-description-fallback",
+      "research-fetch-ssrf-guard"
+    ],
+    "description": "Point each finding at the page the site itself considers canonical: when a fetched page declares <link rel=\"canonical\"> and it resolves to an http(s) URL on the same host as the request, use it as evidence_url instead of the fetched URL. Reject cross-host, non-http(s), and unparseable canonicals, so a page cannot redirect a readers evidence link somewhere the collector never visited. Lock same-host acceptance and cross-host rejection with a hermetic eval.",
     "passes": false,
     "verify": "npm run verify"
   }
