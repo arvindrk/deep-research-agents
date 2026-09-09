@@ -9,9 +9,6 @@ import type {
 import { collectCareersFindings } from './careers';
 import { collectWebsiteFindings } from './website';
 
-/** Bounded so a failing source cannot write an essay into the run record. */
-const MAX_ERROR_CHARS = 200;
-
 export type ResearchCollector = {
   source: ResearchSourceId;
   collect: (
