@@ -587,5 +587,19 @@
     "description": "Drop duplicate findings within a single research run, keyed on source and field, keeping the first. A collector can now reach one field through more than one tag (description or og:description, title or og:title) and a run flattens every source outcome into a single findings list, so the same claim is storable twice. A reader would see it twice and the coverage measure would count it twice.",
     "passes": false,
     "verify": "npm run verify"
+  },
+  {
+    "id": "company-detail-db-resilience",
+    "status": "completed",
+    "priority": 50,
+    "category": "maintenance",
+    "depends_on": [
+      "db-resilience",
+      "listing-db-resilience",
+      "company-detail-route"
+    ],
+    "description": "Finish the pass db-resilience and listing-db-resilience started: getCompanyById returns the raw driver error.message to its caller, and listCompaniesMissingEmbeddings and updateCompanyEmbedding have no retry at all. Close the company read error, wrap the remaining queries in withRetry, keep the two messages callers branch on, and lock both requirements for every query in src/db with a source eval that cannot pass vacuously.",
+    "passes": true,
+    "verify": "npm run verify"
   }
 ]
