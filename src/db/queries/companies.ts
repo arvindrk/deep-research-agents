@@ -221,24 +221,28 @@ export async function listCompaniesMissingEmbeddings(
     const sql = getDBClient();
 
     const results = cursor
-      ? await sql`
-          SELECT
-            id, name, one_liner, long_description, tags, industries, regions,
-            batch, stage
-          FROM companies
-          WHERE embedding IS NULL AND id > ${cursor}
-          ORDER BY id
-          LIMIT ${limit}
-        `
-      : await sql`
-          SELECT
-            id, name, one_liner, long_description, tags, industries, regions,
-            batch, stage
-          FROM companies
-          WHERE embedding IS NULL
-          ORDER BY id
-          LIMIT ${limit}
-        `;
+      ? await withRetry(
+          () => sql`
+            SELECT
+              id, name, one_liner, long_description, tags, industries, regions,
+              batch, stage
+            FROM companies
+            WHERE embedding IS NULL AND id > ${cursor}
+            ORDER BY id
+            LIMIT ${limit}
+          `,
+        )
+      : await withRetry(
+          () => sql`
+            SELECT
+              id, name, one_liner, long_description, tags, industries, regions,
+              batch, stage
+            FROM companies
+            WHERE embedding IS NULL
+            ORDER BY id
+            LIMIT ${limit}
+          `,
+        );
 
     return { success: true, data: results as CompanyEmbeddingSource[] };
   } catch {
