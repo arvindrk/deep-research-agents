@@ -1,25 +1,25 @@
 {
   "slice": [
-    "research-source-error-reasons",
+    "research-finding-dedupe",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-source-error-reasons": "Registered this run. Findings are now careful about what they say and where they point; the failure path is not. A thrown collector error still lands in the database and on the page verbatim, including the URL it was fetching.",
+    "research-finding-dedupe": "Registered this run alongside research-failure-reason-type. Chosen as the next head because a duplicate claim is reader-visible and would double-count in the coverage measure, while the type narrowing is compile-time hygiene that can wait a slice.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "feature_improvement": 2,
     "maintenance": 1,
+    "tech_debt": 2,
     "testing_observability": 2
   },
   "vision_refs": {
-    "research-source-error-reasons": [
-      "Reliable autonomous research",
-      "Evidence-backed intelligence"
+    "research-finding-dedupe": [
+      "Evidence-backed intelligence",
+      "Measurable quality"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260908-091536",
-  "notes": "Executor completed research-canonical-evidence-url and advanced past it. Writing the eval turned up a real defect (a malformed href resolving to a same-host path), fixed in the same run. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260908-233431",
+  "notes": "Executor completed research-source-error-reasons and advanced past it. Failed sources now persist a closed reason code. research-failure-reason-type is registered but deferred behind research-finding-dedupe. Remaining heads stay excluded as in-flight."
 }
