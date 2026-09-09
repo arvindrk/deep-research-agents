@@ -6,15 +6,15 @@
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-finding-dedupe": "Registered this run alongside research-failure-reason-type. Chosen as the next head because a duplicate claim is reader-visible and would double-count in the coverage measure, while the type narrowing is compile-time hygiene that can wait a slice.",
+    "research-finding-dedupe": "Still the registered next slice, deferred by one run so a live rule violation on the company detail read could be closed first. Unblocked and selectable now.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "maintenance": 1,
+    "maintenance": 2,
     "tech_debt": 2,
-    "testing_observability": 2
+    "testing_observability": 1
   },
   "vision_refs": {
     "research-finding-dedupe": [
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260908-233431",
-  "notes": "Executor completed research-source-error-reasons and advanced past it. Failed sources now persist a closed reason code. research-failure-reason-type is registered but deferred behind research-finding-dedupe. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260909-135325",
+  "notes": "Planner defined company-detail-db-resilience rather than taking the horizon head: getCompanyById was handing driver text to callers, which .agents/rules/postgres-neon.md forbids outright. Executor registered it at priority 50 and completed it. research-finding-dedupe returns as the head. Remaining heads stay excluded as in-flight."
 }
