@@ -414,14 +414,14 @@
   },
   {
     "id": "listing-db-resilience",
-    "status": "pending",
+    "status": "completed",
     "priority": 36,
     "category": "maintenance",
     "depends_on": [
       "db-resilience"
     ],
     "description": "Extend withRetry to the company listing and count reads (getCompaniesWithOffset, getCompanyCount, getAllCompanies) so browse and pagination degrade gracefully on transient database failures the same way search already does. Do not change SQL shapes, hybrid weights, or UI copy beyond real error states.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {
