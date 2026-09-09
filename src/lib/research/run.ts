@@ -22,6 +22,14 @@ export type ResearchRun = {
 };
 
 /**
+ * A claim's identity: which source said it, and about what. Source is part of
+ * the key so `website_title` and `careers_title` are never confused, and two
+ * sources reporting the same field name both survive.
+ */
+const findingKey = (finding: ResearchFinding): string =>
+  `${finding.source}\u0000${finding.field}`;
+
+/**
  * Complete only when every attempted source succeeded. Nothing else is ever
  * called complete: a partial result that reads as complete is worse than no
  * result, because a reader stops looking for the rest.
