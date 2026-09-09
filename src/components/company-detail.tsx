@@ -13,17 +13,13 @@ import {
 import type { StoredResearchRun } from '@/db/queries/research';
 import type { Company } from '@/db/types';
 import { formatBatch } from '@/lib/format-batch';
+import {
+  syncDateTime,
+  syncFreshnessLabel,
+  syncRelativeAge,
+} from '@/lib/research/sync-freshness';
 import { httpUrl } from '@/lib/safe-url';
 import { cn } from '@/lib/utils';
-
-function formatSyncedAt(value: Date | string): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Unknown';
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
 
 interface CompanyDetailProps {
   company: Company;
@@ -37,10 +33,15 @@ export function CompanyDetail({
   researchRuns,
   researchHistoryOk,
 }: CompanyDetailProps) {
+  const now = new Date();
   const websiteHref = httpUrl(company.website);
   const description = company.long_description ?? company.one_liner;
   const tags = company.tags ?? [];
   const industries = company.industries ?? [];
+  const syncedAt = company.last_synced_at;
+  const syncBand = syncFreshnessLabel(syncedAt, now);
+  const syncAge = syncRelativeAge(syncedAt, now);
+  const syncIso = syncDateTime(syncedAt);
 
   return (
     <div className={cn('min-h-screen', 'bg-[var(--color-bg-primary)]')}>
@@ -197,13 +198,30 @@ export function CompanyDetail({
                 >
                   Last synced
                 </dt>
-                <dd
-                  className={cn(
-                    'text-sm',
-                    'text-[var(--color-text-primary)]'
+                <dd className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {syncBand}
+                  </Badge>
+                  {syncIso ? (
+                    <time
+                      dateTime={syncIso}
+                      className={cn(
+                        'text-sm',
+                        'text-[var(--color-text-primary)]'
+                      )}
+                    >
+                      {syncAge}
+                    </time>
+                  ) : (
+                    <span
+                      className={cn(
+                        'text-sm',
+                        'text-[var(--color-text-primary)]'
+                      )}
+                    >
+                      {syncAge}
+                    </span>
                   )}
-                >
-                  {formatSyncedAt(company.last_synced_at)}
                 </dd>
               </div>
             </dl>
@@ -250,7 +268,7 @@ export function CompanyDetail({
             <CompanyEvidence
               researchRuns={researchRuns}
               researchHistoryOk={researchHistoryOk}
-              now={new Date()}
+              now={now}
             />
           </CardContent>
         </Card>

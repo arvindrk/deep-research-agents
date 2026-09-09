@@ -449,5 +449,30 @@
     "description": "Add a human-applied migration that creates a non-unique index on company_research_findings (run_id) so getRecentResearchRuns findings lookups (WHERE run_id = $1 or OR of two ids) can use an Index/Bitmap scan instead of relying on a foreign key that does not create a child-column index in Postgres. Keep the migration human-applied like 0001/0002 (comment that the agent loop never applies DDL). Lock the index shape with a hermetic eval that reads migrations/*.sql. Do not change research query TypeScript, collectors, UI, hybrid weights, QUALITY_BAR, or ingestion.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "profile-sync-freshness",
+    "status": "completed",
+    "priority": 39,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-evidence-and-freshness",
+      "company-detail-route"
+    ],
+    "description": "Surface company profile sync freshness with the same bands readers already see on research evidence: map last_synced_at through freshnessOf and relativeAge (clock injected as now) into closed labels matching CompanyEvidence (Fresh / Aging / Stale / Age unknown), replace the absolute-only formatSyncedAt Last synced row on company detail with a secondary Badge for the band, relative age text, and a machine-readable time element with dateTime, keep CompanyDetail a Server Component, extract pure helpers that accept Date or string, and lock them with a hermetic eval under src/eval/. Do not change research collectors, SQL, hybrid weights, QUALITY_BAR, company cards, listing/search UI, or observability emitters.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-fetch-body-limit",
+    "status": "pending",
+    "priority": 40,
+    "category": "maintenance",
+    "depends_on": [
+      "research-agent-runtime"
+    ],
+    "description": "Bound collector response.text() size so unattended research cannot OOM on huge HTML pages. Keep collectors otherwise unchanged; lock the bound with a hermetic eval.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]

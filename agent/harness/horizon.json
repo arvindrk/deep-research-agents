@@ -1,19 +1,25 @@
 {
   "slice": [
+    "research-fetch-body-limit",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
+    "research-fetch-body-limit": "Next reliability slice after profile freshness: bound collector HTML body reads so unattended research cannot OOM on huge pages.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while PR #51 is open.",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while PR #42 is open.",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while PR #27 is open."
   },
   "category_mix": {
+    "maintenance": 1,
     "testing_observability": 2,
     "new_feature": 1
   },
   "vision_refs": {
+    "research-fetch-body-limit": [
+      "Reliable autonomous research"
+    ],
     "embedding-coverage-eval": [
       "Hybrid search",
       "Measurable quality"
@@ -27,6 +33,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260909-213510",
-  "notes": "Executor completed research-findings-run-id-index and advanced past it. Excluded heads stay on the slice for when their PRs merge."
+  "generated_by_run": "continue-20260909-221917",
+  "notes": "Executor completed profile-sync-freshness and advanced past it. research-fetch-body-limit is next free head; excluded in-flight features stay on the slice."
 }
