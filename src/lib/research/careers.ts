@@ -1,4 +1,5 @@
 import { httpUrl } from '../safe-url';
+import { readBoundedResponseText } from './fetch-body';
 import type { ResearchFinding, ResearchSubject } from './types';
 
 /** A source that hangs is a source that failed, so requests carry a bound. */
@@ -109,5 +110,9 @@ export async function collectCareersFindings(
     throw new Error(`Careers request failed with status ${response.status}`);
   }
 
-  return parseCareersFindings(await response.text(), url, observedAt);
+  return parseCareersFindings(
+    await readBoundedResponseText(response),
+    url,
+    observedAt,
+  );
 }
