@@ -72,3 +72,23 @@ describe('the query enumeration', () => {
     }
   });
 });
+
+describe('every query retries transient failures', () => {
+  for (const query of queries) {
+    it(`${query.name} wraps its sql call in withRetry`, () => {
+      assert.match(
+        query.body,
+        /withRetry\s*\(\s*\(\)\s*=>\s*sql[`.]/,
+        `${query.name} must wrap the sql tagged template, not the QueryResult mapping`,
+      );
+    });
+
+    it(`${query.name} awaits no bare sql call`, () => {
+      assert.doesNotMatch(
+        query.body,
+        /await\s+sql[`.]/,
+        `${query.name} has an sql call outside withRetry`,
+      );
+    });
+  }
+});
