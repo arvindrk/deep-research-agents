@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
@@ -197,5 +197,55 @@ describe('retry wrapping did not move the per-transaction settings', () => {
     assert.match(insert.body, /withRetry\(\(\)\s*=>\s*\n?\s*sql\.transaction\(\[/);
     assert.match(insert.body, /INSERT INTO company_research_runs/);
     assert.match(insert.body, /INSERT INTO company_research_findings/);
+  });
+});
+
+describe('only the db client constructs a connection', () => {
+  const CLIENT_MODULE = 'src/db/client.ts';
+
+  function tsFiles(dir: string): string[] {
+    const found: string[] = [];
+    for (const entry of readdirSync(join(REPO_ROOT, dir), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        found.push(...tsFiles(path));
+      } else if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
+        found.push(path);
+      }
+    }
+    return found;
+  }
+
+  // Evals are excluded: this file names the driver package in its own
+  // assertion, and an eval that matched itself would never go green.
+  const sources = [...tsFiles('src'), ...tsFiles('scripts')].filter(
+    (file) => !file.startsWith('src/eval/'),
+  );
+
+  it('scanned the repository, not an empty list', () => {
+    assert.ok(sources.length > 30, `only found ${sources.length} source files`);
+  });
+
+  it('imports the driver in exactly one module', () => {
+    const importers = sources.filter((file) =>
+      read(file).includes('@neondatabase/serverless'),
+    );
+    assert.deepEqual(
+      importers,
+      [CLIENT_MODULE],
+      'DATABASE_URL resolution and connection reuse live in one place',
+    );
+  });
+
+  it('resolves the connection string lazily, so the build needs no secret', () => {
+    const client = read(CLIENT_MODULE);
+    assert.match(client, /export function getDBClient\(\)/);
+    assert.match(client, /if \(!client\)/);
+    assert.match(client, /process\.env\.DATABASE_URL/);
+    assert.doesNotMatch(
+      client,
+      /process\.env\.DATABASE_URL\s*\?\?|process\.env\.DATABASE_URL\s*\|\|/,
+      'never fall back to a default connection string',
+    );
   });
 });
