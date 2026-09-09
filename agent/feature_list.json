@@ -465,14 +465,14 @@
   },
   {
     "id": "research-fetch-body-limit",
-    "status": "pending",
+    "status": "completed",
     "priority": 40,
     "category": "maintenance",
     "depends_on": [
       "research-agent-runtime"
     ],
     "description": "Bound collector response.text() size so unattended research cannot OOM on huge HTML pages. Keep collectors otherwise unchanged; lock the bound with a hermetic eval.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]

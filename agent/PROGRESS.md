@@ -335,3 +335,14 @@ No canary code was merged.
   - Eval canary: changed `fresh: 'Fresh'` to `'Too fresh'` → profile-sync-freshness eval failed on closed label map; restored → 9/9 pass.
   - First `npm run verify`: lint and typecheck green; eval failed only because planner horizon referenced `profile-sync-freshness` / `research-fetch-body-limit` before feature_list registration. After registering features and advancing horizon: `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 274 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no cards, SQL, collectors, hybrid weights, QUALITY_BAR, search-ui, or observability changes. Did not implement research-fetch-body-limit, embedding-coverage-eval, research-observability, search-ui, or research-agent-runtime.
+
+## continue-20260909-235106 (research-fetch-body-limit)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260909-235106` / `harness/continue-local-20260909-235106`
+- **Task / plan:** `research-fetch-body-limit` / `plan-20260909182213`
+- **What changed:** Added `src/lib/research/fetch-body.ts` with `MAX_RESEARCH_FETCH_BODY_BYTES` (1_048_576) and `readBoundedResponseText` that stream-reads Response bodies and throws once the byte total exceeds the cap (no silent truncate). Wired `collectWebsiteFindings` and `collectCareersFindings` to use the helper instead of `response.text()`. Hermetic `src/eval/research-fetch-body-limit.eval.ts` locks the cap, collector wiring, oversize rejection without Content-Length, and under-limit parse success. Marked feature completed; advanced horizon past it.
+- **Why:** Unattended collectors could OOM on huge HTML via unbounded `response.text()`; oversize must fail the source so the run is partial/failed, not a clipped success.
+- **Commands:**
+  - Eval canary: raised cap to 1_048_577 → fetch-body-limit eval failed (`cap … exceeds locked maximum`); restored → pass. Replaced helper call with `response.text()` in website.ts → eval failed (`must call readBoundedResponseText`); restored → 7/7 pass.
+  - `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 281 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, or parse-rule changes. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-agent-runtime.
