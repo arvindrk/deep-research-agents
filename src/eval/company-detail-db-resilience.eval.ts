@@ -92,3 +92,50 @@ describe('every query retries transient failures', () => {
     });
   }
 });
+
+/**
+ * The one query allowed to return a message it caught, with why. It rethrows
+ * its own assertion, not driver text, and the caller needs the dimensions.
+ */
+const DRIVER_TEXT_EXCEPTIONS: Record<string, string> = {
+  updateCompanyEmbedding:
+    'returns its own "Expected embedding length" assertion, guarded by startsWith',
+};
+
+describe('no query hands driver text to a caller', () => {
+  for (const query of queries) {
+    it(`${query.name} keeps error.message out of its QueryResult`, () => {
+      if (DRIVER_TEXT_EXCEPTIONS[query.name]) {
+        assert.match(
+          query.body,
+          /error\.message\.startsWith\('Expected embedding length'\)/,
+          `${query.name} is allowlisted only for its own assertion message`,
+        );
+        return;
+      }
+
+      assert.doesNotMatch(
+        query.body,
+        /error\.message/,
+        `${query.name} must not return or inspect raw driver text`,
+      );
+    });
+  }
+
+  it('gives every allowlisted query a reason', () => {
+    for (const [name, reason] of Object.entries(DRIVER_TEXT_EXCEPTIONS)) {
+      assert.ok(reason.length > 0, `${name} is allowlisted without a reason`);
+      assert.ok(
+        queries.some((query) => query.name === name),
+        `${name} is allowlisted but is not a query any more`,
+      );
+    }
+  });
+
+  it('closes the single company read that used to leak it', () => {
+    const read = queries.find((query) => query.name === 'getCompanyById');
+    assert.ok(read);
+    assert.match(read.body, /error: 'Failed to read company'/);
+    assert.match(read.body, /catch\s*\{/);
+  });
+});
