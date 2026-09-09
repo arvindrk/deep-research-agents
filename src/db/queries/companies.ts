@@ -53,11 +53,9 @@ export async function getCompanyById(id: string): Promise<QueryResult<Company>> 
     }
 
     return { success: true, data: results[0] as Company };
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
+  } catch {
+    // Driver text names columns, hosts, and timeouts. Callers get none of it.
+    return { success: false, error: 'Failed to read company' };
   }
 }
 
