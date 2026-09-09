@@ -1,0 +1,10 @@
+{
+  "note": "Synthetic inventory for embedding coverage. embeddingLength is the reported vector width (or null); never store full 1536-d vectors or secrets here.",
+  "companies": [
+    { "id": "covered-a", "embeddingLength": 1536 },
+    { "id": "covered-b", "embeddingLength": 1536 },
+    { "id": "covered-c", "embeddingLength": 1536 },
+    { "id": "missing", "embeddingLength": null },
+    { "id": "wrong-dim", "embeddingLength": 3 }
+  ]
+}

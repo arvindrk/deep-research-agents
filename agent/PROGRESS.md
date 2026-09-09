@@ -302,3 +302,14 @@ No canary code was merged.
   - Eval canary: load-failure path returned `RESEARCH_EMPTY_HISTORY_COPY` → honesty eval failed (expected load-failure string); restored → pass.
   - First `npm run verify`: lint/typecheck/262 evals green; build failed resolving `next` (broken node_modules). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 262 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no SQL, collectors, write paths, hybrid weights, QUALITY_BAR, search-ui, or observability changes. Failure copy is closed and generic (no driver/`QueryResult.error` interpolation). Next slice head is research-observability (often excluded) or search-ui.
+
+## continue-20260909-184351 (embedding-coverage-eval)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260909-184351` / `harness/continue-local-20260909-184351`
+- **Task / plan:** `embedding-coverage-eval` / `plan-20260909131435`
+- **What changed:** Added pure `src/lib/embedding-coverage.ts` (`isUsableEmbedding`, `isUsableEmbeddingLength`, `measureEmbeddingCoverage`, `EMBEDDING_COVERAGE_BAR` at minCoverage 0.5, `embeddingCoverageViolations`). Fixture corpus `src/eval/fixtures/embedding-coverage.json` uses length/null only (3 usable @ 1536, 1 null, 1 wrong-dim @ 3 → coverage 0.6). Hermetic `src/eval/embedding-coverage.eval.ts` imports those helpers and locks usable vs fallback-only. Marked feature completed; advanced horizon past it to research-observability then search-ui then listing-db-resilience.
+- **Why:** Hybrid search readiness was not measurable in CI after the embedding pipeline and ranking eval shipped. Coverage of usable embeddings vs name/full-text-only fallback needed a lock-after-ship eval.
+- **Commands:**
+  - Eval canary: `isUsableEmbeddingLength` returned `length != null` (wrong-dim counted usable) → embedding-coverage eval exit 1 (3 fails); restored → 10/10 pass.
+  - `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 272 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies. Did not change embed generation, backfill, DB queries, hybrid weights, `HNSW_EF_SEARCH`, or search SQL. Fixtures hold no vectors or secrets. Next slice head is research-observability (often excluded) or search-ui.
