@@ -266,12 +266,16 @@ export async function updateCompanyEmbedding(
     const sql = getDBClient();
     const embeddingJSON = JSON.stringify(embedding);
 
-    const results = await sql`
-      UPDATE companies
-      SET embedding = ${embeddingJSON}::vector
-      WHERE id = ${id}
-      RETURNING id
-    `;
+    // Idempotent UPDATE by primary key, and withRetry only retries transient
+    // transport failures, so a retry cannot write twice or write something else.
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET embedding = ${embeddingJSON}::vector
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
 
     if (results.length === 0) {
       return { success: false, error: 'Company not found' };
