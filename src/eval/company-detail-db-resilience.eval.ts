@@ -139,3 +139,35 @@ describe('no query hands driver text to a caller', () => {
     assert.match(read.body, /catch\s*\{/);
   });
 });
+
+describe('the two messages callers branch on survive', () => {
+  it('getCompanyById still says "Company not found" for an empty result', () => {
+    const read = queries.find((query) => query.name === 'getCompanyById');
+    assert.ok(read);
+    assert.match(
+      read.body,
+      /results\.length === 0[\s\S]*error: 'Company not found'/,
+      'the detail route calls notFound() on exactly this string',
+    );
+  });
+
+  it('the detail route still branches on it, and renders closed copy otherwise', () => {
+    const route = read('src/app/companies/[id]/page.tsx');
+    assert.match(route, /result\.error === 'Company not found'/);
+    assert.match(route, /notFound\(\)/);
+    assert.match(route, /Unable to load company/);
+    assert.doesNotMatch(
+      route,
+      /\{result\.error\}/,
+      'the route must never render a query error string',
+    );
+  });
+
+  it('updateCompanyEmbedding still returns the dimension assertion', () => {
+    const write = queries.find((query) => query.name === 'updateCompanyEmbedding');
+    assert.ok(write);
+    assert.match(write.body, /assertEmbeddingDimensions\(embedding\)/);
+    assert.match(write.body, /Expected embedding length/);
+    assert.match(write.body, /error: 'Failed to update company embedding'/);
+  });
+});
