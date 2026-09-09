@@ -313,3 +313,14 @@ No canary code was merged.
   - Eval canary: restored `error.message` in `getCompanyCount` catch → listing-db-resilience eval failed; restored → pass. Renamed `withRetry` in `getCompaniesWithOffset` → eval failed; restored → pass.
   - First `npm run verify`: lint/typecheck/264 evals green; build failed resolving `next` (broken node_modules). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 264 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; SQL SELECT/ORDER/LIMIT/OFFSET/cursor shapes unchanged; HYBRID_SEARCH_WEIGHTS / HNSW_EF_SEARCH / searchCompanies untouched; no UI edits. Intended EXPLAIN for offset listing remains `ORDER BY id LIMIT/OFFSET` (id index / ordered scan); count is `COUNT(*)` on companies; cursor listing stays `WHERE id > $cursor ORDER BY id LIMIT`. No live EXPLAIN (no secrets / no DB in worktree). Next slice head is embedding-coverage-eval.
+
+## continue-20260909-213510 (research-findings-run-id-index)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260909-213510` / `harness/continue-local-20260909-213510`
+- **Task / plan:** `research-findings-run-id-index` / `plan-20260909160815`
+- **What changed:** Added human-applied `migrations/0003_company_research_findings_run_id_index.sql` (`CREATE INDEX` non-unique on `company_research_findings (run_id)` with agent-loop-does-not-apply-DDL comment). Locked shape with hermetic `src/eval/research-findings-run-id-index.eval.ts`. Registered then completed the feature (priority 38, tech_debt, depends_on research-agent-runtime + research-run-history). Advanced horizon past this feature to embedding-coverage-eval then excluded heads.
+- **Why:** Postgres does not index FK child columns; `getRecentResearchRuns` findings filters by `run_id` need an explicit index for Index/Bitmap scans.
+- **Commands:**
+  - Eval canary: changed `ON company_research_findings (run_id)` to `(company_id)` → findings-run-id-index eval failed (`expected a migration that creates a non-unique index on company_research_findings (run_id)`); restored → pass.
+  - First `npm run verify`: lint/typecheck/265 evals green; build failed resolving `next` (empty `node_modules`). `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 265 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** Migration was not applied to any live database. Intended EXPLAIN for findings by run_id: Index Scan or Bitmap Index Scan on `company_research_findings_run_id_idx` (`run_id`); no sequential scan on findings for that filter. No live EXPLAIN (no secrets / no DB in worktree). No new dependencies; no `src/db`, collectors, UI, hybrid weights, or QUALITY_BAR changes. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-agent-runtime.
