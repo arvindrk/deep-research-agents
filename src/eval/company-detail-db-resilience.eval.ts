@@ -171,3 +171,31 @@ describe('the two messages callers branch on survive', () => {
     assert.match(write.body, /error: 'Failed to update company embedding'/);
   });
 });
+
+describe('retry wrapping did not move the per-transaction settings', () => {
+  it('searchCompanies still sets ef_search and the timeout inside its transaction', () => {
+    const search = queries.find((query) => query.name === 'searchCompanies');
+    assert.ok(search);
+    assert.match(
+      search.body,
+      /withRetry\(\(\)\s*=>\s*\n?\s*sql\.transaction\(\[/,
+      'the transaction, not the individual statements, is what gets retried',
+    );
+    const settings = search.body.indexOf("set_config('hnsw.ef_search'");
+    const timeout = search.body.indexOf("set_config('statement_timeout'");
+    const select = search.body.indexOf('relevance_score');
+    assert.ok(settings > -1 && timeout > -1 && select > -1);
+    assert.ok(
+      settings < select && timeout < select,
+      'both settings must still precede the ranking query in the same transaction',
+    );
+  });
+
+  it('insertResearchRun still writes the run and its findings in one transaction', () => {
+    const insert = queries.find((query) => query.name === 'insertResearchRun');
+    assert.ok(insert);
+    assert.match(insert.body, /withRetry\(\(\)\s*=>\s*\n?\s*sql\.transaction\(\[/);
+    assert.match(insert.body, /INSERT INTO company_research_runs/);
+    assert.match(insert.body, /INSERT INTO company_research_findings/);
+  });
+});
