@@ -436,5 +436,18 @@
     "description": "Add a hermetic or fixture-backed measure of embedding coverage so hybrid search readiness is measurable: how many companies have usable embeddings versus how many would fall back to name/full-text only. Lock the coverage invariant with an eval; do not change embedding generation or hybrid weights.",
     "passes": false,
     "verify": "npm run verify"
+  },
+  {
+    "id": "research-findings-run-id-index",
+    "status": "completed",
+    "priority": 38,
+    "category": "tech_debt",
+    "depends_on": [
+      "research-agent-runtime",
+      "research-run-history"
+    ],
+    "description": "Add a human-applied migration that creates a non-unique index on company_research_findings (run_id) so getRecentResearchRuns findings lookups (WHERE run_id = $1 or OR of two ids) can use an Index/Bitmap scan instead of relying on a foreign key that does not create a child-column index in Postgres. Keep the migration human-applied like 0001/0002 (comment that the agent loop never applies DDL). Lock the index shape with a hermetic eval that reads migrations/*.sql. Do not change research query TypeScript, collectors, UI, hybrid weights, QUALITY_BAR, or ingestion.",
+    "passes": true,
+    "verify": "npm run verify"
   }
 ]
