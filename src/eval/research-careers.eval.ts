@@ -160,7 +160,7 @@ describe('multi-source research run', () => {
     assert.equal(run.status, 'partial');
     assert.deepEqual(run.succeeded, ['website']);
     assert.deepEqual(run.failed, [
-      { source: 'careers', error: 'Careers request failed with status 404' },
+      { source: 'careers', error: 'http_status' },
     ]);
     assert.deepEqual(
       run.findings.map((finding) => finding.field),

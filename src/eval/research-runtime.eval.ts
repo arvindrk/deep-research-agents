@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { buildResearchRun, runStatus } from '@/lib/research/run';
+import { RESEARCH_FAILURE_REASONS } from '@/lib/research/source-error';
 import {
   runResearch,
   type ResearchCollector,
@@ -217,7 +218,12 @@ describe('runResearch', () => {
       ['b'],
     );
     assert.equal(run.failed.length, 1);
-    assert.match(run.failed[0].error, /a unreachable/);
+    assert.equal(run.failed[0].error, 'source_failed');
+    assert.doesNotMatch(
+      run.failed[0].error,
+      /unreachable/,
+      'the thrown message must not reach the record',
+    );
   });
 
   it('reports a run where everything failed as failed, not empty-complete', async () => {
@@ -244,7 +250,12 @@ describe('runResearch', () => {
       },
     };
     const run = await runResearch(subject, [shouty], OBSERVED_AT);
-    assert.equal(run.failed[0].error.length, 200);
+    // The bound is structural now: only a member of the closed set can be
+    // written, so length is no longer the thing worth asserting.
+    assert.ok(
+      RESEARCH_FAILURE_REASONS.some((reason) => reason === run.failed[0].error),
+    );
+    assert.doesNotMatch(run.failed[0].error, /x{10}/);
   });
 
   it('does not throw when a source rejects with something that is not an Error', async () => {
@@ -256,6 +267,6 @@ describe('runResearch', () => {
     };
     const run = await runResearch(subject, [odd], OBSERVED_AT);
     assert.equal(run.status, 'failed');
-    assert.equal(run.failed[0].error, 'source failed');
+    assert.equal(run.failed[0].error, 'source_failed');
   });
 });
