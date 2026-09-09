@@ -426,7 +426,7 @@
   },
   {
     "id": "embedding-coverage-eval",
-    "status": "pending",
+    "status": "completed",
     "priority": 37,
     "category": "testing_observability",
     "depends_on": [
@@ -434,7 +434,7 @@
       "hybrid-search-ranking-eval"
     ],
     "description": "Add a hermetic or fixture-backed measure of embedding coverage so hybrid search readiness is measurable: how many companies have usable embeddings versus how many would fall back to name/full-text only. Lock the coverage invariant with an eval; do not change embedding generation or hybrid weights.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]
