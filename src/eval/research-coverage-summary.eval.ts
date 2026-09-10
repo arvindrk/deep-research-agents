@@ -79,3 +79,46 @@ describe('coverage is measured against the expected fields', () => {
     assert.equal(EXPECTED_FIELDS.length, 4);
   });
 });
+
+describe('the copy a reader sees', () => {
+  const copyFor = (fields: string[]) =>
+    researchCoverageCopy(researchCoverage(fields.map((f) => finding('website', f))));
+
+  it('says nothing is known rather than showing a zero', () => {
+    assert.equal(copyFor([]), 'Nothing known yet out of 4 expected fields.');
+  });
+
+  it('says all when nothing is missing', () => {
+    assert.equal(copyFor([...EXPECTED_FIELDS]), 'All 4 expected fields are known.');
+  });
+
+  it('counts known against expected in between', () => {
+    assert.equal(copyFor(['website_title']), '1 of 4 expected fields are known.');
+    assert.equal(
+      copyFor(['website_title', 'website_description', 'careers_title']),
+      '3 of 4 expected fields are known.',
+    );
+  });
+
+  it('does not count an unexpected field towards known', () => {
+    assert.equal(
+      copyFor(['website_title', 'website_funding_round']),
+      '1 of 4 expected fields are known.',
+    );
+  });
+
+  it('handles an empty expectation without dividing by zero or lying', () => {
+    assert.equal(
+      researchCoverageCopy(researchCoverage([], [])),
+      'Nothing is expected for this company.',
+    );
+  });
+
+  it('never contains a URL, a driver message, or a percentage', () => {
+    for (const fields of [[], ['website_title'], [...EXPECTED_FIELDS]]) {
+      const copy = copyFor(fields);
+      assert.doesNotMatch(copy, /https?:\/\//);
+      assert.doesNotMatch(copy, /%/);
+    }
+  });
+});
