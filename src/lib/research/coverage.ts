@@ -26,7 +26,7 @@ export function researchCoverage(
   return {
     known: expected.filter((field) => present.has(field)),
     missing: expected.filter((field) => !present.has(field)),
-    unexpected: [],
+    unexpected: [...present].filter((field) => !expected.includes(field)),
     expected: expected.length,
   };
 }
