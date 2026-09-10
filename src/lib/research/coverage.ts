@@ -30,3 +30,19 @@ export function researchCoverage(
     expected: expected.length,
   };
 }
+
+/**
+ * Closed copy. A reader gets two counts and, elsewhere in the section, the
+ * names of what is missing: a percentage would imply precision that four
+ * fields do not have.
+ */
+export function researchCoverageCopy(coverage: ResearchCoverage): string {
+  if (coverage.expected === 0) return 'Nothing is expected for this company.';
+  if (coverage.known.length === 0) {
+    return `Nothing known yet out of ${coverage.expected} expected fields.`;
+  }
+  if (coverage.missing.length === 0) {
+    return `All ${coverage.expected} expected fields are known.`;
+  }
+  return `${coverage.known.length} of ${coverage.expected} expected fields are known.`;
+}
