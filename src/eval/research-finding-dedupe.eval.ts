@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import {
+  collectorCoverage,
+  coverageGaps,
+} from '@/lib/research/collector-coverage';
 import { buildResearchRun, dedupeFindings } from '@/lib/research/run';
-import type { ResearchFinding, ResearchSourceId, SourceOutcome } from '@/lib/research/types';
+import { runResearch, type ResearchCollector } from '@/lib/research/runtime';
+import {
+  RESEARCH_SOURCES,
+  type ResearchFinding,
+  type ResearchSourceId,
+  type SourceOutcome,
+} from '@/lib/research/types';
 
 const OBSERVED_AT = '2026-09-10T04:00:00.000Z';
 
@@ -169,5 +179,54 @@ describe('buildResearchRun folds duplicates before anything is written', () => {
     assert.equal(run.status, 'partial');
     assert.equal(run.findings.length, 1);
     assert.deepEqual(run.failed, [{ source: 'careers', error: 'http_status' }]);
+  });
+});
+
+describe('the exposure this closes, end to end', () => {
+  const SUBJECT = { id: 'c1', name: 'Acme', website: 'https://acme.test' };
+
+  const collector = (source: ResearchSourceId, value: string): ResearchCollector => ({
+    source,
+    collect: async () => [finding(source, `${source}_title`, value)],
+  });
+
+  it('a collector list that claims one source twice yields one claim', async () => {
+    const run = await runResearch(
+      SUBJECT,
+      [collector('website', 'Acme'), collector('website', 'Acme Corporation')],
+      OBSERVED_AT,
+    );
+
+    assert.deepEqual(
+      run.findings.map((f) => f.value),
+      ['Acme'],
+      'the duplicate would otherwise have been written and rendered twice',
+    );
+  });
+
+  it('the shipped wiring is unaffected', async () => {
+    const run = await runResearch(
+      SUBJECT,
+      [collector('website', 'Acme'), collector('careers', 'Jobs at Acme')],
+      OBSERVED_AT,
+    );
+
+    assert.equal(run.status, 'complete');
+    assert.deepEqual(
+      run.findings.map((f) => f.field),
+      ['website_title', 'careers_title'],
+    );
+  });
+
+  it('still reports the duplicated source, so the cause stays visible', () => {
+    const coverage = collectorCoverage(RESEARCH_SOURCES, [
+      collector('website', 'Acme'),
+      collector('website', 'Acme Corporation'),
+    ]);
+
+    assert.deepEqual(coverageGaps(coverage), [
+      'declared source "careers" has no collector',
+      'source "website" is claimed by more than one collector',
+    ]);
   });
 });
