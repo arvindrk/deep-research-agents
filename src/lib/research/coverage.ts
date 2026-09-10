@@ -16,3 +16,17 @@ export type ResearchCoverage = {
   unexpected: string[];
   expected: number;
 };
+
+export function researchCoverage(
+  findings: readonly ResearchFinding[],
+  expected: readonly string[] = EXPECTED_FIELDS,
+): ResearchCoverage {
+  const present = new Set(findings.map((finding) => finding.field));
+
+  return {
+    known: expected.filter((field) => present.has(field)),
+    missing: expected.filter((field) => !present.has(field)),
+    unexpected: [],
+    expected: expected.length,
+  };
+}
