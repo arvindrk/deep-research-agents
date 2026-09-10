@@ -95,3 +95,79 @@ describe('first wins, and order survives', () => {
     assert.deepEqual(dedupeFindings([]), []);
   });
 });
+
+describe('buildResearchRun folds duplicates before anything is written', () => {
+  const ok = (source: ResearchSourceId, findings: ResearchFinding[]): SourceOutcome => ({
+    status: 'ok',
+    source,
+    findings,
+  });
+
+  it('drops a claim two outcomes both reported', () => {
+    const run = buildResearchRun(
+      'c1',
+      [
+        ok('website', [finding('website', 'website_title', 'Acme')]),
+        ok('website', [finding('website', 'website_title', 'Acme again')]),
+      ],
+      OBSERVED_AT,
+    );
+
+    assert.deepEqual(
+      run.findings.map((f) => f.value),
+      ['Acme'],
+    );
+  });
+
+  it('leaves attempted, succeeded, and status alone', () => {
+    const run = buildResearchRun(
+      'c1',
+      [
+        ok('website', [finding('website', 'website_title', 'Acme')]),
+        ok('website', [finding('website', 'website_title', 'Acme again')]),
+      ],
+      OBSERVED_AT,
+    );
+
+    assert.equal(run.status, 'complete');
+    assert.deepEqual(run.attempted, ['website', 'website']);
+    assert.deepEqual(run.succeeded, ['website', 'website']);
+    assert.deepEqual(run.failed, []);
+    assert.equal(run.company_id, 'c1');
+    assert.equal(run.observed_at, OBSERVED_AT);
+  });
+
+  it('does not change a normal two-source run', () => {
+    const run = buildResearchRun(
+      'c1',
+      [
+        ok('website', [
+          finding('website', 'website_title', 'Acme'),
+          finding('website', 'website_description', 'We build things'),
+        ]),
+        ok('careers', [finding('careers', 'careers_title', 'Jobs at Acme')]),
+      ],
+      OBSERVED_AT,
+    );
+
+    assert.deepEqual(
+      run.findings.map((f) => f.field),
+      ['website_title', 'website_description', 'careers_title'],
+    );
+  });
+
+  it('keeps a failed outcome contributing nothing, as before', () => {
+    const run = buildResearchRun(
+      'c1',
+      [
+        ok('website', [finding('website', 'website_title', 'Acme')]),
+        { status: 'failed', source: 'careers', error: 'http_status' },
+      ],
+      OBSERVED_AT,
+    );
+
+    assert.equal(run.status, 'partial');
+    assert.equal(run.findings.length, 1);
+    assert.deepEqual(run.failed, [{ source: 'careers', error: 'http_status' }]);
+  });
+});
