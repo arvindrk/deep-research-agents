@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
@@ -265,5 +267,28 @@ describe('what the quality measure would have counted twice', () => {
     ]);
 
     assert.equal(qualityReport([run], NOW).fieldCoverage.website_title, 1);
+  });
+});
+
+describe('the recorded corpus', () => {
+  const corpus = (
+    JSON.parse(
+      readFileSync(join(process.cwd(), 'src/eval/fixtures/research-runs.json'), 'utf8'),
+    ) as { runs: { findings: { source: string; field: string }[] }[] }
+  ).runs;
+
+  it('is not empty, so this assertion means something', () => {
+    assert.ok(corpus.length > 0);
+  });
+
+  it('holds no run with the same claim twice', () => {
+    for (const [index, run] of corpus.entries()) {
+      const keys = run.findings.map((f) => `${f.source}/${f.field}`);
+      assert.deepEqual(
+        keys,
+        [...new Set(keys)],
+        `recorded run ${index} has a duplicate claim; re-record it`,
+      );
+    }
   });
 });
