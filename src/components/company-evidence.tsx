@@ -88,6 +88,19 @@ export function CompanyEvidence({
         </p>
       )}
 
+      {latest && coverage.missing.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}>
+            Not found
+          </span>
+          {coverage.missing.map((field) => (
+            <Badge key={field} variant="outline" className="text-xs">
+              {fieldLabel(field)}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {notice && (
         <p
           className={cn(
