@@ -5,6 +5,7 @@ import {
   collectorCoverage,
   coverageGaps,
 } from '@/lib/research/collector-coverage';
+import { qualityReport } from '@/lib/research/quality';
 import { buildResearchRun, dedupeFindings } from '@/lib/research/run';
 import { runResearch, type ResearchCollector } from '@/lib/research/runtime';
 import {
@@ -228,5 +229,41 @@ describe('the exposure this closes, end to end', () => {
       'declared source "careers" has no collector',
       'source "website" is claimed by more than one collector',
     ]);
+  });
+});
+
+describe('what the quality measure would have counted twice', () => {
+  const NOW = new Date('2026-09-10T12:00:00.000Z');
+
+  const runWith = (findings: ResearchFinding[]) =>
+    buildResearchRun('c1', [{ status: 'ok', source: 'website', findings }], OBSERVED_AT);
+
+  it('counts a repeated claim once in the findings total', () => {
+    const run = runWith([
+      finding('website', 'website_title', 'Acme'),
+      finding('website', 'website_title', 'Acme Corporation'),
+      finding('website', 'website_description', 'We build things'),
+    ]);
+
+    assert.equal(qualityReport([run], NOW).findings, 2);
+  });
+
+  it('counts it once in the freshness mix', () => {
+    const run = runWith([
+      finding('website', 'website_title', 'Acme'),
+      finding('website', 'website_title', 'Acme Corporation'),
+    ]);
+
+    const mix = qualityReport([run], NOW).freshness;
+    assert.equal(mix.fresh + mix.aging + mix.stale + mix.unknown, 1);
+  });
+
+  it('leaves per-field coverage alone, which was already per run', () => {
+    const run = runWith([
+      finding('website', 'website_title', 'Acme'),
+      finding('website', 'website_title', 'Acme Corporation'),
+    ]);
+
+    assert.equal(qualityReport([run], NOW).fieldCoverage.website_title, 1);
   });
 });
