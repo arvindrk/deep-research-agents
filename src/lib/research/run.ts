@@ -92,8 +92,10 @@ export function buildResearchRun(
           outcome.status === 'failed',
       )
       .map((outcome) => ({ source: outcome.source, error: outcome.error })),
-    findings: outcomes.flatMap((outcome) =>
-      outcome.status === 'ok' ? outcome.findings : [],
+    findings: dedupeFindings(
+      outcomes.flatMap((outcome) =>
+        outcome.status === 'ok' ? outcome.findings : [],
+      ),
     ),
     observed_at: observedAt,
   };
