@@ -122,3 +122,47 @@ describe('the copy a reader sees', () => {
     }
   });
 });
+
+describe('the Research section renders it as a Server Component', () => {
+  const component = read('src/components/company-evidence.tsx');
+
+  it('ships no client JavaScript', () => {
+    assert.doesNotMatch(component, /^\s*['"]use client['"]/);
+    assert.doesNotMatch(component, /useState|useEffect|onClick/);
+  });
+
+  it('derives coverage from the findings the section actually displays', () => {
+    const model = component.indexOf('buildResearchSectionModel');
+    const coverage = component.indexOf('researchCoverage(section.findings)');
+    assert.ok(model > -1 && coverage > -1);
+    assert.ok(coverage > model, 'coverage must come from the displayed run');
+  });
+
+  it('shows the summary and the missing fields only when a run exists', () => {
+    assert.match(component, /\{latest && \(\s*<p/);
+    assert.match(component, /latest && coverage\.missing\.length > 0/);
+    assert.match(component, /researchCoverageCopy\(coverage\)/);
+  });
+
+  it('keeps the partial and failed notices above it', () => {
+    const coverage = component.indexOf('researchCoverageCopy(coverage)');
+    const notice = component.indexOf('{notice}');
+    assert.ok(coverage > -1 && notice > -1);
+    assert.ok(
+      coverage < notice,
+      'the honesty notice must not be pushed below the summary',
+    );
+  });
+
+  it('reuses Badge and the token variables rather than new styling', () => {
+    assert.match(component, /<Badge variant="outline" className="text-xs">/);
+    assert.match(component, /text-\[var\(--color-text-secondary\)\]/);
+    assert.doesNotMatch(component, /#[0-9a-fA-F]{3,6}\b/);
+    assert.doesNotMatch(component, /style=\{\{/);
+  });
+
+  it('labels a missing field through the shared fieldLabel', () => {
+    assert.match(component, /fieldLabel\(field\)/);
+    assert.match(component, /from '@\/lib\/research\/evidence'/);
+  });
+});
