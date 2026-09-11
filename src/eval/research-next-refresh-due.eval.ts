@@ -84,3 +84,44 @@ describe('the countdown', () => {
     assert.equal(daysUntilRefresh('not a date', NOW), null);
   });
 });
+
+describe('the copy a reader sees', () => {
+  it('counts down in days, with singular and plural', () => {
+    assert.equal(refreshDueCopy(agedDays(0), NOW), 'Refresh due in 8 days');
+    assert.equal(
+      refreshDueCopy(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh), NOW),
+      'Refresh due in 1 day',
+    );
+  });
+
+  it('says due now on the first non-fresh day, not overdue by zero', () => {
+    assert.equal(
+      refreshDueCopy(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 1), NOW),
+      'Refresh due now',
+    );
+  });
+
+  it('counts up once it is overdue', () => {
+    assert.equal(
+      refreshDueCopy(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 2), NOW),
+      'Refresh overdue by 1 day',
+    );
+    assert.equal(
+      refreshDueCopy(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 31), NOW),
+      'Refresh overdue by 30 days',
+    );
+  });
+
+  it('says unknown rather than counting from a bad date', () => {
+    assert.equal(refreshDueCopy('not a date', NOW), 'Refresh timing unknown');
+    assert.equal(refreshDueCopy('', NOW), 'Refresh timing unknown');
+  });
+
+  it('never leaks a URL or a negative number into the copy', () => {
+    for (const age of [0, 3, 7, 8, 100]) {
+      const copy = refreshDueCopy(agedDays(age), NOW);
+      assert.doesNotMatch(copy, /https?:\/\//);
+      assert.doesNotMatch(copy, /-\d/);
+    }
+  });
+});
