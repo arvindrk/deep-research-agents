@@ -617,7 +617,7 @@
   },
   {
     "id": "research-coverage-summary",
-    "status": "pending",
+    "status": "completed",
     "priority": 52,
     "category": "new_feature",
     "depends_on": [
@@ -625,6 +625,19 @@
       "research-finding-dedupe"
     ],
     "description": "Tell a reader what is known and what is missing for a company: compute, from the findings of the displayed run, which of the expected fields are present and which are absent, and surface that as a short summary on the company Research section. Deduplicated findings make the count trustworthy. Pure helpers with closed copy, a Server Component, and a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-next-refresh-due",
+    "status": "pending",
+    "priority": 53,
+    "category": "feature_improvement",
+    "depends_on": [
+      "research-coverage-summary",
+      "profile-sync-freshness"
+    ],
+    "description": "Tell a reader when a company is due to be researched again, rather than only how old its findings are. Derive a due date from the observation time of the displayed run and the fresh threshold the freshness bands already use, and surface closed copy (due in n days, due now, overdue by n days) beside the coverage summary. The clock is injected, the helpers are pure, and a hermetic eval locks the boundaries.",
     "passes": false,
     "verify": "npm run verify"
   }
