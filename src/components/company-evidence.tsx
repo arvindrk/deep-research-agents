@@ -7,6 +7,10 @@ import {
   researchCoverageCopy,
 } from '@/lib/research/coverage';
 import { fieldLabel, toEvidenceItems } from '@/lib/research/evidence';
+import {
+  refreshDueCopy,
+  refreshDueDateTime,
+} from '@/lib/research/refresh-due';
 import type { Freshness } from '@/lib/research/freshness';
 import {
   buildResearchSectionModel,
@@ -52,6 +56,10 @@ export function CompanyEvidence({
   const coverage = researchCoverage(section.findings);
   const notice = section.notice;
   const latest = section.latest;
+  const refreshCopy = latest
+    ? refreshDueCopy(latest.observed_at, now)
+    : 'Refresh timing unknown';
+  const refreshDue = latest ? refreshDueDateTime(latest.observed_at) : null;
   const emptyCopy = researchEmptyStateCopy({
     historyLoaded: researchHistoryOk,
     hasLatestRun: latest != null,
@@ -84,7 +92,14 @@ export function CompanyEvidence({
 
       {latest && (
         <p className={cn('text-xs', 'text-[var(--color-text-secondary)]')}>
-          {researchCoverageCopy(coverage)}
+          {researchCoverageCopy(coverage)}{' '}
+          {refreshDue ? (
+            <time dateTime={refreshDue} className="text-[var(--color-text-tertiary)]">
+              {refreshCopy}
+            </time>
+          ) : (
+            <span className="text-[var(--color-text-tertiary)]">{refreshCopy}</span>
+          )}
         </p>
       )}
 
