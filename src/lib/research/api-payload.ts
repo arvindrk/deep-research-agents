@@ -1,3 +1,4 @@
+import { researchCoverage, researchCoverageCopy } from './coverage';
 import { toEvidenceItems, type EvidenceItem } from './evidence';
 import type { ResearchRunStatus } from './run';
 import {
@@ -8,14 +9,7 @@ import {
   type ResearchRunStatusLabel,
 } from './run-summary';
 
-/** Placeholders until coverage and refresh timing are folded in below. */
-const EMPTY_COVERAGE = {
-  known: [],
-  missing: [],
-  unexpected: [],
-  expected: 0,
-  summary: '',
-};
+/** Placeholder until refresh timing is folded in below. */
 const EMPTY_REFRESH = { due_at: null, days_until: null, summary: '' };
 
 /**
@@ -66,6 +60,7 @@ export function buildCompanyResearchPayload(
 ): CompanyResearchPayload {
   const section = buildResearchSectionModel(input.runsNewestFirst);
   const findings = toEvidenceItems(section.findings, input.now);
+  const coverage = researchCoverage(section.findings);
 
   return {
     company_id: input.companyId,
@@ -82,7 +77,7 @@ export function buildCompanyResearchPayload(
             hasLatestRun: section.latest != null,
           })
         : null,
-    coverage: EMPTY_COVERAGE,
+    coverage: { ...coverage, summary: researchCoverageCopy(coverage) },
     refresh: EMPTY_REFRESH,
     findings,
   };
