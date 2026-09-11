@@ -125,3 +125,41 @@ describe('the copy a reader sees', () => {
     }
   });
 });
+
+describe('the page and the scheduler agree', () => {
+  it('is due or overdue exactly when the scheduler stops skipping as fresh', () => {
+    for (let age = 0; age <= 40; age += 1) {
+      const observedAt = agedDays(age);
+      const remaining = daysUntilRefresh(observedAt, NOW);
+      assert.ok(remaining !== null);
+
+      const schedule = selectResearchSchedule(
+        [{ company_id: 'c1', newest_finding_at: observedAt }],
+        NOW,
+        10,
+      );
+      const skippedAsFresh = schedule.skipped.some(
+        (skip) => skip.company_id === 'c1' && skip.reason === 'fresh',
+      );
+
+      assert.equal(
+        remaining <= 0,
+        !skippedAsFresh,
+        `age ${age}: the page and the scheduler disagree`,
+      );
+    }
+  });
+
+  it('agrees on the first non-fresh day itself', () => {
+    const observedAt = agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 1);
+    assert.equal(daysUntilRefresh(observedAt, NOW), 0);
+    assert.deepEqual(
+      selectResearchSchedule(
+        [{ company_id: 'c1', newest_finding_at: observedAt }],
+        NOW,
+        10,
+      ).selected,
+      ['c1'],
+    );
+  });
+});
