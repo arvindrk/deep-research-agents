@@ -8,6 +8,11 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * threshold rather than a second constant, so the page cannot promise a
  * refresh the scheduler will not perform.
  *
+ * The fresh band is inclusive (`freshnessOf` returns fresh while whole days
+ * elapsed are `<= fresh`), so the first non-fresh day is the one after the
+ * threshold. An eval asserts the two agree across a range of ages rather than
+ * trusting this comment.
+ *
  * Null when the observation time cannot be read: an unreadable date is not a
  * due date.
  */
@@ -16,7 +21,7 @@ export function refreshDueAt(observedAt: string): Date | null {
   if (Number.isNaN(observed.getTime())) return null;
 
   return new Date(
-    observed.getTime() + FRESHNESS_THRESHOLDS_DAYS.fresh * MS_PER_DAY,
+    observed.getTime() + (FRESHNESS_THRESHOLDS_DAYS.fresh + 1) * MS_PER_DAY,
   );
 }
 

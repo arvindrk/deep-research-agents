@@ -10,6 +10,7 @@ import {
   refreshDueCopy,
   refreshDueDateTime,
 } from '@/lib/research/refresh-due';
+import { selectResearchSchedule } from '@/lib/research/schedule';
 
 const REPO_ROOT = process.cwd();
 const read = (path: string) => readFileSync(join(REPO_ROOT, path), 'utf8');
@@ -20,21 +21,22 @@ const agedDays = (days: number): string =>
   new Date(NOW.getTime() - days * MS_PER_DAY).toISOString();
 
 describe('the due date comes from the shared threshold', () => {
-  it('is the observation time plus the fresh threshold', () => {
+  it('is the first day the run is no longer fresh, not the threshold itself', () => {
     const observedAt = '2026-09-01T00:00:00.000Z';
     assert.equal(
       refreshDueAt(observedAt)?.toISOString(),
       new Date(
         new Date(observedAt).getTime() +
-          FRESHNESS_THRESHOLDS_DAYS.fresh * MS_PER_DAY,
+          (FRESHNESS_THRESHOLDS_DAYS.fresh + 1) * MS_PER_DAY,
       ).toISOString(),
+      'the fresh band is inclusive, so the threshold day is still fresh',
     );
   });
 
   it('exposes it as a machine-readable attribute', () => {
     assert.equal(
       refreshDueDateTime('2026-09-01T00:00:00.000Z'),
-      '2026-09-08T00:00:00.000Z',
+      '2026-09-09T00:00:00.000Z',
     );
   });
 
@@ -46,31 +48,34 @@ describe('the due date comes from the shared threshold', () => {
 });
 
 describe('the countdown', () => {
-  it('is the threshold on the day of observation', () => {
+  it('starts one day past the threshold on the day of observation', () => {
     assert.equal(
       daysUntilRefresh(agedDays(0), NOW),
-      FRESHNESS_THRESHOLDS_DAYS.fresh,
+      FRESHNESS_THRESHOLDS_DAYS.fresh + 1,
     );
   });
 
-  it('reaches zero exactly at the threshold', () => {
-    assert.equal(daysUntilRefresh(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh), NOW), 0);
+  it('is still one day away on the threshold day, which is fresh', () => {
+    assert.equal(daysUntilRefresh(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh), NOW), 1);
   });
 
-  it('is one either side of the threshold', () => {
-    assert.equal(
-      daysUntilRefresh(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh - 1), NOW),
-      1,
-    );
+  it('reaches zero on the first non-fresh day', () => {
     assert.equal(
       daysUntilRefresh(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 1), NOW),
+      0,
+    );
+  });
+
+  it('goes negative the day after that', () => {
+    assert.equal(
+      daysUntilRefresh(agedDays(FRESHNESS_THRESHOLDS_DAYS.fresh + 2), NOW),
       -1,
     );
   });
 
   it('rounds a part-day towards the day it is still due', () => {
     const halfPast = new Date(
-      NOW.getTime() - (FRESHNESS_THRESHOLDS_DAYS.fresh - 0.5) * MS_PER_DAY,
+      NOW.getTime() - (FRESHNESS_THRESHOLDS_DAYS.fresh + 0.5) * MS_PER_DAY,
     ).toISOString();
     assert.equal(daysUntilRefresh(halfPast, NOW), 1);
   });
