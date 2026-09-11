@@ -30,3 +30,19 @@ export function daysUntilRefresh(observedAt: string, now: Date): number | null {
 
   return Math.ceil((due.getTime() - now.getTime()) / MS_PER_DAY);
 }
+
+const days = (count: number): string => `${count} day${count === 1 ? '' : 's'}`;
+
+/** Closed copy. Unknown is its own case, never a countdown from a bad date. */
+export function refreshDueCopy(observedAt: string, now: Date): string {
+  const remaining = daysUntilRefresh(observedAt, now);
+  if (remaining === null) return 'Refresh timing unknown';
+  if (remaining > 0) return `Refresh due in ${days(remaining)}`;
+  if (remaining === 0) return 'Refresh due now';
+  return `Refresh overdue by ${days(-remaining)}`;
+}
+
+/** The due date as a machine-readable attribute, or null when unknown. */
+export function refreshDueDateTime(observedAt: string): string | null {
+  return refreshDueAt(observedAt)?.toISOString() ?? null;
+}
