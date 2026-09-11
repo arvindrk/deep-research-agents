@@ -1,25 +1,25 @@
 {
   "slice": [
-    "research-next-refresh-due",
+    "company-research-api-payload",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-next-refresh-due": "Registered this run. A reader can now see what a run established and what it missed, but not whether the answer is about to be re-checked, which is the question that follows immediately from a Stale badge.",
+    "company-research-api-payload": "Registered this run, ahead of company-research-api-route which depends on it. The page now assembles status, findings, coverage, and refresh timing; extracting that assembly as a pure payload is what lets a route serve it and an eval check it without a database.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "new_feature": 2,
     "feature_improvement": 1,
-    "testing_observability": 2
+    "new_feature": 3,
+    "testing_observability": 1
   },
   "vision_refs": {
-    "research-next-refresh-due": [
+    "company-research-api-payload": [
       "Evidence-backed intelligence",
-      "UI and UX"
+      "Reliable autonomous research"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260910-183113",
-  "notes": "Executor completed research-coverage-summary and advanced past it. The Research section now names what a run did not find. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260911-085008",
+  "notes": "Executor completed research-next-refresh-due and advanced past it. Writing the eval found a real off-by-one: the fresh band is inclusive, so the due date is the day after the threshold, and the page and selectResearchSchedule now agree across a 40-day range. Remaining heads stay excluded as in-flight."
 }
