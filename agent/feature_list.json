@@ -630,7 +630,7 @@
   },
   {
     "id": "research-next-refresh-due",
-    "status": "pending",
+    "status": "completed",
     "priority": 53,
     "category": "feature_improvement",
     "depends_on": [
@@ -638,6 +638,33 @@
       "profile-sync-freshness"
     ],
     "description": "Tell a reader when a company is due to be researched again, rather than only how old its findings are. Derive a due date from the observation time of the displayed run and the fresh threshold the freshness bands already use, and surface closed copy (due in n days, due now, overdue by n days) beside the coverage summary. The clock is injected, the helpers are pure, and a hermetic eval locks the boundaries.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "company-research-api-route",
+    "status": "pending",
+    "priority": 54,
+    "category": "new_feature",
+    "depends_on": [
+      "research-coverage-summary",
+      "research-next-refresh-due",
+      "company-research-api-payload"
+    ],
+    "description": "Expose one company research summary over HTTP so the data the company page renders is reachable without scraping the page: validate the route id at the boundary before any query, read the recent runs, and return the displayed run status, its findings, the coverage summary, and the refresh timing as JSON. Closed generic errors only, never driver text, no embedding vectors, and a bounded response.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "company-research-api-payload",
+    "status": "pending",
+    "priority": 55,
+    "category": "new_feature",
+    "depends_on": [
+      "research-coverage-summary",
+      "research-next-refresh-due"
+    ],
+    "description": "Extract the pure payload builder the company research API route needs: given recent runs and a clock, produce the run status, findings, coverage, and refresh timing already assembled for the page, in one serialisable shape with closed copy. Keeping it pure is what makes the route evaluable hermetically, since the route itself needs a database.",
     "passes": false,
     "verify": "npm run verify"
   }
