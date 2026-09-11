@@ -1,4 +1,9 @@
 import { researchCoverage, researchCoverageCopy } from './coverage';
+import {
+  daysUntilRefresh,
+  refreshDueCopy,
+  refreshDueDateTime,
+} from './refresh-due';
 import { toEvidenceItems, type EvidenceItem } from './evidence';
 import type { ResearchRunStatus } from './run';
 import {
@@ -8,9 +13,6 @@ import {
   type ResearchRunDisplayInput,
   type ResearchRunStatusLabel,
 } from './run-summary';
-
-/** Placeholder until refresh timing is folded in below. */
-const EMPTY_REFRESH = { due_at: null, days_until: null, summary: '' };
 
 /**
  * One company's research, assembled once and read by both the page and the
@@ -46,6 +48,9 @@ export type CompanyResearchPayload = {
   findings: EvidenceItem[];
 };
 
+/** Same closed string the section shows when there is no run to time from. */
+export const REFRESH_UNKNOWN_COPY = 'Refresh timing unknown';
+
 export type CompanyResearchInput = {
   companyId: string;
   /** Newest first, as getRecentResearchRuns returns them. */
@@ -61,6 +66,7 @@ export function buildCompanyResearchPayload(
   const section = buildResearchSectionModel(input.runsNewestFirst);
   const findings = toEvidenceItems(section.findings, input.now);
   const coverage = researchCoverage(section.findings);
+  const observedAt = section.latest?.observed_at ?? null;
 
   return {
     company_id: input.companyId,
@@ -78,7 +84,13 @@ export function buildCompanyResearchPayload(
           })
         : null,
     coverage: { ...coverage, summary: researchCoverageCopy(coverage) },
-    refresh: EMPTY_REFRESH,
+    refresh: {
+      due_at: observedAt ? refreshDueDateTime(observedAt) : null,
+      days_until: observedAt ? daysUntilRefresh(observedAt, input.now) : null,
+      summary: observedAt
+        ? refreshDueCopy(observedAt, input.now)
+        : REFRESH_UNKNOWN_COPY,
+    },
     findings,
   };
 }
