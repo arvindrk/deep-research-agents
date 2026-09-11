@@ -1,23 +1,23 @@
 {
   "slice": [
-    "research-coverage-summary",
+    "research-next-refresh-due",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-coverage-summary": "Registered this run. Findings are now unique per source and field, which is the precondition for counting them: a known-versus-missing summary would have been wrong while a claim could appear twice.",
+    "research-next-refresh-due": "Registered this run. A reader can now see what a run established and what it missed, but not whether the answer is about to be re-checked, which is the question that follows immediately from a Stale badge.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "tech_debt": 2,
     "new_feature": 2,
-    "testing_observability": 1
+    "feature_improvement": 1,
+    "testing_observability": 2
   },
   "vision_refs": {
-    "research-coverage-summary": [
+    "research-next-refresh-due": [
       "Evidence-backed intelligence",
       "UI and UX"
     ],
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260910-041219",
-  "notes": "Executor completed research-finding-dedupe and advanced past it. The durable database constraint is registered separately as research-findings-run-source-field-unique, since a migration is human-applied. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260910-183113",
+  "notes": "Executor completed research-coverage-summary and advanced past it. The Research section now names what a run did not find. Remaining heads stay excluded as in-flight."
 }
