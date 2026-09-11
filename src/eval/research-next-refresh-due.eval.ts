@@ -163,3 +163,36 @@ describe('the page and the scheduler agree', () => {
     );
   });
 });
+
+describe('the helpers and the section read no clock', () => {
+  const helper = read('src/lib/research/refresh-due.ts');
+  const component = read('src/components/company-evidence.tsx');
+
+  it('never reads the current time inside the helper module', () => {
+    assert.doesNotMatch(helper, /Date\.now\(\)/);
+    assert.doesNotMatch(helper, /new Date\(\)/);
+    assert.match(helper, /now: Date/, 'the clock must arrive as an argument');
+  });
+
+  it('derives the threshold from the freshness module, not a copy', () => {
+    assert.match(helper, /from '\.\/freshness'/);
+    assert.match(helper, /FRESHNESS_THRESHOLDS_DAYS\.fresh/);
+    assert.doesNotMatch(helper, /=\s*7\b/, 'no second copy of the threshold');
+  });
+
+  it('passes the request clock through from the section, not a new one', () => {
+    assert.match(component, /refreshDueCopy\(latest\.observed_at, now\)/);
+    assert.doesNotMatch(component, /refreshDueCopy\([^)]*new Date\(\)/);
+  });
+
+  it('renders the due date as a machine-readable time when it is known', () => {
+    assert.match(component, /refreshDueDateTime\(latest\.observed_at\)/);
+    assert.match(component, /<time dateTime=\{refreshDue\}/);
+  });
+
+  it('keeps the section a Server Component with token styling only', () => {
+    assert.doesNotMatch(component, /^\s*['"]use client['"]/);
+    assert.match(component, /text-\[var\(--color-text-tertiary\)\]/);
+    assert.doesNotMatch(component, /#[0-9a-fA-F]{3,6}\b/);
+  });
+});
