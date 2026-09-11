@@ -19,3 +19,14 @@ export function refreshDueAt(observedAt: string): Date | null {
     observed.getTime() + FRESHNESS_THRESHOLDS_DAYS.fresh * MS_PER_DAY,
   );
 }
+
+/**
+ * Whole days until a refresh is due; negative once it is overdue. `now` is an
+ * argument, because a countdown that reads its own clock cannot be evaluated.
+ */
+export function daysUntilRefresh(observedAt: string, now: Date): number | null {
+  const due = refreshDueAt(observedAt);
+  if (!due) return null;
+
+  return Math.ceil((due.getTime() - now.getTime()) / MS_PER_DAY);
+}
