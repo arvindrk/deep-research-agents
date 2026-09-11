@@ -1,6 +1,22 @@
-import type { EvidenceItem } from './evidence';
+import { toEvidenceItems, type EvidenceItem } from './evidence';
 import type { ResearchRunStatus } from './run';
-import type { ResearchRunStatusLabel } from './run-summary';
+import {
+  buildResearchSectionModel,
+  researchEmptyStateCopy,
+  researchRunStatusLabel,
+  type ResearchRunDisplayInput,
+  type ResearchRunStatusLabel,
+} from './run-summary';
+
+/** Placeholders until coverage and refresh timing are folded in below. */
+const EMPTY_COVERAGE = {
+  known: [],
+  missing: [],
+  unexpected: [],
+  expected: 0,
+  summary: '',
+};
+const EMPTY_REFRESH = { due_at: null, days_until: null, summary: '' };
 
 /**
  * One company's research, assembled once and read by both the page and the
@@ -35,3 +51,39 @@ export type CompanyResearchPayload = {
   };
   findings: EvidenceItem[];
 };
+
+export type CompanyResearchInput = {
+  companyId: string;
+  /** Newest first, as getRecentResearchRuns returns them. */
+  runsNewestFirst: readonly ResearchRunDisplayInput[];
+  /** False when the history read failed; distinct from success with zero runs. */
+  historyLoaded: boolean;
+  now: Date;
+};
+
+export function buildCompanyResearchPayload(
+  input: CompanyResearchInput,
+): CompanyResearchPayload {
+  const section = buildResearchSectionModel(input.runsNewestFirst);
+  const findings = toEvidenceItems(section.findings, input.now);
+
+  return {
+    company_id: input.companyId,
+    status: section.latest?.status ?? null,
+    status_label: section.latest
+      ? researchRunStatusLabel(section.latest.status)
+      : null,
+    observed_at: section.latest?.observed_at ?? null,
+    notice: section.notice,
+    empty_state:
+      findings.length === 0
+        ? researchEmptyStateCopy({
+            historyLoaded: input.historyLoaded,
+            hasLatestRun: section.latest != null,
+          })
+        : null,
+    coverage: EMPTY_COVERAGE,
+    refresh: EMPTY_REFRESH,
+    findings,
+  };
+}
