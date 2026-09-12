@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { buildResearchRun, runStatus } from '@/lib/research/run';
-import { RESEARCH_FAILURE_REASONS } from '@/lib/research/source-error';
+import {
+  RESEARCH_FAILURE_REASONS,
+  type ResearchFailureReason,
+} from '@/lib/research/source-error';
 import {
   runResearch,
   type ResearchCollector,
@@ -108,7 +111,7 @@ const ok = (findings: ResearchFinding[]): SourceOutcome => ({
   findings,
 });
 
-const failed = (error: string): SourceOutcome => ({
+const failed = (error: ResearchFailureReason): SourceOutcome => ({
   status: 'failed',
   source: 'website',
   error,
@@ -125,15 +128,15 @@ describe('runStatus', () => {
   });
 
   it('is failed when every source failed, and when none ran', () => {
-    assert.equal(runStatus([failed('timeout'), failed('403')]), 'failed');
+    assert.equal(runStatus([failed('timeout'), failed('http_status')]), 'failed');
     assert.equal(runStatus([]), 'failed');
   });
 
   it('never calls a run with a failure complete', () => {
     const mixes: SourceOutcome[][] = [
-      [failed('x')],
-      [ok([]), failed('x')],
-      [failed('x'), ok([finding('a')])],
+      [failed('source_failed')],
+      [ok([]), failed('source_failed')],
+      [failed('source_failed'), ok([finding('a')])],
     ];
     for (const outcomes of mixes) {
       assert.notEqual(runStatus(outcomes), 'complete');

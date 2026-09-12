@@ -1,3 +1,4 @@
+import type { ResearchFailureReason } from './source-error';
 import type {
   ResearchFinding,
   ResearchSourceId,
@@ -8,7 +9,7 @@ export type ResearchRunStatus = 'complete' | 'partial' | 'failed';
 
 export type ResearchSourceFailure = {
   source: ResearchSourceId;
-  error: string;
+  error: ResearchFailureReason;
 };
 
 export type ResearchRun = {

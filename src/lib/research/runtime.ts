@@ -1,5 +1,8 @@
 import { buildResearchRun, type ResearchRun } from './run';
-import { researchFailureReason } from './source-error';
+import {
+  researchFailureReason,
+  type ResearchFailureReason,
+} from './source-error';
 import type {
   ResearchFinding,
   ResearchSourceId,
@@ -21,7 +24,8 @@ export type ResearchCollector = {
  * A closed reason code, never the thrown message: the message carries the URL
  * the collector was fetching, and this value is persisted with the run.
  */
-const sourceError = (error: unknown): string => researchFailureReason(error);
+const sourceError = (error: unknown): ResearchFailureReason =>
+  researchFailureReason(error);
 
 /**
  * Runs every collector for one company, isolating failures: a source that

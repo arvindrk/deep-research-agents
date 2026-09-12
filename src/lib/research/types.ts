@@ -1,3 +1,5 @@
+import type { ResearchFailureReason } from './source-error';
+
 /** Sources the runtime knows how to ask. One entry per collector. */
 export const RESEARCH_SOURCES = ['website', 'careers'] as const;
 
@@ -22,7 +24,12 @@ export type ResearchFinding = {
 /** What one source produced, or the fact that it could not produce anything. */
 export type SourceOutcome =
   | { status: 'ok'; source: ResearchSourceId; findings: ResearchFinding[] }
-  | { status: 'failed'; source: ResearchSourceId; error: string };
+  | {
+      status: 'failed';
+      source: ResearchSourceId;
+      /** A code from the closed set, never a thrown message. */
+      error: ResearchFailureReason;
+    };
 
 /** The company fields a collector is allowed to see. */
 export type ResearchSubject = {
