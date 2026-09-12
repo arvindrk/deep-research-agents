@@ -131,21 +131,32 @@ describe('the Research section renders it as a Server Component', () => {
     assert.doesNotMatch(component, /useState|useEffect|onClick/);
   });
 
-  it('derives coverage from the findings the section actually displays', () => {
-    const model = component.indexOf('buildResearchSectionModel');
-    const coverage = component.indexOf('researchCoverage(section.findings)');
+  it('derives coverage from the findings the payload actually displays', () => {
+    const payload = read('src/lib/research/api-payload.ts');
+    const model = payload.indexOf('buildResearchSectionModel(input.runsNewestFirst)');
+    const coverage = payload.indexOf('researchCoverage(section.findings)');
     assert.ok(model > -1 && coverage > -1);
     assert.ok(coverage > model, 'coverage must come from the displayed run');
+    assert.match(
+      component,
+      /buildCompanyResearchPayload\(/,
+      'the section must read the shared payload rather than assemble its own',
+    );
+    assert.doesNotMatch(
+      component,
+      /researchCoverage\(/,
+      'two assemblies of the same answer drift',
+    );
   });
 
   it('shows the summary and the missing fields only when a run exists', () => {
-    assert.match(component, /\{latest && \(\s*<p/);
-    assert.match(component, /latest && coverage\.missing\.length > 0/);
-    assert.match(component, /researchCoverageCopy\(coverage\)/);
+    assert.match(component, /\{payload\.status_label && \(\s*<p/);
+    assert.match(component, /payload\.status_label && coverage\.missing\.length > 0/);
+    assert.match(component, /\{coverage\.summary\}/);
   });
 
   it('keeps the partial and failed notices above it', () => {
-    const coverage = component.indexOf('researchCoverageCopy(coverage)');
+    const coverage = component.indexOf('{coverage.summary}');
     const notice = component.indexOf('{notice}');
     assert.ok(coverage > -1 && notice > -1);
     assert.ok(
