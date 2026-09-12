@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { GET } from '@/app/api/companies/[id]/research/route';
 import { MAX_COMPANY_ID_CHARS, parseCompanyId } from '@/lib/company-id';
 
 const NUL = String.fromCharCode(0);
@@ -55,5 +56,32 @@ describe('parseCompanyId', () => {
     assert.equal(result.ok, false);
     if (result.ok) return;
     assert.equal(result.error, 'invalid_company_id');
+  });
+});
+
+/** The route's own signature: a request it ignores, and awaited params. */
+const call = (id: string) =>
+  GET(new Request('http://research.test/api/companies/x/research'), {
+    params: Promise.resolve({ id }),
+  });
+
+describe('GET /api/companies/[id]/research, on an id it refuses', () => {
+  it('answers 400 with closed copy', async () => {
+    const response = await call('   ');
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { error: 'Invalid company id' });
+  });
+
+  it('refuses every unusable id the same way', async () => {
+    for (const id of ['', NUL, 'a\nb', 'a'.repeat(MAX_COMPANY_ID_CHARS + 1)]) {
+      const response = await call(id);
+      assert.equal(response.status, 400, JSON.stringify(id));
+    }
+  });
+
+  it('never echoes the id it rejected', async () => {
+    const response = await call(`${'a'.repeat(MAX_COMPANY_ID_CHARS)}-leaky-id`);
+    assert.equal(response.status, 400);
+    assert.doesNotMatch(await response.text(), /leaky-id/);
   });
 });
