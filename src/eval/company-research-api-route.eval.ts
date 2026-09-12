@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { GET } from '@/app/api/companies/[id]/research/route';
@@ -83,5 +85,67 @@ describe('GET /api/companies/[id]/research, on an id it refuses', () => {
     const response = await call(`${'a'.repeat(MAX_COMPANY_ID_CHARS)}-leaky-id`);
     assert.equal(response.status, 400);
     assert.doesNotMatch(await response.text(), /leaky-id/);
+  });
+});
+
+const ROUTE_PATH = 'src/app/api/companies/[id]/research/route.ts';
+const routeSource = readFileSync(join(process.cwd(), ROUTE_PATH), 'utf8');
+
+const at = (needle: string): number => {
+  const index = routeSource.indexOf(needle);
+  assert.ok(index >= 0, `the route no longer contains ${needle}`);
+  return index;
+};
+
+describe('the route reads nothing it has not validated', () => {
+  it('validates, and answers, before either query is called', () => {
+    const refusal = at('return NextResponse.json(INVALID_ID');
+    assert.ok(at('parseCompanyId(') < refusal);
+    assert.ok(refusal < at('getCompanyById('));
+    assert.ok(refusal < at('getRecentResearchRuns('));
+  });
+
+  it('passes the parsed value, not the raw parameter, to the reads', () => {
+    assert.match(routeSource, /getCompanyById\(companyId\)/);
+    assert.match(routeSource, /getRecentResearchRuns\(companyId\)/);
+    assert.match(routeSource, /const companyId = parsed\.value;/);
+  });
+
+  it('writes no SQL of its own', () => {
+    assert.doesNotMatch(routeSource, /\bSELECT\b|\bFROM\b|getDBClient/);
+  });
+});
+
+describe('the route tells a missing company from a failed read', () => {
+  it('answers 404 only for the not-found outcome', () => {
+    assert.match(
+      routeSource,
+      /company\.error === COMPANY_NOT_FOUND\)\s*\{\s*return NextResponse\.json\(NOT_FOUND, \{ status: 404 \}\);/,
+    );
+  });
+
+  it('answers 503 for every other read failure', () => {
+    assert.match(
+      routeSource,
+      /return NextResponse\.json\(READ_FAILED, \{ status: 503 \}\);/,
+    );
+    assert.notEqual(at('status: 404'), at('status: 503'));
+  });
+
+  it('answers with closed copy, never with the query error', () => {
+    for (const closed of [
+      /const INVALID_ID = \{ error: 'Invalid company id' \};/,
+      /const NOT_FOUND = \{ error: 'Company not found' \};/,
+      /const READ_FAILED = \{ error: 'Unable to load company research' \};/,
+    ]) {
+      assert.match(routeSource, closed);
+    }
+    assert.doesNotMatch(routeSource, /error: company\.error|\$\{company\.error\}/);
+    assert.doesNotMatch(routeSource, /error: research\.error|\$\{research\.error\}/);
+  });
+
+  it('treats an unreadable history as an answerable company', () => {
+    assert.match(routeSource, /historyLoaded: research\.success/);
+    assert.match(routeSource, /research\.success \? research\.data : \[\]/);
   });
 });
