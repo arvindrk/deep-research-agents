@@ -1,23 +1,23 @@
 {
   "slice": [
-    "company-research-api-payload",
+    "company-research-api-route",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "company-research-api-payload": "Registered this run, ahead of company-research-api-route which depends on it. The page now assembles status, findings, coverage, and refresh timing; extracting that assembly as a pure payload is what lets a route serve it and an eval check it without a database.",
+    "company-research-api-route": "Registered last run and unblocked by this one: the payload it needs now exists and is locked by 15 assertions, so the route reduces to validating the id, reading recent runs, and serialising what the page already shows.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "feature_improvement": 1,
-    "new_feature": 3,
-    "testing_observability": 1
+    "new_feature": 2,
+    "testing_observability": 2,
+    "feature_improvement": 1
   },
   "vision_refs": {
-    "company-research-api-payload": [
+    "company-research-api-route": [
       "Evidence-backed intelligence",
       "Reliable autonomous research"
     ],
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260911-085008",
-  "notes": "Executor completed research-next-refresh-due and advanced past it. Writing the eval found a real off-by-one: the fresh band is inclusive, so the due date is the day after the threshold, and the page and selectResearchSchedule now agree across a 40-day range. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260911-230902",
+  "notes": "Executor completed company-research-api-payload and advanced past it. The company page now renders from the same payload the route will serve, so the two cannot drift. Remaining heads stay excluded as in-flight."
 }
