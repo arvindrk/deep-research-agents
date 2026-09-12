@@ -2,7 +2,10 @@ import { ExternalLink } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import type { StoredResearchRun } from '@/db/queries/research';
-import { buildCompanyResearchPayload } from '@/lib/research/api-payload';
+import {
+  buildCompanyResearchPayload,
+  toResearchRunDisplayInputs,
+} from '@/lib/research/api-payload';
 import { fieldLabel } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
 import { cn } from '@/lib/utils';
@@ -37,12 +40,7 @@ export function CompanyEvidence({
 }: CompanyEvidenceProps) {
   const payload = buildCompanyResearchPayload({
     companyId,
-    runsNewestFirst: researchRuns.map((run) => ({
-      status: run.status,
-      observed_at: run.observed_at,
-      findings: run.findings,
-      failedSources: run.failed.map((failure) => failure.source),
-    })),
+    runsNewestFirst: toResearchRunDisplayInputs(researchRuns),
     historyLoaded: researchHistoryOk,
     now,
   });
