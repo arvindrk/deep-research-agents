@@ -9,6 +9,10 @@ import type {
   ResearchSourceFailure,
 } from '@/lib/research/run';
 import {
+  RESEARCH_FAILURE_REASONS,
+  type ResearchFailureReason,
+} from '@/lib/research/source-error';
+import {
   RESEARCH_SOURCES,
   type FindingConfidence,
   type ResearchFinding,
@@ -83,6 +87,15 @@ const asSourceList = (value: unknown): ResearchSourceId[] =>
     ? value.map(asSource).filter((source): source is ResearchSourceId => source !== null)
     : [];
 
+/**
+ * A stored reason is text until it is checked. A row written by an older
+ * deploy, a migration, or by hand can hold anything, including the thrown
+ * message the closed set exists to keep out, so an unrecognised reason becomes
+ * source_failed: the failure survives, the unchecked text does not.
+ */
+const asFailureReason = (value: unknown): ResearchFailureReason =>
+  RESEARCH_FAILURE_REASONS.find((reason) => reason === value) ?? 'source_failed';
+
 const asFailures = (value: unknown): ResearchSourceFailure[] => {
   if (!Array.isArray(value)) return [];
   const failures: ResearchSourceFailure[] = [];
@@ -90,8 +103,8 @@ const asFailures = (value: unknown): ResearchSourceFailure[] => {
     if (typeof entry !== 'object' || entry === null) continue;
     const record = entry as Record<string, unknown>;
     const source = asSource(record.source);
-    if (source && typeof record.error === 'string') {
-      failures.push({ source, error: record.error });
+    if (source) {
+      failures.push({ source, error: asFailureReason(record.error) });
     }
   }
   return failures;
