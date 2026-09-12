@@ -1,25 +1,25 @@
 {
   "slice": [
-    "company-research-api-route",
+    "research-failure-reason-type",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "company-research-api-route": "Registered last run and unblocked by this one: the payload it needs now exists and is locked by 15 assertions, so the route reduces to validating the id, reading recent runs, and serialising what the page already shows.",
+    "research-failure-reason-type": "The closed failure reason set exists as values only. SourceOutcome.error, the stored run's failed[].error, and the row parser all still say string, so one new collector can write free text into a record the page reads. Typing the reason end to end is the smallest change that makes the closed set enforced rather than merely intended, and it is the oldest pending tech_debt item on the list.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "new_feature": 2,
     "testing_observability": 2,
-    "feature_improvement": 1
+    "tech_debt": 1,
+    "new_feature": 1
   },
   "vision_refs": {
-    "company-research-api-route": [
-      "Evidence-backed intelligence",
-      "Reliable autonomous research"
+    "research-failure-reason-type": [
+      "Reliable autonomous research",
+      "Measurable quality"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260911-230902",
-  "notes": "Executor completed company-research-api-payload and advanced past it. The company page now renders from the same payload the route will serve, so the two cannot drift. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260912-132756",
+  "notes": "Executor completed company-research-api-route: the payload the page renders is now served at /api/companies/[id]/research behind boundary validation, and the two company read outcomes are named rather than repeated as literals. Next head is the oldest pending tech_debt item, which nothing in flight touches. Remaining heads stay excluded as in-flight."
 }
