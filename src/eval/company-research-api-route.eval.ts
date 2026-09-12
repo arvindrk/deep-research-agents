@@ -4,7 +4,12 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { GET } from '@/app/api/companies/[id]/research/route';
+import type { StoredResearchRun } from '@/db/queries/research';
 import { MAX_COMPANY_ID_CHARS, parseCompanyId } from '@/lib/company-id';
+import {
+  buildCompanyResearchPayload,
+  toResearchRunDisplayInputs,
+} from '@/lib/research/api-payload';
 
 const NUL = String.fromCharCode(0);
 
@@ -147,5 +152,110 @@ describe('the route tells a missing company from a failed read', () => {
   it('treats an unreadable history as an answerable company', () => {
     assert.match(routeSource, /historyLoaded: research\.success/);
     assert.match(routeSource, /research\.success \? research\.data : \[\]/);
+  });
+});
+
+const OBSERVED_AT = '2026-09-10T00:00:00.000Z';
+
+/** A stored row with everything the route must not serve. */
+const storedRun = (): StoredResearchRun => ({
+  id: 'run-1',
+  company_id: 'company-1',
+  status: 'partial',
+  attempted: ['website', 'careers'],
+  succeeded: ['website'],
+  failed: [{ source: 'careers', error: 'http_status' }],
+  findings: [
+    {
+      source: 'website',
+      field: 'website_title',
+      value: 'Acme',
+      evidence_url: 'https://acme.test/',
+      observed_at: OBSERVED_AT,
+      confidence: 'high',
+    },
+  ],
+  observed_at: OBSERVED_AT,
+});
+
+describe('what the route serves', () => {
+  // Exactly the assembly the route performs, so this is the served body.
+  const served = JSON.parse(
+    JSON.stringify(
+      buildCompanyResearchPayload({
+        companyId: 'company-1',
+        runsNewestFirst: toResearchRunDisplayInputs([storedRun()]),
+        historyLoaded: true,
+        now: new Date('2026-09-12T00:00:00.000Z'),
+      }),
+    ),
+  ) as Record<string, unknown>;
+
+  it('serves a closed key set', () => {
+    assert.deepEqual(Object.keys(served).sort(), [
+      'company_id',
+      'coverage',
+      'empty_state',
+      'findings',
+      'notice',
+      'observed_at',
+      'refresh',
+      'status',
+      'status_label',
+    ]);
+  });
+
+  it('carries none of the stored row a reader never sees', () => {
+    const body = JSON.stringify(served);
+    for (const internal of [
+      'embedding',
+      'vector',
+      'relevance_score',
+      'run_id',
+      'run-1',
+      'attempted',
+      'succeeded',
+      'http_status',
+    ]) {
+      assert.ok(!body.includes(internal), `served body contains ${internal}`);
+    }
+  });
+
+  it('still says a source failed, in reader copy', () => {
+    assert.equal(served.status, 'partial');
+    assert.match(String(served.notice), /careers/i);
+  });
+
+  it('returns the payload the builder made and nothing beside it', () => {
+    assert.match(
+      routeSource,
+      /return NextResponse\.json\(\s*buildCompanyResearchPayload\(\{/,
+    );
+    assert.doesNotMatch(routeSource, /\.\.\.payload|\.\.\.company\.data/);
+  });
+});
+
+describe('the two reads', () => {
+  it('run in parallel, because neither needs the other', () => {
+    assert.match(
+      routeSource,
+      /await Promise\.all\(\[\s*getCompanyById\(companyId\),\s*getRecentResearchRuns\(companyId\),\s*\]\)/,
+    );
+    assert.doesNotMatch(routeSource, /await getCompanyById/);
+    assert.doesNotMatch(routeSource, /await getRecentResearchRuns/);
+  });
+
+  it('feed the page and the route through one mapping', () => {
+    assert.match(routeSource, /toResearchRunDisplayInputs\(/);
+    const component = readFileSync(
+      join(process.cwd(), 'src/components/company-evidence.tsx'),
+      'utf8',
+    );
+    assert.match(component, /toResearchRunDisplayInputs\(researchRuns\)/);
+    assert.doesNotMatch(
+      component,
+      /failedSources:/,
+      'a second copy of the mapping is how the two answers drift',
+    );
   });
 });
