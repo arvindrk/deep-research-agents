@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CompanyDetail } from '@/components/company-detail';
-import { getCompanyById } from '@/db/queries/companies';
+import { COMPANY_NOT_FOUND, getCompanyById } from '@/db/queries/companies';
 import { getRecentResearchRuns } from '@/db/queries/research';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
   ]);
 
   if (!result.success) {
-    if (result.error === 'Company not found') {
+    if (result.error === COMPANY_NOT_FOUND) {
       notFound();
     }
 
