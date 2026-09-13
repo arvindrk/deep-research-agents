@@ -86,3 +86,53 @@ describe('every migration in this repository', () => {
     }
   });
 });
+
+const readSource = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
+
+describe('the run write under the claim key', () => {
+  const research = readSource('src/db/queries/research.ts');
+  const insertRun = research.slice(
+    research.indexOf('export async function insertResearchRun'),
+    research.indexOf('export type StoredResearchRun'),
+  );
+
+  it('tolerates a conflict on both statements', () => {
+    assert.equal((insertRun.match(/ON CONFLICT DO NOTHING/g) ?? []).length, 2);
+  });
+
+  it('names no conflict target, so it cannot depend on a migration', () => {
+    assert.doesNotMatch(insertRun, /ON CONFLICT\s*\(/);
+  });
+
+  it('generates the run id once, outside the retry', () => {
+    assert.equal((insertRun.match(/randomUUID\(\)/g) ?? []).length, 1);
+    assert.ok(
+      insertRun.indexOf('const runId = randomUUID();') <
+        insertRun.indexOf('withRetry('),
+      'a retry must re-send the same id, not invent a new one',
+    );
+  });
+
+  it('still writes only deduplicated claims', () => {
+    // The database now rejects a repeat; the application must not send one.
+    assert.match(
+      readSource('src/lib/research/run.ts'),
+      /findings: dedupeFindings\(/,
+    );
+    assert.match(insertRun, /\.\.\.run\.findings\.map\(/);
+  });
+
+  it('binds every value it writes', () => {
+    assert.doesNotMatch(insertRun, /VALUES[\s\S]*?'\s*\+/);
+    assert.doesNotMatch(insertRun, /INSERT INTO \$\{/);
+  });
+
+  it('leaves the one upsert that needs a target alone', () => {
+    // insertCompanyFromSource upserts on a real key, and the chain eval asserts
+    // the unique index that target requires still exists.
+    assert.match(
+      readSource('src/db/queries/companies.ts'),
+      /ON CONFLICT \(source, source_id\)/,
+    );
+  });
+});
