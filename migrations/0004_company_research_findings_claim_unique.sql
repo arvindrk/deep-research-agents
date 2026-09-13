@@ -19,3 +19,10 @@
 
 CREATE UNIQUE INDEX IF NOT EXISTS company_research_findings_claim_uidx
   ON company_research_findings (run_id, source, field);
+
+-- The single-column index from 0003 is now redundant: run_id is the leading
+-- column of the unique index above, so it serves the findings-by-run lookup in
+-- getRecentResearchRuns and the foreign key's cascade delete. Keeping both
+-- means writing two index entries per finding for no read that needs it.
+
+DROP INDEX IF EXISTS company_research_findings_run_id_idx;
