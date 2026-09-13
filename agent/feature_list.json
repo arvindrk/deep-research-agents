@@ -565,14 +565,14 @@
   },
   {
     "id": "research-failure-reason-type",
-    "status": "pending",
+    "status": "completed",
     "priority": 48,
     "category": "tech_debt",
     "depends_on": [
       "research-source-error-reasons"
     ],
     "description": "Narrow ResearchSourceFailure.error from string to the ResearchFailureReason union so the closed set is enforced by the compiler rather than only at the runtime boundary, and fold an unrecognised stored value to source_failed when reading rows back. Rows written before the reason codes landed still hold raw messages, so the read path has to narrow them rather than trust them.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {
@@ -665,6 +665,18 @@
       "research-next-refresh-due"
     ],
     "description": "Extract the pure payload builder the company research API route needs: given recent runs and a clock, produce the run status, findings, coverage, and refresh timing already assembled for the page, in one serialisable shape with closed copy. Keeping it pure is what makes the route evaluable hermetically, since the route itself needs a database.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "company-read-outcome-type",
+    "status": "completed",
+    "priority": 56,
+    "category": "tech_debt",
+    "depends_on": [
+      "company-research-api-route"
+    ],
+    "description": "Close the outcome of a single company read as a type rather than as two strings compared by hand. The read answers either not found or read failed, the API route turns the first into a 404 and the second into a 503, and the detail page turns the first into notFound(), so a new outcome or a typo in a comparison currently falls silently into the 503 branch. Parameterise the query result reason so the one query whose callers branch on the value declares its own union, and leave every other query's signature untouched.",
     "passes": true,
     "verify": "npm run verify"
   }
