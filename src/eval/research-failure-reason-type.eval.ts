@@ -107,3 +107,50 @@ describe('the row parser', () => {
     assert.match(source, /from '@\/lib\/research\/source-error'/);
   });
 });
+
+describe('the failure reason is a type, not a convention', () => {
+  const REASON_MODULES = [
+    'src/lib/research/types.ts',
+    'src/lib/research/run.ts',
+    'src/lib/research/runtime.ts',
+    'src/db/queries/research.ts',
+  ] as const;
+
+  it('derives the union from the set rather than restating it', () => {
+    assert.match(
+      read('src/lib/research/source-error.ts'),
+      /export type ResearchFailureReason =\s*\(typeof RESEARCH_FAILURE_REASONS\)\[number\];/,
+    );
+    assert.equal(RESEARCH_FAILURE_REASONS.length, 8);
+  });
+
+  it('types the outcome, the record, and the runtime with it', () => {
+    assert.match(
+      read('src/lib/research/types.ts'),
+      /status: 'failed';[\s\S]*?error: ResearchFailureReason;/,
+    );
+    assert.match(
+      read('src/lib/research/run.ts'),
+      /export type ResearchSourceFailure = \{\s*source: ResearchSourceId;\s*error: ResearchFailureReason;\s*\};/,
+    );
+    assert.match(
+      read('src/lib/research/runtime.ts'),
+      /\(error: unknown\): ResearchFailureReason/,
+    );
+  });
+
+  it('leaves no failure reason typed as free text', () => {
+    for (const file of REASON_MODULES) {
+      assert.doesNotMatch(read(file), /error: string/, file);
+    }
+  });
+
+  it('reads back the same type it writes', () => {
+    // StoredResearchRun is ResearchRun plus an id, so the read path cannot
+    // widen a field the write path narrowed.
+    assert.match(
+      read('src/db/queries/research.ts'),
+      /export type StoredResearchRun = ResearchRun & \{ id: string \};/,
+    );
+  });
+});
