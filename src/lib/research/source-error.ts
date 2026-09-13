@@ -59,3 +59,16 @@ export function researchFailureReason(error: unknown): ResearchFailureReason {
   }
   return 'source_failed';
 }
+
+/**
+ * The same closed set, read back. A stored or transported reason is text until
+ * it is checked: a row written by an older deploy, a migration, or by hand can
+ * hold anything, including the thrown message this set exists to keep out.
+ * Anything unrecognised becomes source_failed, so the failure survives and the
+ * unchecked text does not.
+ */
+export function asResearchFailureReason(value: unknown): ResearchFailureReason {
+  return (
+    RESEARCH_FAILURE_REASONS.find((reason) => reason === value) ?? 'source_failed'
+  );
+}
