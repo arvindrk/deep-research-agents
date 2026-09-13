@@ -3,6 +3,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
+import { dedupeFindings } from '@/lib/research/run';
+import type { ResearchFinding } from '@/lib/research/types';
+
+import { replayIndexChain } from './support/migrations';
+
 const MIGRATIONS_DIR = join(process.cwd(), 'migrations');
 
 const migrationNames = (): string[] =>
@@ -134,5 +139,73 @@ describe('the run write under the claim key', () => {
       readSource('src/db/queries/companies.ts'),
       /ON CONFLICT \(source, source_id\)/,
     );
+  });
+});
+
+const claim = (
+  source: ResearchFinding['source'],
+  field: string,
+  value = 'value',
+): ResearchFinding => ({
+  source,
+  field,
+  value,
+  evidence_url: 'https://acme.test/',
+  observed_at: '2026-09-10T00:00:00.000Z',
+  confidence: 'high',
+});
+
+describe('the claim identity the application enforces', () => {
+  it('is the source and the field, so one source cannot repeat a field', () => {
+    const kept = dedupeFindings([
+      claim('website', 'website_title'),
+      claim('website', 'website_title', 'a different value'),
+    ]);
+    assert.equal(kept.length, 1);
+    assert.equal(kept[0].value, 'value', 'first wins, so the result is order-stable');
+  });
+
+  it('keeps the same field reported by two different sources', () => {
+    const kept = dedupeFindings([
+      claim('website', 'title'),
+      claim('careers', 'title'),
+    ]);
+    assert.equal(kept.length, 2);
+  });
+
+  it('ignores the value, the evidence, and the time when deciding', () => {
+    const kept = dedupeFindings([
+      claim('website', 'website_title'),
+      {
+        ...claim('website', 'website_title', 'later'),
+        evidence_url: 'https://acme.test/about',
+        observed_at: '2026-09-11T00:00:00.000Z',
+        confidence: 'low',
+      },
+    ]);
+    assert.equal(kept.length, 1);
+  });
+
+  it('is built from those two fields and nothing else', () => {
+    assert.match(
+      readSource('src/lib/research/run.ts'),
+      /const findingKey = \(finding: ResearchFinding\): string =>\s*`\$\{finding\.source\}[^`]*\$\{finding\.field\}`;/,
+    );
+  });
+
+  it('is scoped to one run, which is why run_id leads the index', () => {
+    assert.match(
+      readSource('src/lib/research/run.ts'),
+      /findings: dedupeFindings\(\s*outcomes\.flatMap\(/,
+    );
+  });
+
+  it('is exactly what the database keys a claim by', () => {
+    const keyed = replayIndexChain().indexes.find(
+      (index) =>
+        index.table === 'company_research_findings' && index.unique,
+    );
+    assert.ok(keyed, 'no unique index keys a claim');
+    assert.deepEqual(keyed.columns, ['run_id', 'source', 'field']);
   });
 });
