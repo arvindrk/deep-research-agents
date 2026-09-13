@@ -1,54 +1,68 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
-const REPO_ROOT = process.cwd();
-const MIGRATIONS_DIR = join(REPO_ROOT, 'migrations');
+import { leadingColumnIndexes, replayIndexChain } from './support/migrations';
 
-const FINDINGS_RUN_ID_INDEX =
-  /CREATE\s+INDEX\b(?!\s+UNIQUE)[\s\S]*\bON\s+company_research_findings\s*\(\s*run_id\s*\)/i;
-
-function findingsRunIdIndexMigration(): { name: string; body: string } {
-  const names = readdirSync(MIGRATIONS_DIR)
-    .filter((name) => name.endsWith('.sql'))
-    .sort();
-  const match = names.find((name) => {
-    const body = readFileSync(join(MIGRATIONS_DIR, name), 'utf8');
-    return FINDINGS_RUN_ID_INDEX.test(body) && !/CREATE\s+UNIQUE\s+INDEX/i.test(body);
+/**
+ * Findings are loaded by run id (WHERE run_id = $1, or an OR of two run ids),
+ * and Postgres does not index the referencing column of a foreign key on its
+ * own, so that lookup needs an index of its own.
+ *
+ * This used to assert that some migration file creates one. That assertion
+ * survives the index being dropped, because the file stays in the repository,
+ * so it now asserts the chain: what is standing after the last migration.
+ */
+describe('findings by run id', () => {
+  it('is served by an index the whole chain leaves standing', () => {
+    const serving = leadingColumnIndexes('company_research_findings', 'run_id');
+    assert.ok(
+      serving.length > 0,
+      'no surviving index on company_research_findings leads with run_id',
+    );
   });
-  assert.ok(
-    match,
-    'expected a migration that creates a non-unique index on company_research_findings (run_id)',
-  );
-  return {
-    name: match,
-    body: readFileSync(join(MIGRATIONS_DIR, match), 'utf8'),
-  };
-}
 
-describe('company_research_findings run_id index', () => {
-  it('migrates a non-unique index on company_research_findings (run_id)', () => {
-    const { body } = findingsRunIdIndexMigration();
-    assert.match(
-      body,
-      FINDINGS_RUN_ID_INDEX,
-      'migration must create INDEX ON company_research_findings (run_id)',
+  it('is served by exactly one such index, not two', () => {
+    const serving = leadingColumnIndexes('company_research_findings', 'run_id');
+    assert.equal(
+      serving.length,
+      1,
+      `${serving.map((index) => index.name).join(', ')} all lead with run_id`,
     );
-    assert.doesNotMatch(
-      body,
-      /CREATE\s+UNIQUE\s+INDEX/i,
-      'findings(run_id) index must not be UNIQUE',
+  });
+
+  it('is served by the claim key, which also makes a claim unique', () => {
+    const [serving] = leadingColumnIndexes(
+      'company_research_findings',
+      'run_id',
     );
-    assert.match(
-      body,
-      /Applied by a human/i,
-      'migration must stay human-applied like 0001/0002',
+    assert.ok(serving);
+    assert.deepEqual(serving.columns, ['run_id', 'source', 'field']);
+    assert.equal(serving.unique, true);
+  });
+
+  it('comes from a migration that stays human-applied', () => {
+    const [serving] = leadingColumnIndexes(
+      'company_research_findings',
+      'run_id',
     );
-    assert.match(
-      body,
-      /agent loop/i,
-      'migration must state the agent loop does not apply DDL',
+    assert.ok(serving);
+    const sql = readFileSync(
+      join(process.cwd(), 'migrations', serving.createdBy),
+      'utf8',
     );
+    assert.match(sql, /Applied by a human/i);
+    assert.match(sql, /agent loop/i);
+  });
+
+  it('is not served by an index a later migration dropped', () => {
+    const chain = replayIndexChain();
+    for (const drop of chain.dropped) {
+      assert.ok(
+        !chain.indexes.some((index) => index.name === drop.name),
+        `${drop.name} was dropped by ${drop.migration} and recreated later`,
+      );
+    }
   });
 });
