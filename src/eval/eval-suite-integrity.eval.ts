@@ -37,13 +37,13 @@ describe('every file in the suite', () => {
   it('asserts something', () => {
     for (const path of files) {
       const source = readRepoFile(path);
-      assert.match(source, /\bit\(/, `${path} declares no test`);
-      assert.match(source, /\bassert\./, `${path} asserts nothing`);
-      assert.match(
-        source,
-        /from 'node:assert\/strict'/,
-        `${path} must assert with node:assert/strict`,
-      );
+      for (const [requirement, pattern] of [
+        ['declares no test', /\bit\(/],
+        ['asserts nothing', /\bassert\./],
+        ['does not use node:assert/strict', /from 'node:assert\/strict'/],
+      ] as const) {
+        assert.equal(pattern.test(source), true, `${path} ${requirement}`);
+      }
     }
   });
 
@@ -80,7 +80,13 @@ describe('nothing in the suite is silenced', () => {
     for (const path of suiteFiles()) {
       const source = readRepoFile(path);
       for (const silencer of SILENCERS) {
-        assert.doesNotMatch(source, silencer.pattern, `${path} contains ${silencer.name}`);
+        // equal(false) rather than doesNotMatch: a failing doesNotMatch prints
+        // the whole file, and a loop reading its own CI output needs the name.
+        assert.equal(
+          silencer.pattern.test(source),
+          false,
+          `${path} contains ${silencer.name}`,
+        );
       }
     }
   });
