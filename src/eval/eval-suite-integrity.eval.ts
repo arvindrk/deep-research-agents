@@ -168,3 +168,64 @@ describe('every module the glob does not run', () => {
     }
   });
 });
+
+/**
+ * The hermeticity rule in .agents/rules/evals.md, as far as a scan can carry
+ * it: no network, no database, no clock, no randomness, no environment. A
+ * rewrite can slip past a pattern, so this catches the shapes that appear in
+ * practice rather than pretending to be a sandbox.
+ */
+const NON_HERMETIC = [
+  { name: 'reads the environment', pattern: /process\.env/ },
+  { name: 'reads the clock', pattern: /new Date\(\s*\)|Date\.now\(/ },
+  // By the import, not by the mention: an eval may quote production code that
+  // calls randomUUID, and asserting that is not the same as being random.
+  //
+  // Assembled rather than written out, because a pattern that contains its own
+  // literal makes this file trip its own scan. Every other rule here escapes a
+  // character, which has the same effect; a new rule must do one or the other.
+  {
+    name: 'uses randomness',
+    pattern: new RegExp("Math\\.random\\(|from 'node:" + "crypto'"),
+  },
+  { name: 'opens a socket', pattern: /from 'node:(net|http|https|dns|tls)'/ },
+  { name: 'imports the database client', pattern: /from '@neondatabase\/serverless'/ },
+] as const;
+
+describe('the suite stays hermetic', () => {
+  it('reads no clock, environment, randomness, or socket', () => {
+    for (const path of suiteFiles()) {
+      const source = readRepoFile(path);
+      for (const rule of NON_HERMETIC) {
+        assert.equal(
+          rule.pattern.test(source),
+          false,
+          `${path} ${rule.name}`,
+        );
+      }
+    }
+  });
+
+  it('checks for the shapes it can actually detect', () => {
+    const samples = [
+      'process' + '.env.DATABASE_URL',
+      'const now = new ' + 'Date();',
+      'Math' + '.random()',
+      "import { randomUUID } from 'node:" + "crypto';",
+      "import net from 'node:" + "net';",
+      "import { neon } from '@neondatabase" + "/serverless';",
+    ];
+    for (const sample of samples) {
+      assert.ok(
+        NON_HERMETIC.some((rule) => rule.pattern.test(sample)),
+        sample,
+      );
+    }
+    assert.ok(samples.length >= NON_HERMETIC.length);
+  });
+
+  it('allows the clock an eval is handed rather than the one it reads', () => {
+    // Injected instants are how the refresh and freshness evals stay stable.
+    assert.equal(NON_HERMETIC[1].pattern.test("new Date('2026-09-12T00:00:00.000Z')"), false);
+  });
+});
