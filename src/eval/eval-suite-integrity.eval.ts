@@ -30,3 +30,32 @@ describe('the suite the verify gate runs', () => {
     assert.equal(new Set(files).size, files.length);
   });
 });
+
+describe('every file in the suite', () => {
+  const files = suiteFiles();
+
+  it('asserts something', () => {
+    for (const path of files) {
+      const source = readRepoFile(path);
+      assert.match(source, /\bit\(/, `${path} declares no test`);
+      assert.match(source, /\bassert\./, `${path} asserts nothing`);
+      assert.match(
+        source,
+        /from 'node:assert\/strict'/,
+        `${path} must assert with node:assert/strict`,
+      );
+    }
+  });
+
+  it('declares a test for every describe block it opens', () => {
+    for (const path of files) {
+      const source = readRepoFile(path);
+      const describes = (source.match(/\bdescribe\(/g) ?? []).length;
+      const tests = (source.match(/\bit\(/g) ?? []).length;
+      assert.ok(
+        tests >= describes,
+        `${path} has ${describes} describe blocks and ${tests} tests`,
+      );
+    }
+  });
+});
