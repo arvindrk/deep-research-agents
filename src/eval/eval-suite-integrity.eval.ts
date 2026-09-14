@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  evalTreeFiles,
   importsOf,
   reachesProduction,
   readRepoFile,
@@ -265,5 +266,30 @@ describe('the suite is held to the same tools as the code', () => {
       );
     }
     assert.ok(installed.includes('tsx'), 'the suite runs TypeScript through tsx');
+  });
+});
+
+describe('nothing in the eval tree is dead', () => {
+  it('has every fixture and helper referenced by a file the glob runs', () => {
+    const suite = suiteFiles();
+    const sources = new Map(suite.map((path) => [path, readRepoFile(path)]));
+    const assets = evalTreeFiles().filter((path) => !path.endsWith(".eval.ts"));
+    assert.ok(assets.length > 0, 'the scan must see the assets it checks');
+
+    for (const asset of assets) {
+      const name = asset.slice(asset.lastIndexOf("/") + 1);
+      const referenced = suite.some((path) => {
+        const source = sources.get(path) ?? "";
+        return (
+          source.includes(asset) ||
+          importsOf(path).some(
+            (specifier) =>
+              resolveLocal(path, specifier) === asset ||
+              specifier.endsWith(name.replace(/\.tsx?$/, "")),
+          )
+        );
+      });
+      assert.ok(referenced, `${asset} is referenced by no eval, so it is dead weight`);
+    }
   });
 });

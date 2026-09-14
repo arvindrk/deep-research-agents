@@ -28,6 +28,16 @@ function typescriptFiles(dir: string): string[] {
 export const suiteFiles = (): string[] =>
   typescriptFiles(EVAL_DIR).filter((path) => path.endsWith('.eval.ts'));
 
+/** Every file under src/eval, of any kind, repo-relative. */
+export function evalTreeFiles(dir = EVAL_DIR): string[] {
+  return readdirSync(join(REPO_ROOT, dir), { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = `${dir}/${entry.name}`;
+      return entry.isDirectory() ? evalTreeFiles(path) : [path];
+    })
+    .sort();
+}
+
 /** Modules under src/eval that the glob does not run, so nothing exercises them alone. */
 export const supportModules = (): string[] =>
   typescriptFiles(EVAL_DIR).filter((path) => !path.endsWith('.eval.ts'));
