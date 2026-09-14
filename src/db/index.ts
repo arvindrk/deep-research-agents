@@ -15,6 +15,7 @@ export type {
 } from './types';
 export {
   getCompanyById,
+  findSimilarCompanies,
   getAllCompanies,
   getCompanyCount,
   getCompaniesWithOffset,
