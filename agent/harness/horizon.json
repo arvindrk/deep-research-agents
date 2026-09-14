@@ -1,25 +1,24 @@
 {
   "slice": [
-    "research-findings-run-source-field-unique",
+    "eval-suite-integrity",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-findings-run-source-field-unique": "dedupeFindings makes a claim unique per source and field before anything is written, and the coverage count on the company page trusts that uniqueness. The database does not enforce it: nothing stops a retry, a second writer, or a hand-inserted row from putting two rows on one run, source, and field, and the count would then overstate what is known. A unique index makes the invariant the database's rather than the application's, and it is the last pending tech_debt item nothing in flight touches.",
+    "eval-suite-integrity": "Three runs in a row have leaned on the eval suite to justify a draft pull request nobody has read, and the suite itself is unchecked. A file the glob never discovers, a describe with no assertion, a skipped test, or a file that only asserts against a fixture it defines itself all pass silently. This run has just added a support module under src/eval, which the glob deliberately does not run, so the difference between a file that is checked and a file that is merely present matters more than it did.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "testing_observability": 2,
-    "tech_debt": 1,
+    "testing_observability": 3,
     "new_feature": 1
   },
   "vision_refs": {
-    "research-findings-run-source-field-unique": [
-      "Evidence-backed intelligence",
-      "Measurable quality"
+    "eval-suite-integrity": [
+      "Measurable quality",
+      "Reliable autonomous research"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +33,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260913-034650",
-  "notes": "Executor completed research-failure-reason-type and company-read-outcome-type: the research failure reason and the company read outcome are both closed types now, narrowed where rows become objects, and the query result reason type takes an optional union so only the query whose callers branch on it declares one. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260913-180545",
+  "notes": "Executor completed research-findings-run-source-field-unique: a claim is unique per run, source, and field in the schema now, the superseded run_id index is dropped, and the run write is idempotent under the key with an untargeted ON CONFLICT so it does not depend on the migration having been applied. The migration is human-applied and this loop never ran it. Remaining heads stay excluded as in-flight."
 }
