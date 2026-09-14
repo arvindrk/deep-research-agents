@@ -229,3 +229,41 @@ describe('the suite stays hermetic', () => {
     assert.equal(NON_HERMETIC[1].pattern.test("new Date('2026-09-12T00:00:00.000Z')"), false);
   });
 });
+
+describe('the suite is held to the same tools as the code', () => {
+  it('is typechecked, because tsconfig excludes only dependencies', () => {
+    const tsconfig = readRepoFile('tsconfig.json');
+    assert.match(tsconfig, /"\*\*\/\*\.ts"/);
+    assert.match(tsconfig, /"exclude":\s*\[\s*"node_modules"\s*\]/);
+  });
+
+  it('is linted, because no config ignores it', () => {
+    const eslintConfig = readRepoFile('eslint.config.mjs');
+    assert.equal(/ignores[\s\S]{0,200}src\/eval/.test(eslintConfig), false);
+    // Flat config only: a .eslintignore file is read by nobody in eslint 9 and
+    // would be a quiet way to believe the suite is linted when it is not.
+    assert.throws(
+      () => readRepoFile('.eslintignore'),
+      /ENOENT/,
+      "a .eslintignore would mislead a reader about what is linted",
+    );
+  });
+
+  it('brings no test framework with it', () => {
+    const manifest = JSON.parse(readRepoFile('package.json')) as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+    const installed = [
+      ...Object.keys(manifest.dependencies),
+      ...Object.keys(manifest.devDependencies),
+    ];
+    for (const framework of ['jest', 'vitest', 'mocha', 'ava', 'jasmine', 'chai']) {
+      assert.ok(
+        !installed.some((name) => name === framework || name.startsWith(`${framework}/`)),
+        `${framework} is installed; the suite runs on node:test on purpose`,
+      );
+    }
+    assert.ok(installed.includes('tsx'), 'the suite runs TypeScript through tsx');
+  });
+});
