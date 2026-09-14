@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
+import { HYBRID_SEARCH_FILTERS } from '@/lib/hybrid-search-ranking';
 import {
   boundSimilarLimit,
+  similarityFromDistance,
+  SIMILAR_COMPANIES_MIN_SIMILARITY,
   SIMILAR_COMPANIES_DEFAULT_LIMIT,
   SIMILAR_COMPANIES_MAX_LIMIT,
 } from '@/lib/similar-companies';
@@ -49,5 +54,59 @@ describe('boundSimilarLimit', () => {
   it('keeps the default inside the bounds it enforces', () => {
     assert.ok(SIMILAR_COMPANIES_DEFAULT_LIMIT >= 1);
     assert.ok(SIMILAR_COMPANIES_DEFAULT_LIMIT <= SIMILAR_COMPANIES_MAX_LIMIT);
+  });
+});
+
+describe('similarityFromDistance', () => {
+  it('turns the ends of the range into the ends of the score', () => {
+    assert.equal(similarityFromDistance(0), 1);
+    assert.equal(similarityFromDistance(1), 0);
+    assert.equal(similarityFromDistance(2), 0);
+  });
+
+  it('is the complement of the distance in between', () => {
+    for (const distance of [0.1, 0.25, 0.5, 0.75, 0.9]) {
+      assert.equal(
+        Number(similarityFromDistance(distance).toFixed(10)),
+        Number((1 - distance).toFixed(10)),
+      );
+    }
+  });
+
+  it('never leaves the range a reader can be shown', () => {
+    for (const distance of [-5, -1, -0.0001, 0, 0.5, 1, 1.0001, 2, 17]) {
+      const score = similarityFromDistance(distance);
+      assert.ok(score >= 0 && score <= 1, String(distance));
+    }
+  });
+
+  it('scores an unusable distance as nothing, not as everything', () => {
+    for (const distance of [NaN, Infinity, -Infinity]) {
+      assert.equal(similarityFromDistance(distance), 0, String(distance));
+    }
+  });
+
+  it('falls short of the floor for a distance the query would exclude', () => {
+    const excluded = 1 - SIMILAR_COMPANIES_MIN_SIMILARITY + 0.01;
+    assert.ok(similarityFromDistance(excluded) < SIMILAR_COMPANIES_MIN_SIMILARITY);
+    const included = 1 - SIMILAR_COMPANIES_MIN_SIMILARITY - 0.01;
+    assert.ok(similarityFromDistance(included) > SIMILAR_COMPANIES_MIN_SIMILARITY);
+  });
+});
+
+describe('how close counts as related', () => {
+  it('is the judgement search already makes, not a second one', () => {
+    assert.equal(
+      SIMILAR_COMPANIES_MIN_SIMILARITY,
+      HYBRID_SEARCH_FILTERS.minSemantic,
+      'the floor must be the search floor, so the two surfaces agree',
+    );
+  });
+
+  it('is read from the search module rather than copied', () => {
+    assert.match(
+      readFileSync(join(process.cwd(), 'src/lib/similar-companies.ts'), 'utf8'),
+      /SIMILAR_COMPANIES_MIN_SIMILARITY = HYBRID_SEARCH_FILTERS\.minSemantic/,
+    );
   });
 });
