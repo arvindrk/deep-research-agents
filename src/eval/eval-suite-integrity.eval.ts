@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { readRepoFile, suiteFiles } from './support/suite';
+import {
+  importsOf,
+  reachesProduction,
+  readRepoFile,
+  resolveLocal,
+  suiteFiles,
+  supportModules,
+} from './support/suite';
 
 describe('the suite the verify gate runs', () => {
   const packageJson = readRepoFile('package.json');
@@ -110,5 +117,54 @@ describe('nothing in the suite is silenced', () => {
       assert.match(sample, SILENCERS[at].pattern, sample);
     });
     assert.equal(samples.length, SILENCERS.length);
+  });
+});
+
+describe('every file in the suite asserts against production code', () => {
+  it('reaches a module or a file outside the eval tree', () => {
+    for (const path of suiteFiles()) {
+      assert.equal(
+        reachesProduction(path),
+        true,
+        `${path} asserts only against itself and its own fixtures`,
+      );
+    }
+  });
+
+  it('counts both shapes this repository actually uses', () => {
+    // An aliased import into src, and a relative import into agent/local.
+    assert.equal(reachesProduction('src/eval/research-coverage-summary.eval.ts'), true);
+    assert.equal(reachesProduction('src/eval/logview.eval.ts'), true);
+    assert.ok(importsOf('src/eval/logview.eval.ts').includes('../../agent/local/logview/events'));
+    assert.equal(
+      resolveLocal('src/eval/logview.eval.ts', '../../agent/local/logview/events'),
+      'agent/local/logview/events.ts',
+    );
+  });
+
+  it('does not count a fixture or a sibling eval as production', () => {
+    assert.equal(resolveLocal('src/eval/x.eval.ts', './fixtures/research-runs.json'), 'src/eval/fixtures/research-runs.json');
+    assert.equal(resolveLocal('src/eval/x.eval.ts', '@/lib/research/run'), null);
+  });
+});
+
+describe('every module the glob does not run', () => {
+  const modules = supportModules();
+
+  it('exists to be used, so something the glob runs must import it', () => {
+    assert.ok(modules.length > 0, 'the support scan must see the modules it checks');
+    const suite = suiteFiles();
+
+    for (const helper of modules) {
+      const importers = suite.filter((path) =>
+        importsOf(path).some(
+          (specifier) => resolveLocal(path, specifier) === helper,
+        ),
+      );
+      assert.ok(
+        importers.length > 0,
+        `${helper} is imported by no eval, so nothing runs it`,
+      );
+    }
   });
 });
