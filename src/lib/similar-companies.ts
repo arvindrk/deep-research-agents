@@ -1,3 +1,13 @@
+import { HYBRID_SEARCH_FILTERS } from './hybrid-search-ranking';
+
+/**
+ * How close is close enough to be worth showing. This is the same judgement
+ * search already makes about what counts as semantically related, so it is
+ * reused rather than redefined: two constants for one judgement drift, and the
+ * drift shows up as a company appearing in one place and not the other.
+ */
+export const SIMILAR_COMPANIES_MIN_SIMILARITY = HYBRID_SEARCH_FILTERS.minSemantic;
+
 /**
  * What a "companies like this one" request may ask for. The limit is bounded
  * here rather than in the query, so a route, a page, and a background job all
@@ -28,4 +38,14 @@ export function boundSimilarLimit(raw: unknown): number {
   const whole = Math.floor(requested);
   if (whole < 1) return 1;
   return Math.min(whole, SIMILAR_COMPANIES_MAX_LIMIT);
+}
+
+/**
+ * A cosine distance from pgvector's `<=>`, as a score a reader can be shown.
+ * Identical vectors are 0 distance and score 1; opposite ones score 0 rather
+ * than a negative number nobody can read.
+ */
+export function similarityFromDistance(distance: number): number {
+  if (!Number.isFinite(distance)) return 0;
+  return Math.min(1, Math.max(0, 1 - distance));
 }
