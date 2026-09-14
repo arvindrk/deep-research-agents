@@ -682,13 +682,26 @@
   },
   {
     "id": "eval-suite-integrity",
-    "status": "pending",
+    "status": "completed",
     "priority": 57,
     "category": "testing_observability",
     "depends_on": [
       "validator-engine"
     ],
     "description": "The eval suite is the only reason it is safe to open a pull request nobody has read, and nothing checks the suite itself. A file that is never discovered by the glob, a describe block with no assertion, a skipped or todo test, or a file that asserts only against a fixture it also defines all pass silently and prove nothing. Assert the suite's own integrity: every eval file is discovered, every file asserts something, nothing is skipped, and every file imports at least one production module.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "similar-companies-query",
+    "status": "pending",
+    "priority": 58,
+    "category": "new_feature",
+    "depends_on": [
+      "embedding-generation-pipeline",
+      "hybrid-search-api"
+    ],
+    "description": "A company profile is a dead end today: a reader who finds one interesting company has no way to ask for the ones like it. The embeddings that power search already describe every company, so nearest-neighbour by embedding answers the question without a new model or a new column. Add a bounded, parameterised query that returns the companies closest to one company, excluding itself and anything without an embedding, with the distance turned into a score the caller can show. No route and no UI in this slice: the query and its eval first.",
     "passes": false,
     "verify": "npm run verify"
   }
