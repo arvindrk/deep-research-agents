@@ -20,10 +20,13 @@ interface SimilarCompaniesProps {
  * A reader who finds one interesting company can follow it to the next; a
  * failed lookup says so rather than reading as "nothing is similar".
  */
+const HEADING_ID = 'similar-companies-heading';
+
 export function SimilarCompanies({ companies, loaded }: SimilarCompaniesProps) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3" aria-labelledby={HEADING_ID}>
       <h2
+        id={HEADING_ID}
         className={cn(
           'text-sm font-medium',
           'text-[var(--color-text-secondary)]'
@@ -51,12 +54,14 @@ export function SimilarCompanies({ companies, loaded }: SimilarCompaniesProps) {
       )}
 
       {companies.length > 0 && (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-4 sm:grid-cols-2" aria-labelledby={HEADING_ID}>
           {companies.map((company) => (
             <li key={company.id} className="space-y-1">
               <CompanyCard company={company} />
               <Badge variant="secondary" className="text-xs">
                 {closenessLabel(company.similarity)}
+                {/* The badge alone reads as a stray word out of context. */}
+                <span className="sr-only"> match to this company</span>
               </Badge>
             </li>
           ))}

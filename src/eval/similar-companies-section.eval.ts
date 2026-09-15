@@ -38,7 +38,7 @@ describe('the similar companies section', () => {
   });
 
   it('is a section with a heading at the level of the page other sections use', () => {
-    assert.match(section, /<section className="space-y-3">/);
+    assert.match(section, /<section className="space-y-3"/);
     assert.match(section, /<h2/);
     assert.doesNotMatch(section, /<h1|<h3/);
     const evidence = read('src/components/company-evidence.tsx');
@@ -46,7 +46,7 @@ describe('the similar companies section', () => {
   });
 
   it('lists neighbours as a list, keyed by company', () => {
-    assert.match(section, /<ul className="grid gap-4 sm:grid-cols-2">/);
+    assert.match(section, /<ul className="grid gap-4 sm:grid-cols-2"/);
     assert.match(section, /<li key=\{company\.id\}/);
   });
 
