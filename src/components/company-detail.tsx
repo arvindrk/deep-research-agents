@@ -3,6 +3,7 @@ import { Building2, ExternalLink, MapPin, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { CompanyEvidence } from '@/components/company-evidence';
 import { CompanyLogo } from '@/components/company-logo';
+import { SimilarCompanies } from '@/components/similar-companies';
 import {
   Card,
   CardContent,
@@ -11,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { StoredResearchRun } from '@/db/queries/research';
-import type { Company } from '@/db/types';
+import type { Company, SimilarCompany } from '@/db/types';
 import { formatBatch } from '@/lib/format-batch';
 import {
   syncDateTime,
@@ -26,12 +27,18 @@ interface CompanyDetailProps {
   researchRuns: StoredResearchRun[];
   /** False when getRecentResearchRuns failed; distinct from success with zero runs. */
   researchHistoryOk: boolean;
+  /** Nearest first. Empty both when there are none and when the lookup failed. */
+  similarCompanies: SimilarCompany[];
+  /** False when findSimilarCompanies failed; distinct from success with none. */
+  similarLoaded: boolean;
 }
 
 export function CompanyDetail({
   company,
   researchRuns,
   researchHistoryOk,
+  similarCompanies,
+  similarLoaded,
 }: CompanyDetailProps) {
   const now = new Date();
   const websiteHref = httpUrl(company.website);
@@ -270,6 +277,11 @@ export function CompanyDetail({
               researchRuns={researchRuns}
               researchHistoryOk={researchHistoryOk}
               now={now}
+            />
+
+            <SimilarCompanies
+              companies={similarCompanies}
+              loaded={similarLoaded}
             />
           </CardContent>
         </Card>

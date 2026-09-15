@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CompanyDetail } from '@/components/company-detail';
-import { COMPANY_NOT_FOUND, getCompanyById } from '@/db/queries/companies';
+import {
+  COMPANY_NOT_FOUND,
+  findSimilarCompanies,
+  getCompanyById,
+} from '@/db/queries/companies';
 import { getRecentResearchRuns } from '@/db/queries/research';
 import { cn } from '@/lib/utils';
 
@@ -28,11 +32,12 @@ export async function generateMetadata({
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  // Independent reads: the research query does not need the company row, so
-  // waiting for one before starting the other would just add a round trip.
-  const [result, research] = await Promise.all([
+  // Independent reads: none of the three needs another's result, so waiting
+  // for one before starting the next would just add round trips.
+  const [result, research, similar] = await Promise.all([
     getCompanyById(id),
     getRecentResearchRuns(id),
+    findSimilarCompanies(id),
   ]);
 
   if (!result.success) {
@@ -69,6 +74,8 @@ export default async function CompanyDetailPage({ params }: PageProps) {
       company={result.data}
       researchRuns={research.success ? research.data : []}
       researchHistoryOk={research.success}
+      similarCompanies={similar.success ? similar.data : []}
+      similarLoaded={similar.success}
     />
   );
 }
