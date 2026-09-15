@@ -717,5 +717,18 @@
     "description": "Render the companies nearest the one being read, on the company page, as a Server Component beside the research section. Reuse the existing company card rather than inventing a second one, show the similarity as reader copy rather than a raw number, and say plainly when there is nothing to show because the company has no embedding yet or nothing clears the relatedness floor. A failed lookup must not take the page down with it.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "search-response-cache-policy",
+    "status": "pending",
+    "priority": 60,
+    "category": "maintenance",
+    "depends_on": [
+      "hybrid-search-api",
+      "search-observability"
+    ],
+    "description": "The search route embeds the query and runs a hybrid ranking on every request, including an identical repeat, and it sends no cache headers at all, so nothing between the reader and the database is allowed to help and nothing downstream knows whether it may. Decide the policy explicitly on the route, with the reasoning recorded: how long a search answer may be reused, whether a shared cache may hold it, and what an invalid request or a failure may never have cached.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]
