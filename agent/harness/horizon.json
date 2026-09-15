@@ -1,12 +1,12 @@
 {
   "slice": [
-    "similar-companies-query",
+    "similar-companies-section",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "similar-companies-query": "Five runs of hardening in a row, and the reader-facing half of the vision has had nothing since research-next-refresh-due. The embeddings already exist and the HNSW index already serves search, so nearest-neighbour by embedding is the cheapest real answer to a question a company page cannot answer at all today. The query and its eval come first; the section that renders it is the run after.",
+    "similar-companies-section": "The query landed this run with no caller, which is the same half-finished shape the payload was in two runs ago. Rendering it is what turns a query into an answer a reader can see, and the card and the page layout it needs already exist, so the slice is small: read, render, and say plainly when there is nothing to show.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
@@ -16,9 +16,9 @@
     "testing_observability": 2
   },
   "vision_refs": {
-    "similar-companies-query": [
+    "similar-companies-section": [
       "Discovery with low noise",
-      "Hybrid search"
+      "UI and UX"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -33,6 +33,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260914-082439",
-  "notes": "Executor completed eval-suite-integrity: the suite is now discovered from the glob the verify gate runs, every file asserts something and reaches production code, nothing is silenced by .only or a skip, the hermeticity rule is scanned, and no helper or fixture in the eval tree is dead weight. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260914-224333",
+  "notes": "Executor completed similar-companies-query: nearest neighbour by embedding, bounded and parameterised, excluding the subject and anything without an embedding, with the relatedness floor read from the search module rather than redefined. No route, no UI, no migration, and no vector crosses the query boundary. Remaining heads stay excluded as in-flight."
 }
