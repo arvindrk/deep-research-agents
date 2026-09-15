@@ -272,3 +272,46 @@ describe('the copy for having nothing to show', () => {
     }
   });
 });
+
+describe('the bands and the query agree', () => {
+  const returnable = (): number[] => {
+    const scores: number[] = [];
+    for (
+      let score = SIMILAR_COMPANIES_MIN_SIMILARITY;
+      score <= 1.00001;
+      score += 0.01
+    ) {
+      scores.push(Number(score.toFixed(4)));
+    }
+    return scores;
+  };
+
+  it('bands every score the query can return', () => {
+    const bands = ['Very close', 'Close', 'Related'];
+    const seen = new Set<string>();
+    for (const score of returnable()) {
+      const label = closenessLabel(score);
+      assert.ok(bands.includes(label), `${score} produced ${label}`);
+      seen.add(label);
+    }
+    assert.deepEqual([...seen].sort(), [...bands].sort(), 'every band must be reachable');
+  });
+
+  it('never bands a score the query would have excluded', () => {
+    // Below the floor the query returns nothing, so no copy is owed for it.
+    const excluded = Number((SIMILAR_COMPANIES_MIN_SIMILARITY - 0.01).toFixed(4));
+    assert.ok(excluded < SIMILAR_COMPANIES_MIN_SIMILARITY);
+    assert.equal(similarityFromDistance(1 - excluded) < SIMILAR_COMPANIES_MIN_SIMILARITY, true);
+  });
+
+  it('rises with closeness and never falls', () => {
+    const rank = { Related: 0, Close: 1, "Very close": 2 } as const;
+    let previous = -1;
+    for (const score of returnable()) {
+      const current = rank[closenessLabel(score)];
+      assert.ok(current >= previous, `band fell at ${score}`);
+      previous = current;
+    }
+    assert.equal(previous, rank["Very close"]);
+  });
+});
