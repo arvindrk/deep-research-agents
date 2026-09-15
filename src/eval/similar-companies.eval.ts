@@ -174,3 +174,47 @@ describe('the nearest-neighbour query', () => {
     assert.doesNotMatch(body, /embedding as|embeddingJSON/i);
   });
 });
+
+describe('what the nearest-neighbour query hands back', () => {
+  const body = functionBody('findSimilarCompanies');
+  // The CTE also selects FROM companies, so the projection runs from the
+  // statement-level SELECT to the FROM that follows it, not to the first one.
+  const selectAt = body.indexOf('SELECT\n');
+  const projection = body.slice(selectAt, body.indexOf('FROM companies', selectAt));
+
+  it('selects no embedding column, so no vector crosses the boundary', () => {
+    assert.doesNotMatch(projection, /^\s*embedding,?\s*$/m);
+    assert.doesNotMatch(projection, /\bembedding\s+AS\b/i);
+    assert.match(projection, /AS similarity/);
+  });
+
+  it('selects the same columns search does, plus the score', () => {
+    const search = functionBody('searchCompanies');
+    for (const column of [
+      'id, source, source_id, source_url, name, slug, website, logo_url',
+      'one_liner, long_description, tags, industries, regions, batch',
+      'team_size, founded_at, stage, status, is_hiring, is_nonprofit',
+    ]) {
+      assert.ok(projection.includes(column), column);
+      assert.ok(search.includes(column), `searchCompanies no longer selects ${column}`);
+    }
+  });
+
+  it('answers a closed reason when the read fails', () => {
+    assert.match(body, /error: 'Similar companies lookup failed'/);
+    assert.match(body, /catch\s*\{/);
+    assert.doesNotMatch(body, /error\.message/);
+  });
+
+  it('is reachable through the database barrel, like every other query', () => {
+    const barrel = readFileSync(join(process.cwd(), 'src/db/index.ts'), 'utf8');
+    assert.match(barrel, /findSimilarCompanies,/);
+    assert.match(barrel, /SimilarCompany,/);
+  });
+
+  it('is typed as a company plus a score, not a company plus a relevance', () => {
+    const types = readFileSync(join(process.cwd(), 'src/db/types.ts'), 'utf8');
+    assert.match(types, /export type SimilarCompany = Company & \{\s*similarity: number;\s*\};/);
+    assert.match(body, /Promise<QueryResult<SimilarCompany\[\]>>/);
+  });
+});
