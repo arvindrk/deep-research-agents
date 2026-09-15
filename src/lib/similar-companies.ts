@@ -49,3 +49,23 @@ export function similarityFromDistance(distance: number): number {
   if (!Number.isFinite(distance)) return 0;
   return Math.min(1, Math.max(0, 1 - distance));
 }
+
+/** Closed copy for the two cases where there is nothing to show. */
+export const SIMILAR_COMPANIES_EMPTY_COPY =
+  'No similar companies yet. This company needs enrichment, or nothing else is close enough to be worth showing.';
+export const SIMILAR_COMPANIES_FAILED_COPY =
+  'Similar companies could not be loaded.';
+
+export type ClosenessLabel = 'Very close' | 'Close' | 'Related';
+
+/**
+ * How close, in words. A cosine similarity is not a percentage of anything a
+ * reader can name, so the bands say what can honestly be said and stop there.
+ * Anything below the floor the query applies still reads as related, because
+ * the query would not have returned it otherwise.
+ */
+export function closenessLabel(similarity: number): ClosenessLabel {
+  if (similarity >= 0.8) return 'Very close';
+  if (similarity >= 0.6) return 'Close';
+  return 'Related';
+}
