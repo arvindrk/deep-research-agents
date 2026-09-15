@@ -707,7 +707,7 @@
   },
   {
     "id": "similar-companies-section",
-    "status": "pending",
+    "status": "completed",
     "priority": 59,
     "category": "new_feature",
     "depends_on": [
@@ -715,7 +715,7 @@
       "company-detail-route"
     ],
     "description": "Render the companies nearest the one being read, on the company page, as a Server Component beside the research section. Reuse the existing company card rather than inventing a second one, show the similarity as reader copy rather than a raw number, and say plainly when there is nothing to show because the company has no embedding yet or nothing clears the relatedness floor. A failed lookup must not take the page down with it.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]
