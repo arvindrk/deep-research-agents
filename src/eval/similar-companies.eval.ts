@@ -110,3 +110,67 @@ describe('how close counts as related', () => {
     );
   });
 });
+
+const companiesSource = readFileSync(
+  join(process.cwd(), 'src/db/queries/companies.ts'),
+  'utf8',
+);
+
+const functionBody = (name: string): string => {
+  const start = companiesSource.indexOf(`export async function ${name}`);
+  assert.ok(start >= 0, `${name} must exist`);
+  const next = companiesSource.indexOf('\nexport async function ', start + 1);
+  return next === -1
+    ? companiesSource.slice(start)
+    : companiesSource.slice(start, next);
+};
+
+describe('the nearest-neighbour query', () => {
+  const body = functionBody('findSimilarCompanies');
+
+  it('never answers with the company that was asked about', () => {
+    assert.match(body, /WHERE id <> \$\{companyId\}/);
+  });
+
+  it('skips a company with no embedding, and a subject with none', () => {
+    assert.match(body, /AND embedding IS NOT NULL/);
+    assert.match(body, /AND \(SELECT embedding FROM target\) IS NOT NULL/);
+  });
+
+  it('applies the shared floor as a parameter', () => {
+    assert.match(body, />= \$\{SIMILAR_COMPANIES_MIN_SIMILARITY\}/);
+    assert.match(
+      body,
+      /\(1 - \(embedding <=> \(SELECT embedding FROM target\)\)\)\s*\n?\s*>=/,
+    );
+  });
+
+  it('orders by the distance the index can serve', () => {
+    assert.match(body, /ORDER BY embedding <=> \(SELECT embedding FROM target\)\s*\n/);
+    assert.doesNotMatch(body, /ORDER BY similarity/);
+    assert.doesNotMatch(body, /ORDER BY[^\n]*DESC/);
+  });
+
+  it('takes a bounded limit as a parameter', () => {
+    assert.match(body, /LIMIT \$\{bounded\}/);
+    assert.match(body, /const bounded = boundSimilarLimit\(limit\);/);
+  });
+
+  it('sets the vector search settings search itself uses', () => {
+    const search = functionBody('searchCompanies');
+    for (const setting of [
+      /set_config\('hnsw\.ef_search', \$\{String\(HNSW_EF_SEARCH\)\}, true\)/,
+      /set_config\('statement_timeout', \$\{String\(STATEMENT_TIMEOUT_MS\)\}, true\)/,
+    ]) {
+      assert.match(body, setting);
+      assert.match(search, setting);
+    }
+    assert.match(body, /sql\.transaction\(\[/);
+    assert.match(body, /withRetry\(\(\) =>/);
+  });
+
+  it('keeps the target vector inside the statement', () => {
+    assert.match(body, /WITH target AS MATERIALIZED \(/);
+    assert.doesNotMatch(body, /embedding as|embeddingJSON/i);
+  });
+});
