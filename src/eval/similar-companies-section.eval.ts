@@ -109,3 +109,28 @@ describe('the page that feeds it', () => {
     assert.match(detail, /similarLoaded: boolean/);
   });
 });
+
+describe('the section can be navigated without sight', () => {
+  const section = read(SECTION);
+
+  it('names itself and its list with its own heading', () => {
+    assert.match(section, /const HEADING_ID = 'similar-companies-heading';/);
+    assert.match(section, /<section className="[^"]*" aria-labelledby=\{HEADING_ID\}>/);
+    assert.match(section, /<h2\s*\n?\s*id=\{HEADING_ID\}/);
+    assert.match(section, /<ul className="[^"]*" aria-labelledby=\{HEADING_ID\}>/);
+  });
+
+  it('reads the closeness badge as a sentence, not a stray word', () => {
+    assert.match(section, /<span className="sr-only"> match to this company<\/span>/);
+  });
+
+  it('leans on the card accessible name rather than adding a second one', () => {
+    const card = read('src/components/company-card.tsx');
+    assert.match(card, /aria-label=\{`View details for \$\{company\.name\}`\}/);
+    assert.doesNotMatch(section, /aria-label=/);
+  });
+
+  it('adds no tab stop of its own', () => {
+    assert.doesNotMatch(section, /tabIndex|role="button"/);
+  });
+});
