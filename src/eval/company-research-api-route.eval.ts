@@ -125,14 +125,14 @@ describe('the route tells a missing company from a failed read', () => {
   it('answers 404 only for the not-found outcome', () => {
     assert.match(
       routeSource,
-      /company\.error === COMPANY_NOT_FOUND\)\s*\{\s*return NextResponse\.json\(NOT_FOUND, \{ status: 404 \}\);/,
+      /company\.error === COMPANY_NOT_FOUND\)\s*\{\s*return NextResponse\.json\(NOT_FOUND, \{\s*status: 404,\s*headers: companyResearchCacheHeaders\('company_not_found'\),/,
     );
   });
 
   it('answers 503 for every other read failure', () => {
     assert.match(
       routeSource,
-      /return NextResponse\.json\(READ_FAILED, \{ status: 503 \}\);/,
+      /return NextResponse\.json\(READ_FAILED, \{\s*status: 503,\s*headers: companyResearchCacheHeaders\('company_read_failed'\),/,
     );
     assert.notEqual(at('status: 404'), at('status: 503'));
   });
