@@ -1,4 +1,5 @@
 import { httpUrl } from '../safe-url';
+import { readBoundedResponseText } from './fetch-body';
 import type { ResearchFinding, ResearchSubject } from './types';
 
 /** A source that hangs is a source that failed, so requests carry a bound. */
@@ -99,5 +100,9 @@ export async function collectWebsiteFindings(
     throw new Error(`Website request failed with status ${response.status}`);
   }
 
-  return parseWebsiteFindings(await response.text(), url, observedAt);
+  return parseWebsiteFindings(
+    await readBoundedResponseText(response),
+    url,
+    observedAt,
+  );
 }
