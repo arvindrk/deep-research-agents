@@ -9,7 +9,9 @@ import {
 } from '@/lib/observability/redact';
 import {
   boundQueryText,
+  buildSearchEvent,
   MAX_LOGGED_QUERY_CHARS,
+  SEARCH_OUTCOMES,
 } from '@/lib/observability/search-event';
 
 /**
@@ -209,5 +211,62 @@ describe('a secret that straddles the length bound', () => {
       const bounded = boundQueryText(build());
       assert.equal(bounded.query_prefix.includes(REDACTED), true, name);
     }
+  });
+});
+
+describe('what an emitted event can carry', () => {
+  it('carries no secret, whatever the outcome', () => {
+    for (const outcome of SEARCH_OUTCOMES) {
+      for (const [name, build] of Object.entries(sample)) {
+        const secret = build();
+        const event = buildSearchEvent({
+          outcome,
+          durationMs: 12,
+          query: secret,
+        });
+
+        const serialised = JSON.stringify(event);
+        assert.equal(
+          serialised.includes(secret),
+          false,
+          `${outcome} leaked ${name}`,
+        );
+        for (const fragment of [secret.slice(0, 12), secret.slice(4, 20)]) {
+          assert.equal(
+            serialised.includes(fragment),
+            false,
+            `${outcome} leaked a fragment of ${name}`,
+          );
+        }
+      }
+    }
+  });
+
+  it('has exactly one field that can hold reader text', () => {
+    const event = buildSearchEvent({ outcome: 'ok', durationMs: 1, query: 'climate' });
+    const textFields = Object.entries(event)
+      .filter(([, value]) => typeof value === 'string')
+      .map(([key]) => key)
+      .sort();
+
+    assert.deepEqual(textFields, [
+      'event',
+      'latency_bucket',
+      'outcome',
+      'query_prefix',
+    ]);
+    assert.equal(event.query_prefix, 'climate');
+  });
+
+  it('reads the reader text through the bound and nowhere else', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/observability/search-event.ts'),
+      'utf8',
+    );
+    // input.queryMs is a number field whose name starts the same way.
+    const reads = source.match(/input\.query(?![A-Za-z])/g) ?? [];
+    assert.equal(reads.length, 1);
+    assert.match(source, /boundQueryText\(input\.query \?\? ''\)/);
+    assert.match(source, /redactCredentials\(/);
   });
 });
