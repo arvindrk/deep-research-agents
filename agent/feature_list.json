@@ -720,7 +720,7 @@
   },
   {
     "id": "search-response-cache-policy",
-    "status": "pending",
+    "status": "completed",
     "priority": 60,
     "category": "maintenance",
     "depends_on": [
@@ -728,6 +728,31 @@
       "search-observability"
     ],
     "description": "The search route embeds the query and runs a hybrid ranking on every request, including an identical repeat, and it sends no cache headers at all, so nothing between the reader and the database is allowed to help and nothing downstream knows whether it may. Decide the policy explicitly on the route, with the reasoning recorded: how long a search answer may be reused, whether a shared cache may hold it, and what an invalid request or a failure may never have cached.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "company-research-cache-policy",
+    "status": "completed",
+    "priority": 61,
+    "category": "maintenance",
+    "depends_on": [
+      "company-research-api-route",
+      "search-response-cache-policy"
+    ],
+    "description": "The company research route sends no cache headers either, so it is the one API surface in the repository that says nothing about whether its answer may be reused. Decide its policy per outcome, with its own freshness argument: a research answer changes only when a run lands for that company, so it may be shared for longer than a search answer, while a refused id, a missing company, and a failed read are never stored.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "observability-redaction-shared",
+    "status": "pending",
+    "priority": 62,
+    "category": "tech_debt",
+    "depends_on": [
+      "search-observability"
+    ],
+    "description": "The credential patterns that keep a pasted secret out of the search event log live in the search event module and are described there as mirroring the harness guard script. Nothing else can reuse them, so the next surface that logs reader text will either copy the list or forget it. Extract the redaction so one definition serves every logger, and assert the two copies that exist today agree.",
     "passes": false,
     "verify": "npm run verify"
   }
