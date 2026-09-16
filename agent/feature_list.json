@@ -746,13 +746,26 @@
   },
   {
     "id": "observability-redaction-shared",
-    "status": "pending",
+    "status": "completed",
     "priority": 62,
     "category": "tech_debt",
     "depends_on": [
       "search-observability"
     ],
     "description": "The credential patterns that keep a pasted secret out of the search event log live in the search event module and are described there as mirroring the harness guard script. Nothing else can reuse them, so the next surface that logs reader text will either copy the list or forget it. Extract the redaction so one definition serves every logger, and assert the two copies that exist today agree.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-parse-corpus-eval",
+    "status": "pending",
+    "priority": 63,
+    "category": "testing_observability",
+    "depends_on": [
+      "research-html-meta-shared",
+      "research-collector-coverage-eval"
+    ],
+    "description": "The shared HTML metadata parser is asserted against a handful of hand-written strings, one per behaviour. Real pages are messier than that: entity escapes, attribute order, uppercase tags, a missing description, a canonical link that disagrees with the fetched URL, whitespace that dwarfs the text. Give the parser a fixture corpus checked into the repository, one file per shape with the expected parse beside it, so a change in the parser is measured against every shape at once rather than against the three examples someone remembered.",
     "passes": false,
     "verify": "npm run verify"
   }
