@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
@@ -77,5 +79,64 @@ describe('the search cache policy', () => {
         'Cache-Control': SEARCH_CACHE_CONTROL[outcome],
       });
     }
+  });
+});
+
+const ROUTE_PATH = 'src/app/api/search/route.ts';
+const route = readFileSync(join(process.cwd(), ROUTE_PATH), 'utf8');
+
+describe('every exit the search route takes', () => {
+  const exits = route.match(/return NextResponse\.json\([\s\S]*?\);/g) ?? [];
+
+  it('is one of the four the policy decides', () => {
+    assert.equal(
+      exits.length,
+      SEARCH_OUTCOMES.length,
+      `the route has ${exits.length} exits and the policy covers ${SEARCH_OUTCOMES.length}`,
+    );
+  });
+
+  it('carries a policy, none spelled by hand', () => {
+    for (const exit of exits) {
+      assert.match(exit, /headers: searchCacheHeaders\('(\w+)'\)/, exit);
+    }
+    assert.doesNotMatch(route, /'Cache-Control'/);
+    assert.doesNotMatch(route, /s-maxage|no-store/);
+  });
+
+  it('carries the same outcome it reports to the observability layer', () => {
+    for (const outcome of SEARCH_OUTCOMES) {
+      assert.ok(
+        route.includes(`searchCacheHeaders('${outcome}')`),
+        `${outcome} has no exit carrying its policy`,
+      );
+      assert.ok(
+        route.includes(`outcome: '${outcome}'`),
+        `${outcome} is no longer emitted`,
+      );
+    }
+  });
+});
+
+describe('what makes a shared cache safe here', () => {
+  it('reads nothing about the reader', () => {
+    assert.doesNotMatch(route, /\bcookies\(\)|\bheaders\(\)/);
+    assert.doesNotMatch(route, /authorization|Authorization/);
+    assert.doesNotMatch(route, /request\.headers/);
+  });
+
+  it('sets no cookie', () => {
+    assert.doesNotMatch(route, /Set-Cookie|cookies\.set/);
+  });
+
+  it('never echoes the query into the body', () => {
+    // A reader can paste anything into a search box. The URL is already in
+    // every access log, but the cached body must not repeat it.
+    assert.match(route, /NextResponse\.json\(\s*\{ results \}/);
+    assert.doesNotMatch(route, /json\(\{[^}]*\bquery\b/);
+  });
+
+  it('lets the headers be the whole policy', () => {
+    assert.doesNotMatch(route, /export const (revalidate|dynamic|fetchCache)/);
   });
 });
