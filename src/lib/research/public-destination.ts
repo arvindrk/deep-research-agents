@@ -42,7 +42,7 @@ function expandIpv6(host: string): string[] | null {
     side.length === 0 ? [] : side.split(':');
 
   let head = parseSide(sides[0] ?? '');
-  let tail = sides.length === 2 ? parseSide(sides[1] ?? '') : [];
+  const tail = sides.length === 2 ? parseSide(sides[1] ?? '') : [];
 
   if (sides.length === 1) {
     if (head.length !== 8) return null;
