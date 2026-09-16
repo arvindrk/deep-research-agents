@@ -1,5 +1,6 @@
 import { httpUrl } from '../safe-url';
 import { readBoundedResponseText } from './fetch-body';
+import { fetchResearchResponse } from './public-destination';
 import type { ResearchFinding, ResearchSubject } from './types';
 
 /** A source that hangs is a source that failed, so requests carry a bound. */
@@ -100,8 +101,7 @@ export async function collectCareersFindings(
   const url = careersPageUrl(subject.website);
   if (!url) return [];
 
-  const response = await fetch(url, {
-    redirect: 'follow',
+  const response = await fetchResearchResponse(url, {
     headers: { accept: 'text/html' },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
