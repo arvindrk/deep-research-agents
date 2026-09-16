@@ -10,6 +10,7 @@ import {
   REDACTED,
 } from '@/lib/observability/redact';
 import { buildSearchEvent, SEARCH_OUTCOMES } from '@/lib/observability/search-event';
+import { readRepoFile, typescriptFilesUnder } from './support/suite';
 
 /**
  * Samples are assembled, never written out. A literal here would be an added
@@ -275,5 +276,41 @@ describe('what an emitted event can carry', () => {
     const sliced = bound.indexOf('.slice(0, MAX_LOGGED_QUERY_CHARS)');
     assert.ok(scrubbed > 0);
     assert.ok(sliced > scrubbed);
+  });
+});
+
+describe('one definition of what reader text may be logged', () => {
+  const OWNER = 'src/lib/observability/redact.ts';
+  const EMITTER = 'src/lib/observability/emit.ts';
+
+  const productionFiles = (): string[] =>
+    typescriptFilesUnder('src').filter((path) => !path.startsWith('src/eval/'));
+
+  const owning = (rule: RegExp): string[] =>
+    productionFiles().filter((path) => rule.test(readRepoFile(path)));
+
+  it('has one owner for the marker and for the pattern list', () => {
+    const naming = productionFiles().filter((path) =>
+      readRepoFile(path).includes(REDACTED),
+    );
+    assert.deepEqual(naming, [OWNER]);
+    assert.deepEqual(owning(/credentialPatterns/), [OWNER]);
+  });
+
+  it('has one owner for the bound, and nothing else truncates by it', () => {
+    assert.deepEqual(owning(/MAX_LOGGED[A-Z_]*\s*=/), [OWNER]);
+    assert.deepEqual(owning(/\.slice\(0, MAX_LOGGED/), [OWNER]);
+  });
+
+  it('emits only events the builder produced', () => {
+    assert.deepEqual(owning(/export function emitSearchEvent\(/), [EMITTER]);
+
+    for (const path of productionFiles()) {
+      if (path === EMITTER) continue;
+      for (const call of readRepoFile(path).split('emitSearchEvent(').slice(1)) {
+        // An event assembled beside the emitter is an event nothing bounded.
+        assert.match(call.trimStart(), /^buildSearchEvent\(/);
+      }
+    }
   });
 });
