@@ -23,6 +23,10 @@ function credentialPatterns(): RegExp[] {
     /sk-[A-Za-z0-9_-]{20,}/g,
     /AKIA[0-9A-Z]{16}/g,
     /xox[baprs]-[A-Za-z0-9-]{10,}/g,
+    // The shell guard has refused this shape since the guards landed; this
+    // list did not, so a key pasted into the search box was logged as a
+    // sixty-four character prefix: the header and the first bytes of the key.
+    /-----BEGIN [A-Z ]*PRIVATE KEY-----/g,
   ];
 }
 
