@@ -6,6 +6,7 @@ import { parseHybridSearchInput } from '@/lib/hybrid-search-input';
 import { toPublicSearchResults } from '@/lib/hybrid-search-result';
 import { emitSearchEvent } from '@/lib/observability/emit';
 import { buildSearchEvent } from '@/lib/observability/search-event';
+import { searchCacheHeaders } from '@/lib/search-cache-policy';
 
 const INVALID_REQUEST = { error: 'Invalid search request' };
 const EMBED_UNAVAILABLE = { error: 'Search temporarily unavailable' };
@@ -14,7 +15,9 @@ const SEARCH_FAILED = { error: 'Search failed' };
 /**
  * Hybrid company search. Validates at the boundary, embeds the query, then
  * ranks via searchCompanies. Never returns embedding vectors or raw
- * driver/provider errors. Every exit path emits one structured event.
+ * driver/provider errors. Every exit path emits one structured event and
+ * carries the cache policy for its outcome: the answer may be shared briefly,
+ * a refusal or a failure is never stored.
  */
 export async function GET(request: Request): Promise<Response> {
   const startedAt = Date.now();
@@ -31,7 +34,10 @@ export async function GET(request: Request): Promise<Response> {
         durationMs: Date.now() - startedAt,
       }),
     );
-    return NextResponse.json(INVALID_REQUEST, { status: 400 });
+    return NextResponse.json(INVALID_REQUEST, {
+      status: 400,
+      headers: searchCacheHeaders('invalid_request'),
+    });
   }
 
   const { query, limit } = parsed.value;
@@ -49,7 +55,10 @@ export async function GET(request: Request): Promise<Response> {
         query,
       }),
     );
-    return NextResponse.json(EMBED_UNAVAILABLE, { status: 502 });
+    return NextResponse.json(EMBED_UNAVAILABLE, {
+      status: 502,
+      headers: searchCacheHeaders('embed_unavailable'),
+    });
   }
   const embedMs = Date.now() - embedStartedAt;
 
@@ -67,7 +76,10 @@ export async function GET(request: Request): Promise<Response> {
         query,
       }),
     );
-    return NextResponse.json(SEARCH_FAILED, { status: 503 });
+    return NextResponse.json(SEARCH_FAILED, {
+      status: 503,
+      headers: searchCacheHeaders('search_failed'),
+    });
   }
 
   const results = toPublicSearchResults(result.data);
@@ -83,5 +95,8 @@ export async function GET(request: Request): Promise<Response> {
     }),
   );
 
-  return NextResponse.json({ results });
+  return NextResponse.json(
+    { results },
+    { headers: searchCacheHeaders('ok') },
+  );
 }
