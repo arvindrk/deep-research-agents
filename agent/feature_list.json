@@ -474,5 +474,29 @@
     "description": "Bound collector response.text() size so unattended research cannot OOM on huge HTML pages. Keep collectors otherwise unchanged; lock the bound with a hermetic eval.",
     "passes": true,
     "verify": "npm run verify"
+  },
+  {
+    "id": "research-fetch-ssrf-guard",
+    "status": "completed",
+    "priority": 41,
+    "category": "maintenance",
+    "depends_on": [
+      "research-fetch-body-limit"
+    ],
+    "description": "Block research collector fetches to non-public destinations so unattended website and careers collection cannot probe loopback, link-local, private, or cloud-metadata hosts. Reject unsafe hosts on the initial URL and on every redirect hop (do not use unchecked redirect:'follow'). When a destination is blocked, fail that source (throw) so the run is partial or failed rather than silently succeeding after an internal probe. Share one pure guard used by both collectors. Lock the blocked-host set and redirect revalidation with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-fetch-content-type",
+    "status": "pending",
+    "priority": 42,
+    "category": "maintenance",
+    "depends_on": [
+      "research-fetch-ssrf-guard"
+    ],
+    "description": "Reject non-HTML research collector response bodies before parse so unattended website and careers fetches fail the source on unexpected Content-Type instead of feeding binary or JSON into HTML extractors. Keep the SSRF guard and body byte cap; lock Content-Type gating with a hermetic eval.",
+    "passes": false,
+    "verify": "npm run verify"
   }
 ]
