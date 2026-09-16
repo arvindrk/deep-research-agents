@@ -4,15 +4,12 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
+  boundQueryText,
+  MAX_LOGGED_QUERY_CHARS,
   redactCredentials,
   REDACTED,
 } from '@/lib/observability/redact';
-import {
-  boundQueryText,
-  buildSearchEvent,
-  MAX_LOGGED_QUERY_CHARS,
-  SEARCH_OUTCOMES,
-} from '@/lib/observability/search-event';
+import { buildSearchEvent, SEARCH_OUTCOMES } from '@/lib/observability/search-event';
 
 /**
  * Samples are assembled, never written out. A literal here would be an added
@@ -267,6 +264,16 @@ describe('what an emitted event can carry', () => {
     const reads = source.match(/input\.query(?![A-Za-z])/g) ?? [];
     assert.equal(reads.length, 1);
     assert.match(source, /boundQueryText\(input\.query \?\? ''\)/);
-    assert.match(source, /redactCredentials\(/);
+    // The logger holds no copy of the rule, so it cannot get half of it right.
+    assert.doesNotMatch(source, /\.slice\(|\.trim\(/);
+
+    const bound = readFileSync(
+      join(process.cwd(), 'src/lib/observability/redact.ts'),
+      'utf8',
+    );
+    const scrubbed = bound.indexOf('redactCredentials(trimmed)');
+    const sliced = bound.indexOf('.slice(0, MAX_LOGGED_QUERY_CHARS)');
+    assert.ok(scrubbed > 0);
+    assert.ok(sliced > scrubbed);
   });
 });

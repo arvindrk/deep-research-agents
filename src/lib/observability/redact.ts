@@ -36,3 +36,24 @@ export function redactCredentials(text: string): string {
     text,
   );
 }
+
+/** Reader text is logged as a bounded prefix, never whole. */
+export const MAX_LOGGED_QUERY_CHARS = 64;
+
+/**
+ * Scrub before truncating: a secret cut in half by the length bound is still
+ * half a secret in the log. Both halves of that rule live here, so the next
+ * logger reaches for one thing rather than remembering two.
+ */
+export function boundQueryText(query: string): {
+  query_prefix: string;
+  query_chars: number;
+} {
+  const trimmed = query.trim();
+  const scrubbed = redactCredentials(trimmed);
+
+  return {
+    query_prefix: scrubbed.slice(0, MAX_LOGGED_QUERY_CHARS),
+    query_chars: trimmed.length,
+  };
+}

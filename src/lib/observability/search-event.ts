@@ -1,4 +1,4 @@
-import { redactCredentials } from './redact';
+import { boundQueryText } from './redact';
 
 /** Every terminal outcome of a search request, in the order the route hits them. */
 export const SEARCH_OUTCOMES = [
@@ -28,26 +28,6 @@ export function latencyBucket(durationMs: number): string {
     }
   }
   return `>${SLOWEST_BUCKET}ms`;
-}
-
-/** Search queries are user text. Log a bounded prefix, never the whole thing. */
-export const MAX_LOGGED_QUERY_CHARS = 64;
-
-/**
- * Scrub before truncating: a secret cut in half by the length bound is still
- * half a secret in the log.
- */
-export function boundQueryText(query: string): {
-  query_prefix: string;
-  query_chars: number;
-} {
-  const trimmed = query.trim();
-  const scrubbed = redactCredentials(trimmed);
-
-  return {
-    query_prefix: scrubbed.slice(0, MAX_LOGGED_QUERY_CHARS),
-    query_chars: trimmed.length,
-  };
 }
 
 /** What the route knows by the time a request ends, one way or another. */
