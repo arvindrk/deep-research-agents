@@ -1,3 +1,5 @@
+import { redactCredentials } from './redact';
+
 /** Every terminal outcome of a search request, in the order the route hits them. */
 export const SEARCH_OUTCOMES = [
   'ok',
@@ -31,17 +33,6 @@ export function latencyBucket(durationMs: number): string {
 /** Search queries are user text. Log a bounded prefix, never the whole thing. */
 export const MAX_LOGGED_QUERY_CHARS = 64;
 
-/** Value-shaped credential patterns, mirroring `agent/local/guards.sh`. */
-const CREDENTIAL_PATTERNS = [
-  /postgres(ql)?:\/\/\S{12,}/gi,
-  /gh[pousr]_[A-Za-z0-9]{30,}/g,
-  /sk-[A-Za-z0-9_-]{20,}/g,
-  /AKIA[0-9A-Z]{16}/g,
-  /xox[baprs]-[A-Za-z0-9-]{10,}/g,
-];
-
-const REDACTED = '[redacted]';
-
 /**
  * Scrub before truncating: a secret cut in half by the length bound is still
  * half a secret in the log.
@@ -51,10 +42,7 @@ export function boundQueryText(query: string): {
   query_chars: number;
 } {
   const trimmed = query.trim();
-  const scrubbed = CREDENTIAL_PATTERNS.reduce(
-    (text, pattern) => text.replace(pattern, REDACTED),
-    trimmed,
-  );
+  const scrubbed = redactCredentials(trimmed);
 
   return {
     query_prefix: scrubbed.slice(0, MAX_LOGGED_QUERY_CHARS),
