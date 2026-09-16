@@ -7,6 +7,10 @@ import {
   redactCredentials,
   REDACTED,
 } from '@/lib/observability/redact';
+import {
+  boundQueryText,
+  MAX_LOGGED_QUERY_CHARS,
+} from '@/lib/observability/search-event';
 
 /**
  * Samples are assembled, never written out. A literal here would be an added
@@ -171,6 +175,39 @@ describe('the redaction and the harness guard', () => {
         /\{\d+,?\}|\{\d+\}|PRIVATE KEY/,
         `${pattern} has no payload requirement`,
       );
+    }
+  });
+});
+
+describe('a secret that straddles the length bound', () => {
+  it('leaves no fragment in the logged prefix', () => {
+    const secret = sample.openAiKey();
+    // Place the secret so the bound would cut it in half.
+    const lead = 'a'.repeat(MAX_LOGGED_QUERY_CHARS - 10);
+    const bounded = boundQueryText(`${lead}${secret}`);
+
+    assert.equal(bounded.query_prefix.length <= MAX_LOGGED_QUERY_CHARS, true);
+    assert.equal(bounded.query_prefix.includes('sk-'), false);
+    for (const length of [8, 12, 20]) {
+      assert.equal(
+        bounded.query_prefix.includes(secret.slice(0, length)),
+        false,
+        `a ${length} character fragment survived`,
+      );
+    }
+  });
+
+  it('reports the length of what the reader actually sent', () => {
+    const secret = sample.githubToken();
+    const bounded = boundQueryText(`  ${secret}  `);
+    assert.equal(bounded.query_chars, secret.length);
+    assert.equal(bounded.query_prefix, REDACTED);
+  });
+
+  it('scrubs before it slices, for every shape', () => {
+    for (const [name, build] of Object.entries(sample)) {
+      const bounded = boundQueryText(build());
+      assert.equal(bounded.query_prefix.includes(REDACTED), true, name);
     }
   });
 });
