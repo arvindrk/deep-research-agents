@@ -1,3 +1,4 @@
+import { NO_STORE, sharedAnswerPolicy } from './http-cache-policy';
 import type { SearchOutcome } from './observability/search-event';
 
 /**
@@ -14,7 +15,7 @@ export const SEARCH_CACHE_SHARED_MAX_AGE_SECONDS = 60;
  */
 export const SEARCH_CACHE_STALE_WHILE_REVALIDATE_SECONDS = 300;
 
-export const SEARCH_CACHE_NO_STORE = 'no-store';
+export const SEARCH_CACHE_NO_STORE = NO_STORE;
 
 /**
  * `public` is safe here, and it is the part worth justifying. The answer is a
@@ -32,7 +33,10 @@ export const SEARCH_CACHE_NO_STORE = 'no-store';
  * input again is free.
  */
 export const SEARCH_CACHE_CONTROL: Record<SearchOutcome, string> = {
-  ok: `public, max-age=0, s-maxage=${SEARCH_CACHE_SHARED_MAX_AGE_SECONDS}, stale-while-revalidate=${SEARCH_CACHE_STALE_WHILE_REVALIDATE_SECONDS}`,
+  ok: sharedAnswerPolicy(
+    SEARCH_CACHE_SHARED_MAX_AGE_SECONDS,
+    SEARCH_CACHE_STALE_WHILE_REVALIDATE_SECONDS,
+  ),
   invalid_request: SEARCH_CACHE_NO_STORE,
   embed_unavailable: SEARCH_CACHE_NO_STORE,
   search_failed: SEARCH_CACHE_NO_STORE,
