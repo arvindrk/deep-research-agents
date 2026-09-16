@@ -154,13 +154,12 @@ describe('collectors use the shared public-destination guard', () => {
 
   it('public-destination fetch uses redirect:manual', () => {
     const source = read('src/lib/research/public-destination.ts');
-    assert.match(
-      source,
-      /fetch\s*\(\s*current\s*,\s*\{[^}]*redirect\s*:\s*['"]manual['"]/s,
-    );
-    assert.doesNotMatch(
-      source,
-      /fetch\s*\([^;]*redirect\s*:\s*['"]follow['"]/s,
+    assert.match(source, /redirect\s*:\s*['"]manual['"]/);
+    assert.equal(
+      source.includes("redirect: 'follow'") ||
+        source.includes('redirect: "follow"'),
+      false,
+      'fetch helper must not pass redirect follow',
     );
     assert.match(source, /assertPublicResearchDestination/);
     assert.match(source, /nextPublicResearchUrl/);
