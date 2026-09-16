@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
@@ -84,5 +86,91 @@ describe('redactCredentials', () => {
   it('marks the redaction in a way a log reader can see', () => {
     assert.equal(REDACTED, '[redacted]');
     assert.doesNotMatch(REDACTED, /[A-Za-z0-9]{20,}/);
+  });
+});
+
+/**
+ * The shell guard is the reference: it decides what may enter a diff, and the
+ * redaction decides what may enter a log. They are the same judgement about
+ * the same shapes, so a pattern that exists on one side and not the other is
+ * a hole, and until now nothing said so.
+ */
+const GUARDS_SCRIPT = 'agent/local/guards.sh';
+
+function shellSecretPatterns(): string[] {
+  const script = readFileSync(join(process.cwd(), GUARDS_SCRIPT), 'utf8');
+  const block = /GUARD_SECRET_PATTERNS=\(([\s\S]*?)\n\)/.exec(script);
+  assert.ok(block, 'the guard script no longer declares GUARD_SECRET_PATTERNS');
+
+  return block[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => {
+      const unquoted = line.replace(/^'/, '').replace(/',?$/, '');
+      // Shell has no escape inside single quotes, so a literal quote is
+      // written by closing, escaping, and reopening the string.
+      return unquoted.split(`'"'"'`).join("'");
+    });
+}
+
+/** A shape each shell pattern describes, and a sample that shape matches. */
+const COVERAGE: { marker: string; sample: () => string }[] = [
+  { marker: 'postgres', sample: sample.postgresUrl },
+  { marker: 'gh[pousr]', sample: sample.githubToken },
+  { marker: 'sk-', sample: sample.openAiKey },
+  { marker: 'AKIA', sample: sample.awsKeyId },
+  { marker: 'xox', sample: sample.slackToken },
+  { marker: 'PRIVATE KEY', sample: sample.privateKey },
+];
+
+describe('the redaction and the harness guard', () => {
+  const shellPatterns = shellSecretPatterns();
+
+  it('describe the same number of shapes', () => {
+    assert.equal(shellPatterns.length, COVERAGE.length);
+    assert.equal(shellPatterns.length, Object.keys(sample).length);
+  });
+
+  it('leave no shell pattern unaccounted for', () => {
+    for (const pattern of shellPatterns) {
+      const covered = COVERAGE.filter((entry) => pattern.includes(entry.marker));
+      assert.equal(
+        covered.length,
+        1,
+        `${pattern} matches ${covered.length} declared shapes`,
+      );
+    }
+  });
+
+  it('agree on every sample, in both directions', () => {
+    for (const pattern of shellPatterns) {
+      const entry = COVERAGE.find((candidate) => pattern.includes(candidate.marker));
+      assert.ok(entry, pattern);
+      const secret = entry.sample();
+
+      // POSIX classes are the only ERE-only syntax in the list.
+      const asJs = new RegExp(pattern.replace(/\[:space:\]/g, '\\s'));
+      assert.equal(
+        asJs.test(secret),
+        true,
+        `the guard would not catch the sample for ${pattern}`,
+      );
+      assert.equal(
+        redactCredentials(secret).includes(REDACTED),
+        true,
+        `the redaction does not catch what the guard refuses: ${pattern}`,
+      );
+    }
+  });
+
+  it('are value-shaped, so neither flags the file describing it', () => {
+    for (const pattern of shellPatterns) {
+      assert.match(
+        pattern,
+        /\{\d+,?\}|\{\d+\}|PRIVATE KEY/,
+        `${pattern} has no payload requirement`,
+      );
+    }
   });
 });
