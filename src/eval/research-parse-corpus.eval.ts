@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { headDescription, headTitle } from '@/lib/research/html-meta';
+import {
+  decodeHtmlEntities,
+  headDescription,
+  headTitle,
+  MAX_FINDING_VALUE_CHARS,
+} from '@/lib/research/html-meta';
 
+import { readRepoFile } from './support/suite';
 import {
   corpusFiles,
   corpusPages,
@@ -55,6 +61,45 @@ describe('the corpus describes itself', () => {
           `${page.name} claims a shape the inventory does not name: ${shape}`,
         );
       }
+    }
+  });
+});
+
+describe('the corpus exercises the bounds the parser applies', () => {
+  it('carries a page whose value reaches the shared cap exactly', () => {
+    const atCap = corpusPages().filter(
+      (page) =>
+        page.title.length === MAX_FINDING_VALUE_CHARS ||
+        page.description.length === MAX_FINDING_VALUE_CHARS,
+    );
+    assert.ok(
+      atCap.length > 0,
+      `no page reaches the ${MAX_FINDING_VALUE_CHARS}-character cap, so nothing measures it`,
+    );
+  });
+
+  it('carries every entity the parser decodes, decoded in the recorded parse', () => {
+    // Read the table rather than keep a second copy of it: a list here is a
+    // list that gets forgotten the next time the parser learns an entity.
+    const table = readRepoFile('src/lib/research/html-meta.ts');
+    const entities = table.match(/'&[a-z#0-9]+;'/g) ?? [];
+    assert.ok(entities.length >= 5, "the scan must see the parser's entity table");
+
+    const pages = corpusPages();
+    for (const quoted of entities) {
+      const entity = quoted.slice(1, -1);
+      const decoded = decodeHtmlEntities(entity);
+      assert.notEqual(decoded, entity, `${entity} is in the table but decodes to itself`);
+
+      const covering = pages.filter((page) => page.html.includes(entity));
+      assert.ok(covering.length > 0, `no page carries ${entity}`);
+      assert.ok(
+        covering.some(
+          (page) =>
+            page.title.includes(decoded) || page.description.includes(decoded),
+        ),
+        `${entity} is carried by a page but no recorded parse holds it decoded`,
+      );
     }
   });
 });

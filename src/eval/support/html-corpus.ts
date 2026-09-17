@@ -22,6 +22,8 @@ export const PAGE_SHAPES = [
   'og-description-fallback',
   'og-title-fallback',
   'title-element',
+  'value-cap',
+  'whitespace-collapse',
 ] as const;
 
 export type PageShape = (typeof PAGE_SHAPES)[number];

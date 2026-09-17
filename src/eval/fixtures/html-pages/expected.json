@@ -2,21 +2,52 @@
   "entity-escaped": {
     "title": "Peak & Vale",
     "description": "We build <things>, we say \"hello\", and the founder's dog approves.",
-    "shapes": ["title-element", "meta-description", "entity-escape"]
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "entity-escape"
+    ]
   },
   "no-metadata": {
     "title": "",
     "description": "",
-    "shapes": ["no-metadata"]
+    "shapes": [
+      "no-metadata"
+    ]
   },
   "open-graph-only": {
     "title": "Harbor Analytics",
     "description": "Warehouse-native product analytics.",
-    "shapes": ["og-title-fallback", "og-description-fallback"]
+    "shapes": [
+      "og-title-fallback",
+      "og-description-fallback"
+    ]
+  },
+  "over-the-value-cap": {
+    "title": "Broadleaf Materials",
+    "description": "Broadleaf Materials supplies engineered hardwood panels, acoustic cores, and fire-rated sheet goods to builders across the Pacific Northwest, with mills in Eugene and Spokane, a distribution yard in Tacoma, and a specification desk that answers architects the same day they call, every working day of",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "value-cap"
+    ]
   },
   "plain-title-and-description": {
     "title": "Northwind Logistics",
     "description": "Freight brokerage for mid-market shippers.",
-    "shapes": ["title-element", "meta-description", "doctype-and-comments"]
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "doctype-and-comments"
+    ]
+  },
+  "whitespace-heavy": {
+    "title": "Cedar Grove Instruments",
+    "description": "Precision sensors for process plants. Built in Ohio since 1974.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "whitespace-collapse"
+    ]
   }
 }
