@@ -53,11 +53,9 @@ export async function getCompanyById(id: string): Promise<QueryResult<Company>> 
     }
 
     return { success: true, data: results[0] as Company };
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
+  } catch {
+    // Driver text names columns, hosts, and timeouts. Callers get none of it.
+    return { success: false, error: 'Failed to read company' };
   }
 }
 
@@ -223,24 +221,28 @@ export async function listCompaniesMissingEmbeddings(
     const sql = getDBClient();
 
     const results = cursor
-      ? await sql`
-          SELECT
-            id, name, one_liner, long_description, tags, industries, regions,
-            batch, stage
-          FROM companies
-          WHERE embedding IS NULL AND id > ${cursor}
-          ORDER BY id
-          LIMIT ${limit}
-        `
-      : await sql`
-          SELECT
-            id, name, one_liner, long_description, tags, industries, regions,
-            batch, stage
-          FROM companies
-          WHERE embedding IS NULL
-          ORDER BY id
-          LIMIT ${limit}
-        `;
+      ? await withRetry(
+          () => sql`
+            SELECT
+              id, name, one_liner, long_description, tags, industries, regions,
+              batch, stage
+            FROM companies
+            WHERE embedding IS NULL AND id > ${cursor}
+            ORDER BY id
+            LIMIT ${limit}
+          `,
+        )
+      : await withRetry(
+          () => sql`
+            SELECT
+              id, name, one_liner, long_description, tags, industries, regions,
+              batch, stage
+            FROM companies
+            WHERE embedding IS NULL
+            ORDER BY id
+            LIMIT ${limit}
+          `,
+        );
 
     return { success: true, data: results as CompanyEmbeddingSource[] };
   } catch {
@@ -264,12 +266,16 @@ export async function updateCompanyEmbedding(
     const sql = getDBClient();
     const embeddingJSON = JSON.stringify(embedding);
 
-    const results = await sql`
-      UPDATE companies
-      SET embedding = ${embeddingJSON}::vector
-      WHERE id = ${id}
-      RETURNING id
-    `;
+    // Idempotent UPDATE by primary key, and withRetry only retries transient
+    // transport failures, so a retry cannot write twice or write something else.
+    const results = await withRetry(
+      () => sql`
+        UPDATE companies
+        SET embedding = ${embeddingJSON}::vector
+        WHERE id = ${id}
+        RETURNING id
+      `,
+    );
 
     if (results.length === 0) {
       return { success: false, error: 'Company not found' };
