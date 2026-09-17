@@ -5,13 +5,16 @@ import { describe, it } from 'node:test';
 
 import { parseCareersFindings } from '@/lib/research/careers';
 import {
+  DESCRIPTION_META_KEYS,
   MAX_FINDING_VALUE_CHARS,
   RESEARCH_FETCH_TIMEOUT_MS,
   collapseValue,
   decodeHtmlEntities,
   headDescription,
   headTitle,
+  metaContent,
 } from '@/lib/research/html-meta';
+import { EXPECTED_FIELDS } from '@/lib/research/quality';
 import { parseWebsiteFindings } from '@/lib/research/website';
 
 const REPO_ROOT = process.cwd();
@@ -167,4 +170,221 @@ describe('collectors no longer carry their own head parser', () => {
       assert.doesNotMatch(source, /decodeEntities/, 'entity decode is duplicated');
     });
   }
+});
+
+describe('description key precedence', () => {
+  it('prefers the search-engine description over the link-preview one', () => {
+    assert.deepEqual([...DESCRIPTION_META_KEYS], ['description', 'og:description']);
+  });
+
+  it('takes name="description" when both are declared', () => {
+    assert.equal(
+      headDescription(
+        '<meta name="description" content="Classic"><meta property="og:description" content="Open Graph">',
+      ),
+      'Classic',
+    );
+  });
+
+  it('takes it even when the og tag comes first in the document', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="Open Graph"><meta name="description" content="Classic">',
+      ),
+      'Classic',
+    );
+  });
+
+  it('falls back to og:description when no description is declared', () => {
+    assert.equal(
+      headDescription('<meta property="og:description" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('skips a matching tag with an empty content attribute', () => {
+    assert.equal(
+      headDescription(
+        '<meta name="description" content=""><meta property="og:description" content="Open Graph">',
+      ),
+      'Open Graph',
+    );
+  });
+});
+
+describe('metaContent reads real-world tag shapes', () => {
+  it('does not care which attribute comes first', () => {
+    assert.equal(
+      metaContent('<meta content="Reversed" property="og:description">', 'og:description'),
+      'Reversed',
+    );
+    assert.equal(
+      metaContent('<meta content="Reversed" name="description">', 'description'),
+      'Reversed',
+    );
+  });
+
+  it('accepts single quotes, extra attributes, and spacing', () => {
+    assert.equal(
+      metaContent(
+        "<meta   data-rh='true'  property = 'og:title'   content = 'Acme'  />",
+        'og:title',
+      ),
+      'Acme',
+    );
+  });
+
+  it('matches the key case-insensitively', () => {
+    assert.equal(
+      metaContent('<meta PROPERTY="OG:TITLE" CONTENT="Acme">', 'og:title'),
+      'Acme',
+    );
+  });
+
+  it('does not match a different key that shares a prefix', () => {
+    assert.equal(
+      metaContent('<meta property="og:description:alt" content="No">', 'og:description'),
+      '',
+    );
+  });
+
+  it('returns an empty string when nothing matches', () => {
+    assert.equal(metaContent('<html><head></head></html>', 'description'), '');
+    assert.equal(metaContent('', 'og:title'), '');
+  });
+
+  it('is repeatable, so the global regexes carry no state between calls', () => {
+    const html = '<meta property="og:title" content="Acme">';
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+    assert.equal(metaContent(html, 'og:title'), 'Acme');
+  });
+});
+
+describe('the fallback path keeps the shared bounds', () => {
+  it('decodes entities in one pass', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="Tools &amp;lt;things&amp;gt;">',
+      ),
+      'Tools &lt;things&gt;',
+    );
+  });
+
+  it('collapses whitespace in og content', () => {
+    assert.equal(
+      headDescription(
+        '<meta property="og:description" content="  We   build\n  things  ">',
+      ),
+      'We build things',
+    );
+  });
+
+  it('truncates og content at the shared cap', () => {
+    const long = 'z'.repeat(MAX_FINDING_VALUE_CHARS + 100);
+    assert.equal(
+      headDescription(`<meta property="og:description" content="${long}">`).length,
+      MAX_FINDING_VALUE_CHARS,
+    );
+  });
+});
+
+describe('title fallback', () => {
+  it('prefers a real <title> over og:title', () => {
+    assert.equal(
+      headTitle('<title>Classic</title><meta property="og:title" content="Open Graph">'),
+      'Classic',
+    );
+  });
+
+  it('falls back to og:title when there is no title element', () => {
+    assert.equal(
+      headTitle('<meta property="og:title" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('falls back when the title element is empty or whitespace', () => {
+    assert.equal(
+      headTitle('<title>   </title><meta property="og:title" content="Open Graph">'),
+      'Open Graph',
+    );
+  });
+
+  it('stays empty when neither is declared', () => {
+    assert.equal(headTitle('<html><head></head></html>'), '');
+  });
+});
+
+describe('an Open Graph-only page now produces findings', () => {
+  const ogOnly = [
+    '<html><head>',
+    '<meta property="og:title" content="Acme &amp; Co">',
+    '<meta property="og:description" content="We build things">',
+    '</head><body></body></html>',
+  ].join('');
+
+  it('yields website title and description findings', () => {
+    assert.deepEqual(
+      parseWebsiteFindings(ogOnly, SITE, OBSERVED_AT).map((finding) => [
+        finding.field,
+        finding.value,
+        finding.confidence,
+      ]),
+      [
+        ['website_title', 'Acme & Co', 'high'],
+        ['website_description', 'We build things', 'medium'],
+      ],
+    );
+  });
+
+  it('yields careers title and description findings', () => {
+    assert.deepEqual(
+      parseCareersFindings(ogOnly, CAREERS, OBSERVED_AT).map((finding) => [
+        finding.field,
+        finding.value,
+        finding.confidence,
+      ]),
+      [
+        ['careers_title', 'Acme & Co', 'high'],
+        ['careers_description', 'We build things', 'medium'],
+      ],
+    );
+  });
+
+  it('kept producing nothing for a page with neither', () => {
+    assert.deepEqual(parseWebsiteFindings('<html></html>', SITE, OBSERVED_AT), []);
+  });
+});
+
+describe('the fallback adds no new finding fields', () => {
+  const pages = [
+    '<title>Classic</title><meta name="description" content="Classic">',
+    '<meta property="og:title" content="OG"><meta property="og:description" content="OG">',
+    '<title>Classic</title><meta property="og:description" content="OG">',
+    '<html><head></head></html>',
+  ];
+
+  it('keeps every produced field inside EXPECTED_FIELDS', () => {
+    for (const html of pages) {
+      for (const findings of [
+        parseWebsiteFindings(html, SITE, OBSERVED_AT),
+        parseCareersFindings(html, CAREERS, OBSERVED_AT),
+      ]) {
+        for (const finding of findings) {
+          assert.ok(
+            EXPECTED_FIELDS.some((field) => field === finding.field),
+            `unexpected field "${finding.field}": the quality bar would not measure it`,
+          );
+        }
+      }
+    }
+  });
+
+  it('keeps each collector to at most its two fields', () => {
+    for (const html of pages) {
+      assert.ok(parseWebsiteFindings(html, SITE, OBSERVED_AT).length <= 2);
+      assert.ok(parseCareersFindings(html, CAREERS, OBSERVED_AT).length <= 2);
+    }
+  });
 });
