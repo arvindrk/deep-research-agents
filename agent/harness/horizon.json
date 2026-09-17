@@ -1,23 +1,19 @@
 {
   "slice": [
-    "observability-redaction-shared",
+    "research-parse-corpus-eval",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "observability-redaction-shared": "The search event module scrubs credential-shaped text out of a logged query, and its comment says the patterns mirror agent/local/guards.sh. Two copies of a security-critical list, one in TypeScript and one in shell, with nothing asserting they agree, and no way for a second logger to reuse either. This run added a second API surface that answers reader input, so the next logger is closer than it was.",
+    "research-parse-corpus-eval": "The redaction has one owner and one set of assertions, so the next item is the one the vision calls measurable quality: the parser that turns a fetched page into evidence is asserted against a few remembered examples, not against the shapes real pages take.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
-  "category_mix": {
-    "maintenance": 2,
-    "tech_debt": 1,
-    "testing_observability": 1
-  },
+  "category_mix": "Three maintenance and tech_debt runs in a row have paid down the security and caching debt around the reader-facing surfaces. Testing and observability is the category with the oldest thin spot: the parser has coverage of its collectors but not of its parse.",
   "vision_refs": {
-    "observability-redaction-shared": [
+    "research-parse-corpus-eval": [
       "Measurable quality",
       "Reliable autonomous research"
     ],
@@ -34,6 +30,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260916-032122",
-  "notes": "Executor completed search-response-cache-policy and company-research-cache-policy: both API routes now carry an explicit policy per outcome, composed by one shared helper, with a shared answer lifetime each surface argues for separately and nothing stored for a refusal or a failure. Remaining heads stay excluded as in-flight."
+  "generated_by_run": 19,
+  "notes": "Fixtures are checked in, so the corpus stays hermetic: no network, no clock, no environment."
 }

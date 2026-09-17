@@ -13,12 +13,12 @@ const EVAL_DIR = 'src/eval';
 export const readRepoFile = (path: string): string =>
   readFileSync(join(REPO_ROOT, path), 'utf8');
 
-/** Every .ts file under src/eval, in a stable order, repo-relative. */
-function typescriptFiles(dir: string): string[] {
+/** Every .ts file under a directory, in a stable order, repo-relative. */
+export function typescriptFilesUnder(dir: string): string[] {
   return readdirSync(join(REPO_ROOT, dir), { withFileTypes: true })
     .flatMap((entry) => {
       const path = `${dir}/${entry.name}`;
-      if (entry.isDirectory()) return typescriptFiles(path);
+      if (entry.isDirectory()) return typescriptFilesUnder(path);
       return /\.tsx?$/.test(entry.name) ? [path] : [];
     })
     .sort();
@@ -26,7 +26,7 @@ function typescriptFiles(dir: string): string[] {
 
 /** Files `npm run eval` runs: the glob is `src/eval/**\/*.eval.ts`. */
 export const suiteFiles = (): string[] =>
-  typescriptFiles(EVAL_DIR).filter((path) => path.endsWith('.eval.ts'));
+  typescriptFilesUnder(EVAL_DIR).filter((path) => path.endsWith('.eval.ts'));
 
 /** Every file under src/eval, of any kind, repo-relative. */
 export function evalTreeFiles(dir = EVAL_DIR): string[] {
@@ -40,7 +40,7 @@ export function evalTreeFiles(dir = EVAL_DIR): string[] {
 
 /** Modules under src/eval that the glob does not run, so nothing exercises them alone. */
 export const supportModules = (): string[] =>
-  typescriptFiles(EVAL_DIR).filter((path) => !path.endsWith('.eval.ts'));
+  typescriptFilesUnder(EVAL_DIR).filter((path) => !path.endsWith('.eval.ts'));
 
 /** Static import specifiers, which is all this repository uses. */
 export function importsOf(path: string): string[] {

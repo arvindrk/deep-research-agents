@@ -3,10 +3,12 @@ import { describe, it } from 'node:test';
 
 import {
   boundQueryText,
+  MAX_LOGGED_QUERY_CHARS,
+} from '@/lib/observability/redact';
+import {
   buildSearchEvent,
   LATENCY_BUCKETS_MS,
   latencyBucket,
-  MAX_LOGGED_QUERY_CHARS,
   SEARCH_OUTCOMES,
 } from '@/lib/observability/search-event';
 
