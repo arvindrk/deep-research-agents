@@ -489,14 +489,14 @@
   },
   {
     "id": "research-fetch-content-type",
-    "status": "pending",
+    "status": "completed",
     "priority": 42,
     "category": "maintenance",
     "depends_on": [
       "research-fetch-ssrf-guard"
     ],
     "description": "Reject non-HTML research collector response bodies before parse so unattended website and careers fetches fail the source on unexpected Content-Type instead of feeding binary or JSON into HTML extractors. Keep the SSRF guard and body byte cap; lock Content-Type gating with a hermetic eval.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]

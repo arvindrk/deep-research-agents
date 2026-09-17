@@ -1,4 +1,5 @@
 import { httpUrl } from '../safe-url';
+import { assertHtmlResearchContentType } from './content-type';
 import { readBoundedResponseText } from './fetch-body';
 import { fetchResearchResponse } from './public-destination';
 import type { ResearchFinding, ResearchSubject } from './types';
@@ -99,6 +100,8 @@ export async function collectWebsiteFindings(
   if (!response.ok) {
     throw new Error(`Website request failed with status ${response.status}`);
   }
+
+  assertHtmlResearchContentType(response.headers.get('content-type'));
 
   return parseWebsiteFindings(
     await readBoundedResponseText(response),
