@@ -19,6 +19,13 @@
       "entity-escape"
     ]
   },
+  "description-without-title": {
+    "title": "",
+    "description": "Contract machining for aerospace fasteners.",
+    "shapes": [
+      "meta-description"
+    ]
+  },
   "empty-description-content": {
     "title": "Salt Flat Coffee",
     "description": "Single-origin roasting in West Texas.",
@@ -77,6 +84,13 @@
       "title-element",
       "meta-description",
       "doctype-and-comments"
+    ]
+  },
+  "title-without-description": {
+    "title": "Quarry Lane Bakery",
+    "description": "",
+    "shapes": [
+      "title-element"
     ]
   },
   "uppercase-tags": {

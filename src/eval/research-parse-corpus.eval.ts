@@ -195,3 +195,43 @@ describe('nothing outside the head supplies the title', () => {
     }
   });
 });
+
+describe('the corpus covers the inventory and every answer the parser gives', () => {
+  it('has a page for every shape the inventory names', () => {
+    const claimed = new Set(corpusPages().flatMap((page) => page.shapes));
+    for (const shape of PAGE_SHAPES) {
+      assert.ok(claimed.has(shape), `no page covers ${shape}`);
+    }
+  });
+
+  it('keeps the inventory sorted and free of duplicates, so it stays readable', () => {
+    const sorted = [...PAGE_SHAPES].sort();
+    assert.deepEqual([...PAGE_SHAPES], sorted);
+    assert.equal(new Set(PAGE_SHAPES).size, PAGE_SHAPES.length);
+  });
+
+  it('measures all four answers a page can produce', () => {
+    const answers = corpusPages().map((page) => ({
+      title: page.title.length > 0,
+      description: page.description.length > 0,
+    }));
+
+    // A field the corpus never sees empty is a field whose absent case is
+    // measured by nothing, and absence is the common case on a real page.
+    for (const wanted of [
+      { title: true, description: true },
+      { title: true, description: false },
+      { title: false, description: true },
+      { title: false, description: false },
+    ]) {
+      assert.ok(
+        answers.some(
+          (answer) =>
+            answer.title === wanted.title &&
+            answer.description === wanted.description,
+        ),
+        `no page answers with title=${wanted.title} and description=${wanted.description}`,
+      );
+    }
+  });
+});
