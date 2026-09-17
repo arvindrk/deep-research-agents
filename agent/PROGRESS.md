@@ -368,3 +368,14 @@ No canary code was merged.
   - Eval canary: removed `127.0.0.0/8` block → SSRF eval failed on `http://127.0.0.1/` and redirect-into-loopback; restored → pass. Restored `redirect:'follow'` in website.ts → eval failed (`must call fetchResearchResponse`); restored → 39/39 pass.
   - First verify without `node_modules`: lint/typecheck/evals green; build failed missing `next`. `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 320 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, or `httpUrl` semantic changes. DNS rebinding (public hostname resolving to private IP) remains out of scope. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-fetch-content-type.
+
+## continue-20260917-210221 (research-fetch-content-type)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260917-210221` / `harness/continue-local-20260917-210221`
+- **Task / plan:** `research-fetch-content-type` / `plan-20260917153408`
+- **What changed:** Added `src/lib/research/content-type.ts` with `assertHtmlResearchContentType` (allows only `text/html` and `application/xhtml+xml`, ignores parameters, case-insensitive; missing/empty throws). Wired `collectWebsiteFindings` and `collectCareersFindings` to call it after `response.ok` and before `readBoundedResponseText`. Hermetic `src/eval/research-fetch-content-type.eval.ts` locks allow/reject cases and collector call order. Marked feature completed; advanced horizon past it.
+- **Why:** Unattended collectors could feed JSON, binary, or plain text into HTML regex extractors when Accept alone was insufficient; unexpected Content-Type must fail the source.
+- **Commands:**
+  - Eval canary: temporarily allowed `application/json` in the guard → content-type eval failed (2 rejects); restored → 19/19 pass.
+  - `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 339 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, SSRF, body-cap, or parse-rule changes. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-agent-runtime.
