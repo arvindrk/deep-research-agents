@@ -31,9 +31,16 @@ export type SearchResult = Company & {
   relevance_score: number;
 };
 
-export type QueryResult<T> = 
+/**
+ * A query answers with data or with a reason, and never throws. The reason is
+ * a string by default, because most callers only render closed copy for it. A
+ * query whose caller branches on which reason it got names its own union
+ * instead, so a new reason or a typo fails typecheck rather than falling into
+ * whichever branch is last.
+ */
+export type QueryResult<T, E extends string = string> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  | { success: false; error: E };
 
 export type PaginatedResult<T> = {
   items: T[];

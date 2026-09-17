@@ -28,6 +28,15 @@ const HNSW_EF_SEARCH = 200;
 export const COMPANY_NOT_FOUND = 'Company not found';
 export const COMPANY_READ_FAILED = 'Failed to read company';
 
+/**
+ * Every way a single company read can fail. The route answers 404 for one and
+ * 503 for the other, so the pair is a type: a new outcome, or a typo in the
+ * comparison, fails typecheck instead of quietly becoming a 503.
+ */
+export type CompanyReadFailure =
+  | typeof COMPANY_NOT_FOUND
+  | typeof COMPANY_READ_FAILED;
+
 /** Columns needed to compose embedding input; never includes the vector. */
 export type CompanyEmbeddingSource = {
   id: string;
@@ -41,7 +50,9 @@ export type CompanyEmbeddingSource = {
   stage: string | null;
 };
 
-export async function getCompanyById(id: string): Promise<QueryResult<Company>> {
+export async function getCompanyById(
+  id: string,
+): Promise<QueryResult<Company, CompanyReadFailure>> {
   try {
     const sql = getDBClient();
     const results = await withRetry(

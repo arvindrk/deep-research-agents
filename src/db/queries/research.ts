@@ -8,6 +8,7 @@ import type {
   ResearchRunStatus,
   ResearchSourceFailure,
 } from '@/lib/research/run';
+import { asResearchFailureReason } from '@/lib/research/source-error';
 import {
   RESEARCH_SOURCES,
   type FindingConfidence,
@@ -90,8 +91,8 @@ const asFailures = (value: unknown): ResearchSourceFailure[] => {
     if (typeof entry !== 'object' || entry === null) continue;
     const record = entry as Record<string, unknown>;
     const source = asSource(record.source);
-    if (source && typeof record.error === 'string') {
-      failures.push({ source, error: record.error });
+    if (source) {
+      failures.push({ source, error: asResearchFailureReason(record.error) });
     }
   }
   return failures;
