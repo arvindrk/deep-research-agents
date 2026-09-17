@@ -1,4 +1,14 @@
 {
+  "attribute-order-and-quotes": {
+    "title": "Tide Street Robotics",
+    "description": "Pick-and-place cells for small-batch electronics.",
+    "shapes": [
+      "og-title-fallback",
+      "og-description-fallback",
+      "attribute-order",
+      "single-quoted-attributes"
+    ]
+  },
   "entity-escaped": {
     "title": "Peak & Vale",
     "description": "We build <things>, we say \"hello\", and the founder's dog approves.",
@@ -39,6 +49,15 @@
       "title-element",
       "meta-description",
       "doctype-and-comments"
+    ]
+  },
+  "uppercase-tags": {
+    "title": "Granite Bay Foundry",
+    "description": "Sand casting and finishing for marine hardware.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "uppercase-tags"
     ]
   },
   "whitespace-heavy": {

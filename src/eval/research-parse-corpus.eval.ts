@@ -16,6 +16,7 @@ import {
   expectations,
   fixtureNames,
   PAGE_SHAPES,
+  SHAPE_EVIDENCE,
 } from './support/html-corpus';
 
 /**
@@ -102,4 +103,17 @@ describe('the corpus exercises the bounds the parser applies', () => {
       );
     }
   });
+});
+
+describe('a page exhibits the shapes it claims', () => {
+  for (const page of corpusPages()) {
+    it(`${page.name}`, () => {
+      for (const shape of page.shapes) {
+        assert.ok(
+          SHAPE_EVIDENCE[shape](page.html),
+          `${page.name} claims ${shape} but the page does not exhibit it`,
+        );
+      }
+    });
+  }
 });

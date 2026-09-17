@@ -1,6 +1,8 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { MAX_FINDING_VALUE_CHARS } from '@/lib/research/html-meta';
+
 import { readRepoFile } from './suite';
 
 /**
@@ -15,13 +17,16 @@ export const EXPECTATIONS_FILE = `${CORPUS_DIR}/expected.json`;
 
 /** The shapes the parser has a branch for, which the corpus must cover. */
 export const PAGE_SHAPES = [
+  'attribute-order',
   'doctype-and-comments',
   'entity-escape',
   'meta-description',
   'no-metadata',
   'og-description-fallback',
   'og-title-fallback',
+  'single-quoted-attributes',
   'title-element',
+  'uppercase-tags',
   'value-cap',
   'whitespace-collapse',
 ] as const;
@@ -70,3 +75,43 @@ export function corpusPages(): CorpusPage[] {
     };
   });
 }
+
+/** Meta tags whose content attribute is written before the key that names it. */
+const contentBeforeKey = (html: string): boolean =>
+  (html.match(/<meta\b[^>]*>/gi) ?? []).some(
+    (tag) =>
+      tag.indexOf('content') >= 0 &&
+      tag.indexOf('content') < Math.max(tag.indexOf('property'), tag.indexOf('name')),
+  );
+
+const overCap = new RegExp(`content\\s*=\\s*"[^"]{${MAX_FINDING_VALUE_CHARS + 1},}"`);
+
+/**
+ * What a page must contain to claim a shape. A Record over the inventory, so a
+ * shape cannot join the inventory without saying how a page exhibits it, and a
+ * page cannot claim coverage it does not provide.
+ */
+export const SHAPE_EVIDENCE: Record<PageShape, (html: string) => boolean> = {
+  'attribute-order': contentBeforeKey,
+  'doctype-and-comments': (html) =>
+    /<!doctype/i.test(html) && html.includes('<!--'),
+  'entity-escape': (html) => /&(?:amp|lt|gt|quot|#39);/.test(html),
+  'meta-description': (html) => /name\s*=\s*["']description["']/i.test(html),
+  'no-metadata': (html) =>
+    !/<title[^>]*>\s*\S/i.test(html) &&
+    !/(?:name|property)\s*=\s*["'](?:og:)?(?:title|description)["']/i.test(html),
+  'og-description-fallback': (html) =>
+    /property\s*=\s*["']og:description["']/i.test(html) &&
+    !/name\s*=\s*["']description["']/i.test(html),
+  'og-title-fallback': (html) =>
+    /(?:property|name)\s*=\s*["']og:title["']/i.test(html) &&
+    !/<title[^>]*>\s*\S/i.test(html),
+  'single-quoted-attributes': (html) => /content\s*=\s*'/.test(html),
+  'title-element': (html) => /<title[^>]*>\s*\S/i.test(html),
+  // Written as the page author wrote them, not lowercased on the way in.
+  'uppercase-tags': (html) => /<(?:TITLE|META)\b/.test(html),
+  'value-cap': (html) => overCap.test(html),
+  'whitespace-collapse': (html) =>
+    /<title[^>]*>[^<]*(?:\n|  )/i.test(html) ||
+    /content\s*=\s*["'][^"']*(?:\n|  )/.test(html),
+};
