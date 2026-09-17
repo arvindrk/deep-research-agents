@@ -1,39 +1,28 @@
 {
   "slice": [
-    "research-fetch-content-type",
+    "research-html-meta-shared",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-fetch-content-type": "Next fetch-hardening slice after SSRF guard: reject non-HTML bodies before parse. Unblocked maintenance follow-up registered this run.",
+    "research-html-meta-shared": "Registered this run. The Content-Type gate had to be wired into two collectors that duplicate their whole head-parsing layer; deduplicating it is the cheapest way to stop the next parse fix landing in one source only.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
     "maintenance": 1,
+    "tech_debt": 1,
     "testing_observability": 2,
     "new_feature": 1
   },
   "vision_refs": {
-    "research-fetch-content-type": [
-      "Reliable autonomous research",
-      "Agent research"
-    ],
-    "embedding-coverage-eval": [
-      "Hybrid search",
-      "Measurable quality"
-    ],
-    "research-observability": [
-      "Reliable autonomous research",
-      "Measurable quality"
-    ],
-    "search-ui": [
-      "UI and UX",
-      "Discovery with low noise"
-    ]
+    "research-html-meta-shared": ["Agent research", "Reliable autonomous research"],
+    "embedding-coverage-eval": ["Hybrid search", "Measurable quality"],
+    "research-observability": ["Reliable autonomous research", "Measurable quality"],
+    "search-ui": ["UI and UX", "Discovery with low noise"]
   },
-  "generated_by_run": "continue-20260916-161519",
-  "notes": "Executor completed research-fetch-ssrf-guard and advanced past it. Registered pending research-fetch-content-type as the next hardening slice. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260906-000000",
+  "notes": "Executor completed research-fetch-content-type and advanced past it. The fetch-hardening chain (body limit, SSRF guard, content type) is closed. Remaining heads stay excluded as in-flight."
 }

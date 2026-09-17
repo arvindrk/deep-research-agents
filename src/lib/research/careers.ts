@@ -1,4 +1,5 @@
 import { httpUrl } from '../safe-url';
+import { assertHtmlResponse } from './content-type';
 import { readBoundedResponseText } from './fetch-body';
 import { fetchResearchResponse } from './public-destination';
 import type { ResearchFinding, ResearchSubject } from './types';
@@ -109,6 +110,8 @@ export async function collectCareersFindings(
   if (!response.ok) {
     throw new Error(`Careers request failed with status ${response.status}`);
   }
+
+  assertHtmlResponse(response);
 
   return parseCareersFindings(
     await readBoundedResponseText(response),
