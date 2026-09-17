@@ -1,19 +1,26 @@
 {
   "slice": [
+    "research-fetch-content-type",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
+    "research-fetch-content-type": "Next fetch-hardening slice after SSRF guard: reject non-HTML bodies before parse. Unblocked maintenance follow-up registered this run.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
+    "maintenance": 1,
     "testing_observability": 2,
     "new_feature": 1
   },
   "vision_refs": {
+    "research-fetch-content-type": [
+      "Reliable autonomous research",
+      "Agent research"
+    ],
     "embedding-coverage-eval": [
       "Hybrid search",
       "Measurable quality"
@@ -27,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260909-235106",
-  "notes": "Executor completed research-fetch-body-limit and advanced past it. Remaining slice heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260916-161519",
+  "notes": "Executor completed research-fetch-ssrf-guard and advanced past it. Registered pending research-fetch-content-type as the next hardening slice. Remaining heads stay excluded as in-flight."
 }

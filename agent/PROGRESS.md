@@ -346,3 +346,25 @@ No canary code was merged.
   - Eval canary: raised cap to 1_048_577 → fetch-body-limit eval failed (`cap … exceeds locked maximum`); restored → pass. Replaced helper call with `response.text()` in website.ts → eval failed (`must call readBoundedResponseText`); restored → 7/7 pass.
   - `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 281 evals, build). Build succeeded without `DATABASE_URL`.
 - **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, or parse-rule changes. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-agent-runtime.
+
+## continue-20260916-161519 (research-fetch-ssrf-guard)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260916-161519` / `harness/continue-local-20260916-161519`
+- **Task / plan:** `research-fetch-ssrf-guard` / `plan-20260916104826`
+- **What changed:** Added `src/lib/research/public-destination.ts` with `assertPublicResearchDestination`, `nextPublicResearchUrl`, and `fetchResearchResponse` (redirect manual, revalidate every Location). Wired `collectWebsiteFindings` and `collectCareersFindings` through the shared helper. Left `httpUrl` protocol-only for UI. Hermetic `src/eval/research-fetch-ssrf-guard.eval.ts` locks blocked hosts (loopback, RFC1918, link-local, metadata), redirect revalidation, collector wiring, and unchanged `httpUrl`. Registered and completed the feature (priority 41); registered pending `research-fetch-content-type` (priority 42); advanced horizon past the SSRF guard.
+- **Why:** Unattended collectors used unchecked redirect follow after a protocol-only `httpUrl` check, so a malicious or misconfigured host could probe private/metadata destinations without failing the source.
+- **Commands:**
+  - Eval canary: removed `127.0.0.0/8` block → SSRF eval failed on `http://127.0.0.1/` and redirect-into-loopback; restored → pass. Restored redirect follow in website.ts → eval failed (`must call fetchResearchResponse`); restored → 39/39 pass.
+  - First verify without `node_modules`: lint/typecheck/evals green; build failed missing `next`. `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 320 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, or `httpUrl` semantic changes. DNS rebinding (public hostname resolving to private IP) remains out of scope. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-fetch-content-type.
+
+## continue-20260916-161519 (research-fetch-ssrf-guard)
+
+- **Worktree / branch:** `.harness/worktrees/continue-20260916-161519` / `harness/continue-local-20260916-161519`
+- **Task / plan:** `research-fetch-ssrf-guard` / `plan-20260916104826`
+- **What changed:** Added `src/lib/research/public-destination.ts` with `assertPublicResearchDestination`, `nextPublicResearchUrl`, and `fetchResearchResponse` (redirect manual, revalidate every Location). Wired `collectWebsiteFindings` and `collectCareersFindings` through the shared helper. Left `httpUrl` protocol-only for UI. Hermetic `src/eval/research-fetch-ssrf-guard.eval.ts` locks blocked hosts (loopback, RFC1918, link-local, metadata), redirect revalidation, collector wiring, and unchanged `httpUrl`. Registered and completed the feature (priority 41); registered pending `research-fetch-content-type` (priority 42); advanced horizon past the SSRF guard.
+- **Why:** Unattended collectors used `redirect:'follow'` against `httpUrl`, which only checks protocol, so a malicious or misconfigured host could probe private/metadata destinations without failing the source.
+- **Commands:**
+  - Eval canary: removed `127.0.0.0/8` block → SSRF eval failed on `http://127.0.0.1/` and redirect-into-loopback; restored → pass. Restored `redirect:'follow'` in website.ts → eval failed (`must call fetchResearchResponse`); restored → 39/39 pass.
+  - First verify without `node_modules`: lint/typecheck/evals green; build failed missing `next`. `npm ci` then `npm run verify` → exit 0 (lint, typecheck, 320 evals, build). Build succeeded without `DATABASE_URL`.
+- **Human notes:** No new dependencies; no SQL, UI, hybrid weights, QUALITY_BAR, observability, or `httpUrl` semantic changes. DNS rebinding (public hostname resolving to private IP) remains out of scope. Did not implement embedding-coverage-eval, research-observability, search-ui, or research-fetch-content-type.
