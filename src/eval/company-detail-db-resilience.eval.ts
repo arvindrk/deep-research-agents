@@ -52,6 +52,7 @@ describe('the query enumeration', () => {
     assert.deepEqual(
       queries.map((fn) => fn.name).sort(),
       [
+        'findSimilarCompanies',
         'getAllCompanies',
         'getCompaniesWithOffset',
         'getCompanyById',

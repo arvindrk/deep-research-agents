@@ -6,9 +6,16 @@ export {
   RETRY_ATTEMPTS,
   STATEMENT_TIMEOUT_MS,
 } from './resilience';
-export type { Company, SearchResult, QueryResult, PaginatedResult } from './types';
+export type {
+  Company,
+  SearchResult,
+  SimilarCompany,
+  QueryResult,
+  PaginatedResult,
+} from './types';
 export {
   getCompanyById,
+  findSimilarCompanies,
   getAllCompanies,
   getCompanyCount,
   getCompaniesWithOffset,

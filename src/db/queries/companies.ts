@@ -14,7 +14,17 @@ import {
   textList,
   type SourceCompanyRecord,
 } from '@/lib/ingestion/source-record';
-import type { Company, SearchResult, QueryResult, PaginatedResult } from '../types';
+import {
+  boundSimilarLimit,
+  SIMILAR_COMPANIES_MIN_SIMILARITY,
+} from '@/lib/similar-companies';
+import type {
+  Company,
+  SearchResult,
+  SimilarCompany,
+  QueryResult,
+  PaginatedResult,
+} from '../types';
 
 export { HYBRID_SEARCH_WEIGHTS };
 
@@ -225,6 +235,61 @@ export async function searchCompanies(
   } catch {
     // Driver text names columns, hosts, and timeouts. Callers get none of it.
     return { success: false, error: 'Search query failed' };
+  }
+}
+
+/**
+ * The companies nearest one company, by embedding. Nothing new is computed:
+ * these are the same vectors search ranks with, read through the same HNSW
+ * index and the same ef_search setting, so a company that is related here is
+ * related there.
+ *
+ * The subject's own vector stays inside the statement in a materialised CTE.
+ * Reading it into the application would cost a round trip and would put an
+ * embedding somewhere it could be logged; nothing here selects one.
+ *
+ * Answers an empty list, not an error, when the subject has no embedding yet:
+ * an unenriched company has no neighbours to report, which is a fact rather
+ * than a failure.
+ */
+export async function findSimilarCompanies(
+  companyId: string,
+  limit?: number,
+): Promise<QueryResult<SimilarCompany[]>> {
+  try {
+    const sql = getDBClient();
+    const bounded = boundSimilarLimit(limit);
+
+    const [, , results] = await withRetry(() =>
+      sql.transaction([
+        sql`SELECT set_config('hnsw.ef_search', ${String(HNSW_EF_SEARCH)}, true)`,
+        sql`SELECT set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
+        sql`
+          WITH target AS MATERIALIZED (
+            SELECT embedding FROM companies WHERE id = ${companyId}
+          )
+          SELECT
+            id, source, source_id, source_url, name, slug, website, logo_url,
+            one_liner, long_description, tags, industries, regions, batch,
+            team_size, founded_at, stage, status, is_hiring, is_nonprofit,
+            all_locations, source_metadata, created_at, updated_at, last_synced_at,
+            (1 - (embedding <=> (SELECT embedding FROM target))) AS similarity
+          FROM companies
+          WHERE id <> ${companyId}
+            AND embedding IS NOT NULL
+            AND (SELECT embedding FROM target) IS NOT NULL
+            AND (1 - (embedding <=> (SELECT embedding FROM target)))
+                  >= ${SIMILAR_COMPANIES_MIN_SIMILARITY}
+          ORDER BY embedding <=> (SELECT embedding FROM target)
+          LIMIT ${bounded}
+        `,
+      ]),
+    );
+
+    return { success: true, data: results as SimilarCompany[] };
+  } catch {
+    // Driver text names columns, hosts, and timeouts. Callers get none of it.
+    return { success: false, error: 'Similar companies lookup failed' };
   }
 }
 

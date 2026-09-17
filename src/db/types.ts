@@ -32,6 +32,15 @@ export type SearchResult = Company & {
 };
 
 /**
+ * A company near another one, by embedding. Same shape as a search result so
+ * the same card renders it, with a 0 to 1 score in place of a relevance score:
+ * the two numbers are not comparable and are not named as if they were.
+ */
+export type SimilarCompany = Company & {
+  similarity: number;
+};
+
+/**
  * A query answers with data or with a reason, and never throws. The reason is
  * a string by default, because most callers only render closed copy for it. A
  * query whose caller branches on which reason it got names its own union
