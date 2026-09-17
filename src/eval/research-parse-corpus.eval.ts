@@ -11,6 +11,12 @@ import {
   tagAttributeSets,
 } from '@/lib/research/html-meta';
 
+import { parseCareersFindings } from '@/lib/research/careers';
+import { EXPECTED_FIELDS } from '@/lib/research/quality';
+import type { ResearchFinding } from '@/lib/research/types';
+import { parseWebsiteFindings } from '@/lib/research/website';
+
+import type { CorpusPage } from './support/html-corpus';
 import { readRepoFile } from './support/suite';
 import {
   corpusFiles,
@@ -232,6 +238,77 @@ describe('the corpus covers the inventory and every answer the parser gives', ()
         ),
         `no page answers with title=${wanted.title} and description=${wanted.description}`,
       );
+    }
+  });
+});
+
+describe('both collectors turn a page into the findings production stores', () => {
+  const SITE = 'https://example.test/';
+  const CAREERS = 'https://example.test/careers';
+  const OBSERVED_AT = '2026-02-03T04:05:06.000Z';
+
+  /**
+   * The findings a page must produce, derived from the recorded parse rather
+   * than from the collector: same two fields, same confidences, the fetched URL
+   * as evidence, and nothing at all for a field the page does not carry.
+   */
+  const expectedFindings = (
+    page: CorpusPage,
+    source: 'website' | 'careers',
+    url: string,
+  ): ResearchFinding[] => {
+    const findings: ResearchFinding[] = [];
+
+    if (page.title) {
+      findings.push({
+        source,
+        field: `${source}_title`,
+        value: page.title,
+        evidence_url: url,
+        observed_at: OBSERVED_AT,
+        confidence: 'high',
+      });
+    }
+
+    if (page.description) {
+      findings.push({
+        source,
+        field: `${source}_description`,
+        value: page.description,
+        evidence_url: url,
+        observed_at: OBSERVED_AT,
+        confidence: 'medium',
+      });
+    }
+
+    return findings;
+  };
+
+  for (const page of corpusPages()) {
+    it(`${page.name}`, () => {
+      assert.deepEqual(
+        parseWebsiteFindings(page.html, SITE, OBSERVED_AT),
+        expectedFindings(page, 'website', SITE),
+      );
+      assert.deepEqual(
+        parseCareersFindings(page.html, CAREERS, OBSERVED_AT),
+        expectedFindings(page, 'careers', CAREERS),
+      );
+    });
+  }
+
+  it('names no field the quality report does not expect', () => {
+    for (const page of corpusPages()) {
+      const findings = [
+        ...parseWebsiteFindings(page.html, SITE, OBSERVED_AT),
+        ...parseCareersFindings(page.html, CAREERS, OBSERVED_AT),
+      ];
+      for (const finding of findings) {
+        assert.ok(
+          EXPECTED_FIELDS.some((field) => field === finding.field),
+          `${page.name} produced ${finding.field}, which nothing scores`,
+        );
+      }
     }
   });
 });
