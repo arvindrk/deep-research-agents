@@ -552,7 +552,7 @@
   },
   {
     "id": "research-source-error-reasons",
-    "status": "pending",
+    "status": "completed",
     "priority": 47,
     "category": "maintenance",
     "depends_on": [
@@ -560,6 +560,31 @@
       "research-agent-runtime"
     ],
     "description": "Replace the raw error message a failed source stores on a research run with a closed set of reason codes (blocked destination, timeout, HTTP status, oversize body, non-HTML body, source failed). Collector failures currently persist and render whatever the thrown Error said, which can carry the fetched URL and its query string into the database and onto the company page. Classify at the runtime boundary, keep the closed codes readable, and lock the classification with a hermetic eval.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-failure-reason-type",
+    "status": "pending",
+    "priority": 48,
+    "category": "tech_debt",
+    "depends_on": [
+      "research-source-error-reasons"
+    ],
+    "description": "Narrow ResearchSourceFailure.error from string to the ResearchFailureReason union so the closed set is enforced by the compiler rather than only at the runtime boundary, and fold an unrecognised stored value to source_failed when reading rows back. Rows written before the reason codes landed still hold raw messages, so the read path has to narrow them rather than trust them.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-finding-dedupe",
+    "status": "pending",
+    "priority": 49,
+    "category": "tech_debt",
+    "depends_on": [
+      "research-meta-description-fallback",
+      "research-agent-runtime"
+    ],
+    "description": "Drop duplicate findings within a single research run, keyed on source and field, keeping the first. A collector can now reach one field through more than one tag (description or og:description, title or og:title) and a run flattens every source outcome into a single findings list, so the same claim is storable twice. A reader would see it twice and the coverage measure would count it twice.",
     "passes": false,
     "verify": "npm run verify"
   }
