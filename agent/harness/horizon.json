@@ -1,24 +1,25 @@
 {
   "slice": [
-    "similar-companies-section",
+    "search-response-cache-policy",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "similar-companies-section": "The query landed this run with no caller, which is the same half-finished shape the payload was in two runs ago. Rendering it is what turns a query into an answer a reader can see, and the card and the page layout it needs already exist, so the slice is small: read, render, and say plainly when there is nothing to show.",
+    "search-response-cache-policy": "The search route embeds a query and then runs a hybrid ranking on every request, including the identical repeat a reader makes by pressing enter twice, and it sends no cache headers at all, so nothing between the reader and the database is allowed to help. A short explicit policy on the route, with the reasoning written down, is the smallest change that makes the cost of a repeat request a decision rather than an accident. Nothing in flight touches that route.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "new_feature": 2,
-    "testing_observability": 2
+    "new_feature": 1,
+    "testing_observability": 2,
+    "maintenance": 1
   },
   "vision_refs": {
-    "similar-companies-section": [
-      "Discovery with low noise",
-      "UI and UX"
+    "search-response-cache-policy": [
+      "Hybrid search",
+      "Reliable autonomous research"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -33,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260914-224333",
-  "notes": "Executor completed similar-companies-query: nearest neighbour by embedding, bounded and parameterised, excluding the subject and anything without an embedding, with the relatedness floor read from the search module rather than redefined. No route, no UI, no migration, and no vector crosses the query boundary. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260915-130227",
+  "notes": "Executor completed similar-companies-section: the company page now reads its neighbours in the same Promise.all as its other two reads and renders them with the existing card, closed copy for both the empty and the failed case, closeness in words rather than as a number, and the section named for assistive technology. Remaining heads stay excluded as in-flight."
 }

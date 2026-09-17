@@ -6,6 +6,9 @@ import { describe, it } from 'node:test';
 import { HYBRID_SEARCH_FILTERS } from '@/lib/hybrid-search-ranking';
 import {
   boundSimilarLimit,
+  closenessLabel,
+  SIMILAR_COMPANIES_EMPTY_COPY,
+  SIMILAR_COMPANIES_FAILED_COPY,
   similarityFromDistance,
   SIMILAR_COMPANIES_MIN_SIMILARITY,
   SIMILAR_COMPANIES_DEFAULT_LIMIT,
@@ -216,5 +219,99 @@ describe('what the nearest-neighbour query hands back', () => {
     const types = readFileSync(join(process.cwd(), 'src/db/types.ts'), 'utf8');
     assert.match(types, /export type SimilarCompany = Company & \{\s*similarity: number;\s*\};/);
     assert.match(body, /Promise<QueryResult<SimilarCompany\[\]>>/);
+  });
+});
+
+describe('closenessLabel', () => {
+  it('names the three bands at their boundaries', () => {
+    assert.equal(closenessLabel(1), 'Very close');
+    assert.equal(closenessLabel(0.8), 'Very close');
+    assert.equal(closenessLabel(0.79), 'Close');
+    assert.equal(closenessLabel(0.6), 'Close');
+    assert.equal(closenessLabel(0.59), 'Related');
+  });
+
+  it('still says related for anything the query would return', () => {
+    for (const score of [
+      SIMILAR_COMPANIES_MIN_SIMILARITY,
+      SIMILAR_COMPANIES_MIN_SIMILARITY + 0.01,
+      0.3,
+      0.5,
+    ]) {
+      assert.equal(closenessLabel(score), 'Related', String(score));
+    }
+  });
+
+  it('answers one of three things, whatever it is handed', () => {
+    const bands = ['Very close', 'Close', 'Related'];
+    for (const score of [-1, 0, 0.25, 0.5, 0.75, 0.999, 1, 2, NaN]) {
+      assert.ok(bands.includes(closenessLabel(score)), String(score));
+    }
+  });
+
+  it('never says a number, a percentage, or a guess', () => {
+    for (const score of [0.3, 0.62, 0.85, 1]) {
+      const label = closenessLabel(score);
+      assert.doesNotMatch(label, /[0-9%]/);
+    }
+  });
+});
+
+describe('the copy for having nothing to show', () => {
+  it('tells an empty answer apart from a failed one', () => {
+    assert.notEqual(SIMILAR_COMPANIES_EMPTY_COPY, SIMILAR_COMPANIES_FAILED_COPY);
+    assert.match(SIMILAR_COMPANIES_EMPTY_COPY, /No similar companies yet/);
+    assert.match(SIMILAR_COMPANIES_FAILED_COPY, /could not be loaded/);
+  });
+
+  it('carries no URL, no driver text, and no instruction to retry', () => {
+    for (const copy of [SIMILAR_COMPANIES_EMPTY_COPY, SIMILAR_COMPANIES_FAILED_COPY]) {
+      assert.doesNotMatch(copy, /https?:\/\//);
+      assert.doesNotMatch(copy, /postgres|neon|timeout|ECONN/i);
+      assert.ok(copy.length < 160, copy);
+    }
+  });
+});
+
+describe('the bands and the query agree', () => {
+  const returnable = (): number[] => {
+    const scores: number[] = [];
+    for (
+      let score = SIMILAR_COMPANIES_MIN_SIMILARITY;
+      score <= 1.00001;
+      score += 0.01
+    ) {
+      scores.push(Number(score.toFixed(4)));
+    }
+    return scores;
+  };
+
+  it('bands every score the query can return', () => {
+    const bands = ['Very close', 'Close', 'Related'];
+    const seen = new Set<string>();
+    for (const score of returnable()) {
+      const label = closenessLabel(score);
+      assert.ok(bands.includes(label), `${score} produced ${label}`);
+      seen.add(label);
+    }
+    assert.deepEqual([...seen].sort(), [...bands].sort(), 'every band must be reachable');
+  });
+
+  it('never bands a score the query would have excluded', () => {
+    // Below the floor the query returns nothing, so no copy is owed for it.
+    const excluded = Number((SIMILAR_COMPANIES_MIN_SIMILARITY - 0.01).toFixed(4));
+    assert.ok(excluded < SIMILAR_COMPANIES_MIN_SIMILARITY);
+    assert.equal(similarityFromDistance(1 - excluded) < SIMILAR_COMPANIES_MIN_SIMILARITY, true);
+  });
+
+  it('rises with closeness and never falls', () => {
+    const rank = { Related: 0, Close: 1, "Very close": 2 } as const;
+    let previous = -1;
+    for (const score of returnable()) {
+      const current = rank[closenessLabel(score)];
+      assert.ok(current >= previous, `band fell at ${score}`);
+      previous = current;
+    }
+    assert.equal(previous, rank["Very close"]);
   });
 });
