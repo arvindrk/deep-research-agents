@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  collapseValue,
   decodeHtmlEntities,
+  DESCRIPTION_META_KEYS,
   headDescription,
   headTitle,
   MAX_FINDING_VALUE_CHARS,
+  tagAttributeSets,
 } from '@/lib/research/html-meta';
 
 import { readRepoFile } from './support/suite';
@@ -116,4 +119,54 @@ describe('a page exhibits the shapes it claims', () => {
       }
     });
   }
+});
+
+describe('the description follows the precedence production declares', () => {
+  /**
+   * The tag reader is production code and shared on purpose. What is under
+   * test is the choice between keys, so the choice is made here from the
+   * production order and compared against what the parser answered.
+   */
+  const declaredUnder = (html: string, key: string): string | null => {
+    for (const attributes of tagAttributeSets(html, 'meta')) {
+      const named = attributes.get('name') ?? attributes.get('property');
+      if (named?.toLowerCase() !== key) continue;
+
+      const content = attributes.get('content');
+      if (content) return collapseValue(decodeHtmlEntities(content));
+    }
+    return null;
+  };
+
+  it('takes the first key in the production order that a page declares', () => {
+    assert.ok(
+      DESCRIPTION_META_KEYS.length > 1,
+      'a precedence needs at least two keys to be a precedence',
+    );
+
+    for (const page of corpusPages()) {
+      const byPrecedence =
+        DESCRIPTION_META_KEYS.map((key) => declaredUnder(page.html, key)).find(
+          (value) => value !== null,
+        ) ?? '';
+      assert.equal(
+        page.description,
+        byPrecedence,
+        `${page.name} does not match the declared key order`,
+      );
+    }
+  });
+
+  it('is measured by a page that declares more than one of the keys', () => {
+    const overlapping = corpusPages().filter(
+      (page) =>
+        DESCRIPTION_META_KEYS.filter(
+          (key) => declaredUnder(page.html, key) !== null,
+        ).length > 1,
+    );
+    assert.ok(
+      overlapping.length > 0,
+      'no page declares two description keys, so the precedence is unmeasured',
+    );
+  });
 });

@@ -9,6 +9,25 @@
       "single-quoted-attributes"
     ]
   },
+  "description-declared-twice": {
+    "title": "Alder & Finch Design",
+    "description": "Brand and packaging studio for food and drink.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "description-precedence",
+      "entity-escape"
+    ]
+  },
+  "empty-description-content": {
+    "title": "Salt Flat Coffee",
+    "description": "Single-origin roasting in West Texas.",
+    "shapes": [
+      "title-element",
+      "description-precedence",
+      "empty-content-skipped"
+    ]
+  },
   "entity-escaped": {
     "title": "Peak & Vale",
     "description": "We build <things>, we say \"hello\", and the founder's dog approves.",

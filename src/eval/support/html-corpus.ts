@@ -18,7 +18,9 @@ export const EXPECTATIONS_FILE = `${CORPUS_DIR}/expected.json`;
 /** The shapes the parser has a branch for, which the corpus must cover. */
 export const PAGE_SHAPES = [
   'attribute-order',
+  'description-precedence',
   'doctype-and-comments',
+  'empty-content-skipped',
   'entity-escape',
   'meta-description',
   'no-metadata',
@@ -93,9 +95,18 @@ const overCap = new RegExp(`content\\s*=\\s*"[^"]{${MAX_FINDING_VALUE_CHARS + 1}
  */
 export const SHAPE_EVIDENCE: Record<PageShape, (html: string) => boolean> = {
   'attribute-order': contentBeforeKey,
+  'description-precedence': (html) =>
+    /name\s*=\s*["']description["']/i.test(html) &&
+    /property\s*=\s*["']og:description["']/i.test(html),
   'doctype-and-comments': (html) =>
     /<!doctype/i.test(html) && html.includes('<!--'),
   'entity-escape': (html) => /&(?:amp|lt|gt|quot|#39);/.test(html),
+  'empty-content-skipped': (html) =>
+    (html.match(/<meta\b[^>]*>/gi) ?? []).some(
+      (tag) =>
+        /(?:name|property)\s*=\s*["'](?:og:)?description["']/i.test(tag) &&
+        /content\s*=\s*(?:""|'')/.test(tag),
+    ),
   'meta-description': (html) => /name\s*=\s*["']description["']/i.test(html),
   'no-metadata': (html) =>
     !/<title[^>]*>\s*\S/i.test(html) &&
