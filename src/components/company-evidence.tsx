@@ -2,7 +2,11 @@ import { ExternalLink } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import type { StoredResearchRun } from '@/db/queries/research';
-import { toEvidenceItems } from '@/lib/research/evidence';
+import {
+  researchCoverage,
+  researchCoverageCopy,
+} from '@/lib/research/coverage';
+import { fieldLabel, toEvidenceItems } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
 import {
   buildResearchSectionModel,
@@ -45,6 +49,7 @@ export function CompanyEvidence({
     })),
   );
   const items = toEvidenceItems(section.findings, now);
+  const coverage = researchCoverage(section.findings);
   const notice = section.notice;
   const latest = section.latest;
   const emptyCopy = researchEmptyStateCopy({
@@ -74,6 +79,25 @@ export function CompanyEvidence({
           >
             {latest.observed_at}
           </time>
+        </div>
+      )}
+
+      {latest && (
+        <p className={cn('text-xs', 'text-[var(--color-text-secondary)]')}>
+          {researchCoverageCopy(coverage)}
+        </p>
+      )}
+
+      {latest && coverage.missing.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}>
+            Not found
+          </span>
+          {coverage.missing.map((field) => (
+            <Badge key={field} variant="outline" className="text-xs">
+              {fieldLabel(field)}
+            </Badge>
+          ))}
         </div>
       )}
 
