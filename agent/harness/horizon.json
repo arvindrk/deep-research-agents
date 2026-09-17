@@ -1,24 +1,24 @@
 {
   "slice": [
-    "eval-suite-integrity",
+    "similar-companies-query",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "eval-suite-integrity": "Three runs in a row have leaned on the eval suite to justify a draft pull request nobody has read, and the suite itself is unchecked. A file the glob never discovers, a describe with no assertion, a skipped test, or a file that only asserts against a fixture it defines itself all pass silently. This run has just added a support module under src/eval, which the glob deliberately does not run, so the difference between a file that is checked and a file that is merely present matters more than it did.",
+    "similar-companies-query": "Five runs of hardening in a row, and the reader-facing half of the vision has had nothing since research-next-refresh-due. The embeddings already exist and the HNSW index already serves search, so nearest-neighbour by embedding is the cheapest real answer to a question a company page cannot answer at all today. The query and its eval come first; the section that renders it is the run after.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
-    "testing_observability": 3,
-    "new_feature": 1
+    "new_feature": 2,
+    "testing_observability": 2
   },
   "vision_refs": {
-    "eval-suite-integrity": [
-      "Measurable quality",
-      "Reliable autonomous research"
+    "similar-companies-query": [
+      "Discovery with low noise",
+      "Hybrid search"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -33,6 +33,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260913-180545",
-  "notes": "Executor completed research-findings-run-source-field-unique: a claim is unique per run, source, and field in the schema now, the superseded run_id index is dropped, and the run write is idempotent under the key with an untargeted ON CONFLICT so it does not depend on the migration having been applied. The migration is human-applied and this loop never ran it. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260914-082439",
+  "notes": "Executor completed eval-suite-integrity: the suite is now discovered from the glob the verify gate runs, every file asserts something and reaches production code, nothing is silenced by .only or a skip, the hermeticity rule is scanned, and no helper or fixture in the eval tree is dead weight. Remaining heads stay excluded as in-flight."
 }
