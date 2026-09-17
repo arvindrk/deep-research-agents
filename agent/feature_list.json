@@ -577,7 +577,7 @@
   },
   {
     "id": "research-finding-dedupe",
-    "status": "pending",
+    "status": "completed",
     "priority": 49,
     "category": "tech_debt",
     "depends_on": [
@@ -585,7 +585,7 @@
       "research-agent-runtime"
     ],
     "description": "Drop duplicate findings within a single research run, keyed on source and field, keeping the first. A collector can now reach one field through more than one tag (description or og:description, title or og:title) and a run flattens every source outcome into a single findings list, so the same claim is storable twice. A reader would see it twice and the coverage measure would count it twice.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {
@@ -600,6 +600,32 @@
     ],
     "description": "Finish the pass db-resilience and listing-db-resilience started: getCompanyById returns the raw driver error.message to its caller, and listCompaniesMissingEmbeddings and updateCompanyEmbedding have no retry at all. Close the company read error, wrap the remaining queries in withRetry, keep the two messages callers branch on, and lock both requirements for every query in src/db with a source eval that cannot pass vacuously.",
     "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-findings-run-source-field-unique",
+    "status": "pending",
+    "priority": 51,
+    "category": "tech_debt",
+    "depends_on": [
+      "research-finding-dedupe",
+      "research-findings-run-id-index"
+    ],
+    "description": "Add a human-applied migration creating a unique index on company_research_findings (run_id, source, field) so a duplicate claim cannot persist even if a future writer bypasses buildResearchRun. The run builder folds duplicates today, which is the cosmetic fix; the database has no constraint, which is the durable one. Note in the migration that a duplicate then fails the whole insert transaction, and confirm the dedupe makes that unreachable from the shipped path before applying it.",
+    "passes": false,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-coverage-summary",
+    "status": "pending",
+    "priority": 52,
+    "category": "new_feature",
+    "depends_on": [
+      "research-evidence-and-freshness",
+      "research-finding-dedupe"
+    ],
+    "description": "Tell a reader what is known and what is missing for a company: compute, from the findings of the displayed run, which of the expected fields are present and which are absent, and surface that as a short summary on the company Research section. Deduplicated findings make the count trustworthy. Pure helpers with closed copy, a Server Component, and a hermetic eval.",
+    "passes": false,
     "verify": "npm run verify"
   }
 ]
