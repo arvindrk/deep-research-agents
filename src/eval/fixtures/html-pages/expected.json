@@ -1,0 +1,143 @@
+{
+  "attribute-order-and-quotes": {
+    "title": "Tide Street Robotics",
+    "description": "Pick-and-place cells for small-batch electronics.",
+    "shapes": [
+      "og-title-fallback",
+      "og-description-fallback",
+      "attribute-order",
+      "single-quoted-attributes"
+    ]
+  },
+  "canonical-link-absolute": {
+    "title": "Redpoint Ceramics",
+    "description": "Glaze and kiln supplies for studio potters.",
+    "evidence": "https://example.test/company",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "canonical-link"
+    ]
+  },
+  "canonical-link-other-host": {
+    "title": "Stonepath Surveying",
+    "description": "Boundary and topographic surveys in the Front Range.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "canonical-link-other-host"
+    ]
+  },
+  "canonical-link-relative": {
+    "title": "Marlow Optics",
+    "description": "Coated lenses for industrial inspection.",
+    "evidence": "https://example.test/company",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "canonical-link-relative"
+    ]
+  },
+  "description-declared-twice": {
+    "title": "Alder & Finch Design",
+    "description": "Brand and packaging studio for food and drink.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "description-precedence",
+      "entity-escape"
+    ]
+  },
+  "description-without-title": {
+    "title": "",
+    "description": "Contract machining for aerospace fasteners.",
+    "shapes": [
+      "meta-description"
+    ]
+  },
+  "empty-description-content": {
+    "title": "Salt Flat Coffee",
+    "description": "Single-origin roasting in West Texas.",
+    "shapes": [
+      "title-element",
+      "description-precedence",
+      "empty-content-skipped"
+    ]
+  },
+  "entity-escaped": {
+    "title": "Peak & Vale",
+    "description": "We build <things>, we say \"hello\", and the founder's dog approves.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "entity-escape"
+    ]
+  },
+  "icon-title-in-body": {
+    "title": "Fernbrook Bicycles",
+    "description": "Steel frames built to order in Vermont.",
+    "shapes": [
+      "og-title-fallback",
+      "meta-description",
+      "title-outside-head-ignored"
+    ]
+  },
+  "no-metadata": {
+    "title": "",
+    "description": "",
+    "shapes": [
+      "no-metadata"
+    ]
+  },
+  "open-graph-only": {
+    "title": "Harbor Analytics",
+    "description": "Warehouse-native product analytics.",
+    "shapes": [
+      "og-title-fallback",
+      "og-description-fallback"
+    ]
+  },
+  "over-the-value-cap": {
+    "title": "Broadleaf Materials",
+    "description": "Broadleaf Materials supplies engineered hardwood panels, acoustic cores, and fire-rated sheet goods to builders across the Pacific Northwest, with mills in Eugene and Spokane, a distribution yard in Tacoma, and a specification desk that answers architects the same day they call, every working day of",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "value-cap"
+    ]
+  },
+  "plain-title-and-description": {
+    "title": "Northwind Logistics",
+    "description": "Freight brokerage for mid-market shippers.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "doctype-and-comments"
+    ]
+  },
+  "title-without-description": {
+    "title": "Quarry Lane Bakery",
+    "description": "",
+    "shapes": [
+      "title-element"
+    ]
+  },
+  "uppercase-tags": {
+    "title": "Granite Bay Foundry",
+    "description": "Sand casting and finishing for marine hardware.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "uppercase-tags"
+    ]
+  },
+  "whitespace-heavy": {
+    "title": "Cedar Grove Instruments",
+    "description": "Precision sensors for process plants. Built in Ohio since 1974.",
+    "shapes": [
+      "title-element",
+      "meta-description",
+      "whitespace-collapse"
+    ]
+  }
+}

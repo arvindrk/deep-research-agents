@@ -1,21 +1,21 @@
 {
   "slice": [
-    "research-parse-corpus-eval",
+    "research-head-parse-comments",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-parse-corpus-eval": "The redaction has one owner and one set of assertions, so the next item is the one the vision calls measurable quality: the parser that turns a fetched page into evidence is asserted against a few remembered examples, not against the shapes real pages take.",
+    "research-head-parse-comments": "The corpus that landed this run found two defects. One is fixed; the other is that the parser reads commented-out tags, so a template placeholder becomes a company's stored name. The corpus now exists to measure the fix, which is the cheapest this item will ever be.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
-  "category_mix": "Three maintenance and tech_debt runs in a row have paid down the security and caching debt around the reader-facing surfaces. Testing and observability is the category with the oldest thin spot: the parser has coverage of its collectors but not of its parse.",
+  "category_mix": "maintenance. Four of the last five runs paid down debt on the reader-facing surfaces; this one is a correctness bug in the enrichment path, found by evidence rather than by reading, and the page it needs is a fixture away.",
   "vision_refs": {
-    "research-parse-corpus-eval": [
-      "Measurable quality",
-      "Reliable autonomous research"
+    "research-head-parse-comments": [
+      "Reliable autonomous research",
+      "Measurable quality"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -30,6 +30,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": 19,
-  "notes": "Fixtures are checked in, so the corpus stays hermetic: no network, no clock, no environment."
+  "generated_by_run": 20,
+  "notes": "Skipping commented regions touches every read in the head parser, so it needs its own canaries and its own pages. The existing snippet assertions must stay true."
 }

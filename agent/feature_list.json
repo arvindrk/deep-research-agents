@@ -758,7 +758,7 @@
   },
   {
     "id": "research-parse-corpus-eval",
-    "status": "pending",
+    "status": "completed",
     "priority": 63,
     "category": "testing_observability",
     "depends_on": [
@@ -766,6 +766,19 @@
       "research-collector-coverage-eval"
     ],
     "description": "The shared HTML metadata parser is asserted against a handful of hand-written strings, one per behaviour. Real pages are messier than that: entity escapes, attribute order, uppercase tags, a missing description, a canonical link that disagrees with the fetched URL, whitespace that dwarfs the text. Give the parser a fixture corpus checked into the repository, one file per shape with the expected parse beside it, so a change in the parser is measured against every shape at once rather than against the three examples someone remembered.",
+    "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "research-head-parse-comments",
+    "status": "pending",
+    "priority": 64,
+    "category": "maintenance",
+    "depends_on": [
+      "research-parse-corpus-eval",
+      "research-html-meta-shared"
+    ],
+    "description": "Found by the page corpus and deliberately left alone by the run that found it: the head parser reads tags that are commented out. A template that leaves a placeholder behind, which is common, stores the placeholder: a page whose head carries a commented title and description before the real ones yields the commented values as the company title and description. Skip commented regions before reading the head, add pages for the shape, and keep the existing snippet assertions true.",
     "passes": false,
     "verify": "npm run verify"
   }
