@@ -37,6 +37,15 @@
       "entity-escape"
     ]
   },
+  "icon-title-in-body": {
+    "title": "Fernbrook Bicycles",
+    "description": "Steel frames built to order in Vermont.",
+    "shapes": [
+      "og-title-fallback",
+      "meta-description",
+      "title-outside-head-ignored"
+    ]
+  },
   "no-metadata": {
     "title": "",
     "description": "",

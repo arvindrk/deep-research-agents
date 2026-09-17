@@ -30,6 +30,18 @@ export function collapseValue(value: string): string {
 
 const TITLE = /<title[^>]*>([\s\S]*?)<\/title>/i;
 
+const HEAD = /<head\b[^>]*>([\s\S]*?)<\/head>/i;
+
+/**
+ * Where a title may come from: the head when the document declares one, the
+ * whole document when it does not. An inline icon in the body carries a
+ * `<title>` of its own, and on a client-rendered page with no head title that
+ * icon would otherwise become the company name.
+ */
+function titleSection(html: string): string {
+  return HEAD.exec(html)?.[1] ?? html;
+}
+
 /**
  * Description keys in precedence order. A page that declares both gets the one
  * it wrote for search engines, not the one it wrote for link previews.
@@ -92,7 +104,7 @@ export function metaContent(html: string, key: string): string {
  * says exactly that without a caller having to unwrap a null.
  */
 export function headTitle(html: string): string {
-  const raw = TITLE.exec(html)?.[1];
+  const raw = TITLE.exec(titleSection(html))?.[1];
   const title = raw ? collapseValue(decodeHtmlEntities(raw)) : '';
   return title || metaContent(html, 'og:title');
 }

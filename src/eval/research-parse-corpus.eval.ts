@@ -170,3 +170,28 @@ describe('the description follows the precedence production declares', () => {
     );
   });
 });
+
+describe('nothing outside the head supplies the title', () => {
+  // Every icon library ships this markup, and a client-rendered page often has
+  // no head title for it to lose to.
+  const ICON =
+    '<svg viewBox="0 0 24 24" role="img"><title>Menu</title></svg>';
+
+  it('reads the same title with an icon added to the body of every page', () => {
+    for (const page of corpusPages()) {
+      const withIcon = page.html.replace(/<\/body>/i, `${ICON}</body>`);
+      assert.notEqual(
+        withIcon,
+        page.html,
+        `${page.name} has no body for the icon, so the rule would prove nothing`,
+      );
+      assert.deepEqual(
+        {
+          title: headTitle(withIcon),
+          description: headDescription(withIcon),
+        },
+        { title: page.title, description: page.description },
+      );
+    }
+  });
+});

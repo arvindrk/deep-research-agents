@@ -28,6 +28,7 @@ export const PAGE_SHAPES = [
   'og-title-fallback',
   'single-quoted-attributes',
   'title-element',
+  'title-outside-head-ignored',
   'uppercase-tags',
   'value-cap',
   'whitespace-collapse',
@@ -78,6 +79,16 @@ export function corpusPages(): CorpusPage[] {
   });
 }
 
+/**
+ * The head when the document declares one. A predicate describes the page, so
+ * it reads the page the way a browser would rather than borrowing the parser.
+ */
+const headOf = (html: string): string =>
+  /<head\b[^>]*>([\s\S]*?)<\/head>/i.exec(html)?.[1] ?? html;
+
+/** A title element with something in it. */
+const hasTitle = (html: string): boolean => /<title[^>]*>\s*\S/i.test(html);
+
 /** Meta tags whose content attribute is written before the key that names it. */
 const contentBeforeKey = (html: string): boolean =>
   (html.match(/<meta\b[^>]*>/gi) ?? []).some(
@@ -109,16 +120,18 @@ export const SHAPE_EVIDENCE: Record<PageShape, (html: string) => boolean> = {
     ),
   'meta-description': (html) => /name\s*=\s*["']description["']/i.test(html),
   'no-metadata': (html) =>
-    !/<title[^>]*>\s*\S/i.test(html) &&
+    !hasTitle(html) &&
     !/(?:name|property)\s*=\s*["'](?:og:)?(?:title|description)["']/i.test(html),
   'og-description-fallback': (html) =>
     /property\s*=\s*["']og:description["']/i.test(html) &&
     !/name\s*=\s*["']description["']/i.test(html),
   'og-title-fallback': (html) =>
     /(?:property|name)\s*=\s*["']og:title["']/i.test(html) &&
-    !/<title[^>]*>\s*\S/i.test(html),
+    !hasTitle(headOf(html)),
   'single-quoted-attributes': (html) => /content\s*=\s*'/.test(html),
-  'title-element': (html) => /<title[^>]*>\s*\S/i.test(html),
+  'title-element': (html) => hasTitle(headOf(html)),
+  'title-outside-head-ignored': (html) =>
+    hasTitle(html) && !hasTitle(headOf(html)),
   // Written as the page author wrote them, not lowercased on the way in.
   'uppercase-tags': (html) => /<(?:TITLE|META)\b/.test(html),
   'value-cap': (html) => overCap.test(html),
