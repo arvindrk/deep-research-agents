@@ -2,21 +2,9 @@ import { ExternalLink } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import type { StoredResearchRun } from '@/db/queries/research';
-import {
-  researchCoverage,
-  researchCoverageCopy,
-} from '@/lib/research/coverage';
-import { fieldLabel, toEvidenceItems } from '@/lib/research/evidence';
-import {
-  refreshDueCopy,
-  refreshDueDateTime,
-} from '@/lib/research/refresh-due';
+import { buildCompanyResearchPayload } from '@/lib/research/api-payload';
+import { fieldLabel } from '@/lib/research/evidence';
 import type { Freshness } from '@/lib/research/freshness';
-import {
-  buildResearchSectionModel,
-  researchEmptyStateCopy,
-  researchRunStatusLabel,
-} from '@/lib/research/run-summary';
 import { cn } from '@/lib/utils';
 
 const FRESHNESS_LABEL: Record<Freshness, string> = {
@@ -27,6 +15,8 @@ const FRESHNESS_LABEL: Record<Freshness, string> = {
 };
 
 interface CompanyEvidenceProps {
+  /** Identifies the payload, which the API route serves under the same shape. */
+  companyId: string;
   /** Newest-first runs (typically latest plus one prior). */
   researchRuns: StoredResearchRun[];
   /** False when the research history read failed; distinct from success with []. */
@@ -40,30 +30,23 @@ interface CompanyEvidenceProps {
  * what is known, where it came from, and whether it is still true.
  */
 export function CompanyEvidence({
+  companyId,
   researchRuns,
   researchHistoryOk,
   now,
 }: CompanyEvidenceProps) {
-  const section = buildResearchSectionModel(
-    researchRuns.map((run) => ({
+  const payload = buildCompanyResearchPayload({
+    companyId,
+    runsNewestFirst: researchRuns.map((run) => ({
       status: run.status,
       observed_at: run.observed_at,
       findings: run.findings,
       failedSources: run.failed.map((failure) => failure.source),
     })),
-  );
-  const items = toEvidenceItems(section.findings, now);
-  const coverage = researchCoverage(section.findings);
-  const notice = section.notice;
-  const latest = section.latest;
-  const refreshCopy = latest
-    ? refreshDueCopy(latest.observed_at, now)
-    : 'Refresh timing unknown';
-  const refreshDue = latest ? refreshDueDateTime(latest.observed_at) : null;
-  const emptyCopy = researchEmptyStateCopy({
     historyLoaded: researchHistoryOk,
-    hasLatestRun: latest != null,
+    now,
   });
+  const { coverage, findings: items, notice, refresh } = payload;
 
   return (
     <section className="space-y-3">
@@ -76,34 +59,41 @@ export function CompanyEvidence({
         Research
       </h2>
 
-      {latest && (
+      {payload.status_label && (
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="text-xs">
-            {researchRunStatusLabel(latest.status)}
+            {payload.status_label}
           </Badge>
-          <time
-            dateTime={latest.observed_at}
-            className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
-          >
-            {latest.observed_at}
-          </time>
+          {payload.observed_at && (
+            <time
+              dateTime={payload.observed_at}
+              className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}
+            >
+              {payload.observed_at}
+            </time>
+          )}
         </div>
       )}
 
-      {latest && (
+      {payload.status_label && (
         <p className={cn('text-xs', 'text-[var(--color-text-secondary)]')}>
-          {researchCoverageCopy(coverage)}{' '}
-          {refreshDue ? (
-            <time dateTime={refreshDue} className="text-[var(--color-text-tertiary)]">
-              {refreshCopy}
+          {coverage.summary}{' '}
+          {refresh.due_at ? (
+            <time
+              dateTime={refresh.due_at}
+              className="text-[var(--color-text-tertiary)]"
+            >
+              {refresh.summary}
             </time>
           ) : (
-            <span className="text-[var(--color-text-tertiary)]">{refreshCopy}</span>
+            <span className="text-[var(--color-text-tertiary)]">
+              {refresh.summary}
+            </span>
           )}
         </p>
       )}
 
-      {latest && coverage.missing.length > 0 && (
+      {payload.status_label && coverage.missing.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className={cn('text-xs', 'text-[var(--color-text-tertiary)]')}>
             Not found
@@ -128,9 +118,9 @@ export function CompanyEvidence({
         </p>
       )}
 
-      {items.length === 0 && (
+      {payload.empty_state && (
         <p className={cn('text-sm', 'text-[var(--color-text-tertiary)]')}>
-          {emptyCopy}
+          {payload.empty_state}
         </p>
       )}
 

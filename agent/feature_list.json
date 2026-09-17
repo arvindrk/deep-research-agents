@@ -657,7 +657,7 @@
   },
   {
     "id": "company-research-api-payload",
-    "status": "pending",
+    "status": "completed",
     "priority": 55,
     "category": "new_feature",
     "depends_on": [
@@ -665,7 +665,7 @@
       "research-next-refresh-due"
     ],
     "description": "Extract the pure payload builder the company research API route needs: given recent runs and a clock, produce the run status, findings, coverage, and refresh timing already assembled for the page, in one serialisable shape with closed copy. Keeping it pure is what makes the route evaluable hermetically, since the route itself needs a database.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   }
 ]

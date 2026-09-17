@@ -180,14 +180,18 @@ describe('the helpers and the section read no clock', () => {
     assert.doesNotMatch(helper, /=\s*7\b/, 'no second copy of the threshold');
   });
 
-  it('passes the request clock through from the section, not a new one', () => {
-    assert.match(component, /refreshDueCopy\(latest\.observed_at, now\)/);
-    assert.doesNotMatch(component, /refreshDueCopy\([^)]*new Date\(\)/);
+  it('passes the request clock through to the payload, not a new one', () => {
+    const payload = read('src/lib/research/api-payload.ts');
+    assert.match(payload, /refreshDueCopy\(observedAt, input\.now\)/);
+    assert.match(payload, /daysUntilRefresh\(observedAt, input\.now\)/);
+    assert.doesNotMatch(payload, /new Date\(\)/);
+    assert.match(component, /now,\n\s*\}\);/, 'the section forwards its clock');
+    assert.doesNotMatch(component, /refreshDueCopy\(/, 'no second timing path');
   });
 
   it('renders the due date as a machine-readable time when it is known', () => {
-    assert.match(component, /refreshDueDateTime\(latest\.observed_at\)/);
-    assert.match(component, /<time dateTime=\{refreshDue\}/);
+    assert.match(component, /refresh\.due_at \? \(/);
+    assert.match(component, /<time\s*\n?\s*dateTime=\{refresh\.due_at\}/);
   });
 
   it('keeps the section a Server Component with token styling only', () => {

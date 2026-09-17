@@ -266,6 +266,7 @@ export function CompanyDetail({
               </section>
             )}
             <CompanyEvidence
+              companyId={company.id}
               researchRuns={researchRuns}
               researchHistoryOk={researchHistoryOk}
               now={now}
