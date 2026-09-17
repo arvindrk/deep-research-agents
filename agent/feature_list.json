@@ -643,7 +643,7 @@
   },
   {
     "id": "company-research-api-route",
-    "status": "pending",
+    "status": "completed",
     "priority": 54,
     "category": "new_feature",
     "depends_on": [
@@ -652,7 +652,7 @@
       "company-research-api-payload"
     ],
     "description": "Expose one company research summary over HTTP so the data the company page renders is reachable without scraping the page: validate the route id at the boundary before any query, read the recent runs, and return the displayed run status, its findings, the coverage summary, and the refresh timing as JSON. Closed generic errors only, never driver text, no embedding vectors, and a bounded response.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {

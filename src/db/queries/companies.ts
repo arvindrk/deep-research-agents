@@ -20,6 +20,14 @@ export { HYBRID_SEARCH_WEIGHTS };
 
 const HNSW_EF_SEARCH = 200;
 
+/**
+ * The two outcomes a caller branches on. A missing row and a failed read want
+ * different answers from every surface, so both readers compare against one
+ * definition rather than repeating the string.
+ */
+export const COMPANY_NOT_FOUND = 'Company not found';
+export const COMPANY_READ_FAILED = 'Failed to read company';
+
 /** Columns needed to compose embedding input; never includes the vector. */
 export type CompanyEmbeddingSource = {
   id: string;
@@ -49,13 +57,13 @@ export async function getCompanyById(id: string): Promise<QueryResult<Company>> 
     );
 
     if (results.length === 0) {
-      return { success: false, error: 'Company not found' };
+      return { success: false, error: COMPANY_NOT_FOUND };
     }
 
     return { success: true, data: results[0] as Company };
   } catch {
     // Driver text names columns, hosts, and timeouts. Callers get none of it.
-    return { success: false, error: 'Failed to read company' };
+    return { success: false, error: COMPANY_READ_FAILED };
   }
 }
 
@@ -278,7 +286,7 @@ export async function updateCompanyEmbedding(
     );
 
     if (results.length === 0) {
-      return { success: false, error: 'Company not found' };
+      return { success: false, error: COMPANY_NOT_FOUND };
     }
 
     return { success: true, data: { id: results[0].id as string } };
@@ -453,7 +461,7 @@ export async function updateCompanyFromSource(
     );
 
     if (results.length === 0) {
-      return { success: false, error: 'Company not found' };
+      return { success: false, error: COMPANY_NOT_FOUND };
     }
 
     return { success: true, data: { id: String(results[0].id) } };
@@ -478,7 +486,7 @@ export async function touchCompanySyncedAt(
     );
 
     if (results.length === 0) {
-      return { success: false, error: 'Company not found' };
+      return { success: false, error: COMPANY_NOT_FOUND };
     }
 
     return { success: true, data: { id: String(results[0].id) } };

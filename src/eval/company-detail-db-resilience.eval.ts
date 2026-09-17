@@ -3,6 +3,11 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
+import {
+  COMPANY_NOT_FOUND,
+  COMPANY_READ_FAILED,
+} from '@/db/queries/companies';
+
 const REPO_ROOT = process.cwd();
 const QUERY_FILES = [
   'src/db/queries/companies.ts',
@@ -135,25 +140,32 @@ describe('no query hands driver text to a caller', () => {
   it('closes the single company read that used to leak it', () => {
     const read = queries.find((query) => query.name === 'getCompanyById');
     assert.ok(read);
-    assert.match(read.body, /error: 'Failed to read company'/);
+    assert.match(read.body, /error: COMPANY_READ_FAILED/);
     assert.match(read.body, /catch\s*\{/);
+    assert.equal(COMPANY_READ_FAILED, 'Failed to read company');
   });
 });
 
-describe('the two messages callers branch on survive', () => {
-  it('getCompanyById still says "Company not found" for an empty result', () => {
+describe('the two outcomes callers branch on survive', () => {
+  it('getCompanyById still answers COMPANY_NOT_FOUND for an empty result', () => {
     const read = queries.find((query) => query.name === 'getCompanyById');
     assert.ok(read);
     assert.match(
       read.body,
-      /results\.length === 0[\s\S]*error: 'Company not found'/,
-      'the detail route calls notFound() on exactly this string',
+      /results\.length === 0[\s\S]*error: COMPANY_NOT_FOUND/,
+      'the detail page calls notFound() on exactly this outcome',
+    );
+    assert.equal(COMPANY_NOT_FOUND, 'Company not found');
+    assert.notEqual(
+      COMPANY_NOT_FOUND,
+      COMPANY_READ_FAILED,
+      'a missing row and a failed read must stay tellable apart',
     );
   });
 
   it('the detail route still branches on it, and renders closed copy otherwise', () => {
     const route = read('src/app/companies/[id]/page.tsx');
-    assert.match(route, /result\.error === 'Company not found'/);
+    assert.match(route, /result\.error === COMPANY_NOT_FOUND/);
     assert.match(route, /notFound\(\)/);
     assert.match(route, /Unable to load company/);
     assert.doesNotMatch(

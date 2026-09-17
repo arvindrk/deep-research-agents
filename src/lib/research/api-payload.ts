@@ -1,3 +1,5 @@
+import type { StoredResearchRun } from '@/db/queries/research';
+
 import { researchCoverage, researchCoverageCopy } from './coverage';
 import {
   daysUntilRefresh,
@@ -59,6 +61,21 @@ export type CompanyResearchInput = {
   historyLoaded: boolean;
   now: Date;
 };
+
+/**
+ * The one mapping from stored rows to display input, so the page and the route
+ * cannot disagree about which fields of a run the answer is assembled from.
+ */
+export function toResearchRunDisplayInputs(
+  runs: readonly StoredResearchRun[],
+): ResearchRunDisplayInput[] {
+  return runs.map((run) => ({
+    status: run.status,
+    observed_at: run.observed_at,
+    findings: run.findings,
+    failedSources: run.failed.map((failure) => failure.source),
+  }));
+}
 
 export function buildCompanyResearchPayload(
   input: CompanyResearchInput,
