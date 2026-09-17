@@ -604,7 +604,7 @@
   },
   {
     "id": "research-findings-run-source-field-unique",
-    "status": "pending",
+    "status": "completed",
     "priority": 51,
     "category": "tech_debt",
     "depends_on": [
@@ -612,7 +612,7 @@
       "research-findings-run-id-index"
     ],
     "description": "Add a human-applied migration creating a unique index on company_research_findings (run_id, source, field) so a duplicate claim cannot persist even if a future writer bypasses buildResearchRun. The run builder folds duplicates today, which is the cosmetic fix; the database has no constraint, which is the durable one. Note in the migration that a duplicate then fails the whole insert transaction, and confirm the dedupe makes that unreachable from the shipped path before applying it.",
-    "passes": false,
+    "passes": true,
     "verify": "npm run verify"
   },
   {
@@ -678,6 +678,18 @@
     ],
     "description": "Close the outcome of a single company read as a type rather than as two strings compared by hand. The read answers either not found or read failed, the API route turns the first into a 404 and the second into a 503, and the detail page turns the first into notFound(), so a new outcome or a typo in a comparison currently falls silently into the 503 branch. Parameterise the query result reason so the one query whose callers branch on the value declares its own union, and leave every other query's signature untouched.",
     "passes": true,
+    "verify": "npm run verify"
+  },
+  {
+    "id": "eval-suite-integrity",
+    "status": "pending",
+    "priority": 57,
+    "category": "testing_observability",
+    "depends_on": [
+      "validator-engine"
+    ],
+    "description": "The eval suite is the only reason it is safe to open a pull request nobody has read, and nothing checks the suite itself. A file that is never discovered by the glob, a describe block with no assertion, a skipped or todo test, or a file that asserts only against a fixture it also defines all pass silently and prove nothing. Assert the suite's own integrity: every eval file is discovered, every file asserts something, nothing is skipped, and every file imports at least one production module.",
+    "passes": false,
     "verify": "npm run verify"
   }
 ]

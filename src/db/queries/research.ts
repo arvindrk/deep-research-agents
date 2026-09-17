@@ -22,7 +22,16 @@ import {
  * tell which half it has.
  *
  * The run id is generated here rather than returned by the insert, so both
- * statements fit in a single non-interactive transaction.
+ * statements fit in a single non-interactive transaction, and it is generated
+ * once, outside withRetry: a retry after a transaction that committed without
+ * being acknowledged re-sends the same id, and both inserts tolerate the
+ * conflict, so the retry is a no-op rather than a failure the caller would
+ * record as a lost run.
+ *
+ * The ON CONFLICT clauses name no target on purpose. A target naming the claim
+ * index would make every write fail on a database where that migration has not
+ * been applied yet, and the only conflict either statement can meet is its own
+ * row: findings are deduplicated by source and field before they get here.
  */
 export async function insertResearchRun(
   run: ResearchRun,
@@ -41,6 +50,7 @@ export async function insertResearchRun(
             ${run.succeeded}, ${JSON.stringify(run.failed)}::jsonb,
             ${run.observed_at}
           )
+          ON CONFLICT DO NOTHING
         `,
         ...run.findings.map(
           (finding) => sql`
@@ -52,6 +62,7 @@ export async function insertResearchRun(
               ${finding.value}, ${finding.evidence_url}, ${finding.confidence},
               ${finding.observed_at}
             )
+            ON CONFLICT DO NOTHING
           `,
         ),
       ]),
