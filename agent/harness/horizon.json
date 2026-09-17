@@ -1,25 +1,25 @@
 {
   "slice": [
-    "research-canonical-evidence-url",
+    "research-source-error-reasons",
     "embedding-coverage-eval",
     "research-observability",
     "search-ui"
   ],
   "rationale_per_step": {
-    "research-canonical-evidence-url": "Registered this run. With Open Graph tags now read, the evidence link is the weakest part of a finding: it points at whatever URL the collector happened to fetch, including a tracking or locale variant.",
+    "research-source-error-reasons": "Registered this run. Findings are now careful about what they say and where they point; the failure path is not. A thrown collector error still lands in the database and on the page verbatim, including the URL it was fetching.",
     "embedding-coverage-eval": "Keep on slice for Hybrid search readiness / Measurable quality. Do not select while in flight (exclusion list).",
     "research-observability": "Keep on slice for research.run / research.schedule inspectability. Do not select while in flight (exclusion list).",
     "search-ui": "Keep on slice for URL-driven discovery UI. Do not select while in flight (exclusion list)."
   },
   "category_mix": {
     "feature_improvement": 2,
-    "testing_observability": 2,
-    "new_feature": 1
+    "maintenance": 1,
+    "testing_observability": 2
   },
   "vision_refs": {
-    "research-canonical-evidence-url": [
-      "Evidence-backed intelligence",
-      "UI and UX"
+    "research-source-error-reasons": [
+      "Reliable autonomous research",
+      "Evidence-backed intelligence"
     ],
     "embedding-coverage-eval": [
       "Hybrid search",
@@ -34,6 +34,6 @@
       "Discovery with low noise"
     ]
   },
-  "generated_by_run": "continue-20260907-185642",
-  "notes": "Executor completed research-meta-description-fallback and advanced past it. Classic head tags keep precedence; Open Graph is the fallback. Remaining heads stay excluded as in-flight."
+  "generated_by_run": "continue-20260908-091536",
+  "notes": "Executor completed research-canonical-evidence-url and advanced past it. Writing the eval turned up a real defect (a malformed href resolving to a same-host path), fixed in the same run. Remaining heads stay excluded as in-flight."
 }

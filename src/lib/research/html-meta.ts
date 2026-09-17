@@ -36,17 +36,16 @@ const TITLE = /<title[^>]*>([\s\S]*?)<\/title>/i;
  */
 export const DESCRIPTION_META_KEYS = ['description', 'og:description'] as const;
 
-const META_TAG = /<meta\b[^>]*>/gi;
-const META_ATTR = /([a-zA-Z0-9:_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+const TAG_ATTR = /([a-zA-Z0-9:_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
 
-/** A meta tag's attributes, lowercased keys, quoted values. */
-function metaAttributes(tag: string): Map<string, string> {
+/** One tag's attributes, lowercased keys, quoted values. */
+function tagAttributes(tag: string): Map<string, string> {
   const attributes = new Map<string, string>();
-  META_ATTR.lastIndex = 0;
+  TAG_ATTR.lastIndex = 0;
   for (
-    let match = META_ATTR.exec(tag);
+    let match = TAG_ATTR.exec(tag);
     match !== null;
-    match = META_ATTR.exec(tag)
+    match = TAG_ATTR.exec(tag)
   ) {
     attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? '');
   }
@@ -54,18 +53,30 @@ function metaAttributes(tag: string): Map<string, string> {
 }
 
 /**
- * The content of the first meta tag whose `name` or `property` is `key`.
- * Attributes are read as a set rather than matched in sequence, because real
- * pages write `content` before `property` about as often as after it.
+ * Every `<name ...>` tag's attributes, in document order. Attributes are read
+ * as a set rather than matched in sequence, because real pages write `content`
+ * before `property` about as often as after it. Bounded by the byte cap the
+ * fetch layer already applies.
  */
-export function metaContent(html: string, key: string): string {
-  META_TAG.lastIndex = 0;
+export function tagAttributeSets(
+  html: string,
+  name: string,
+): Map<string, string>[] {
+  const pattern = new RegExp(`<${name}\\b[^>]*>`, 'gi');
+  const sets: Map<string, string>[] = [];
   for (
-    let tag = META_TAG.exec(html);
+    let tag = pattern.exec(html);
     tag !== null;
-    tag = META_TAG.exec(html)
+    tag = pattern.exec(html)
   ) {
-    const attributes = metaAttributes(tag[0]);
+    sets.push(tagAttributes(tag[0]));
+  }
+  return sets;
+}
+
+/** The content of the first meta tag whose `name` or `property` is `key`. */
+export function metaContent(html: string, key: string): string {
+  for (const attributes of tagAttributeSets(html, 'meta')) {
     const declared = attributes.get('name') ?? attributes.get('property');
     if (declared?.toLowerCase() !== key) continue;
 
