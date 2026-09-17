@@ -1,0 +1,22 @@
+{
+  "entity-escaped": {
+    "title": "Peak & Vale",
+    "description": "We build <things>, we say \"hello\", and the founder's dog approves.",
+    "shapes": ["title-element", "meta-description", "entity-escape"]
+  },
+  "no-metadata": {
+    "title": "",
+    "description": "",
+    "shapes": ["no-metadata"]
+  },
+  "open-graph-only": {
+    "title": "Harbor Analytics",
+    "description": "Warehouse-native product analytics.",
+    "shapes": ["og-title-fallback", "og-description-fallback"]
+  },
+  "plain-title-and-description": {
+    "title": "Northwind Logistics",
+    "description": "Freight brokerage for mid-market shippers.",
+    "shapes": ["title-element", "meta-description", "doctype-and-comments"]
+  }
+}

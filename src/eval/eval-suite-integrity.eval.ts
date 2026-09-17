@@ -270,18 +270,25 @@ describe('the suite is held to the same tools as the code', () => {
 });
 
 describe('nothing in the eval tree is dead', () => {
-  it('has every fixture and helper referenced by a file the glob runs', () => {
-    const suite = suiteFiles();
-    const sources = new Map(suite.map((path) => [path, readRepoFile(path)]));
+  it('has every fixture and helper named by a module the suite runs or imports', () => {
+    const modules = [...suiteFiles(), ...supportModules()];
+    const sources = new Map(modules.map((path) => [path, readRepoFile(path)]));
     const assets = evalTreeFiles().filter((path) => !path.endsWith(".eval.ts"));
     assert.ok(assets.length > 0, 'the scan must see the assets it checks');
 
     for (const asset of assets) {
       const name = asset.slice(asset.lastIndexOf("/") + 1);
-      const referenced = suite.some((path) => {
+      const directory = asset.slice(0, asset.lastIndexOf("/"));
+      const referenced = modules.some((path) => {
+        if (path === asset) return false;
         const source = sources.get(path) ?? "";
         return (
           source.includes(asset) ||
+          // A corpus is scanned, so its pages are named by the directory
+          // literal the scan reads, not one file at a time. Nothing weaker:
+          // a bare substring would clear any asset whose directory is the
+          // prefix of some other path a module happens to mention.
+          (!asset.endsWith('.ts') && source.includes(`'${directory}'`)) ||
           importsOf(path).some(
             (specifier) =>
               resolveLocal(path, specifier) === asset ||
@@ -289,7 +296,7 @@ describe('nothing in the eval tree is dead', () => {
           )
         );
       });
-      assert.ok(referenced, `${asset} is referenced by no eval, so it is dead weight`);
+      assert.ok(referenced, ` is named by no eval and no helper, so it is dead weight`);
     }
   });
 });
