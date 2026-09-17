@@ -249,8 +249,9 @@ describe('both collectors turn a page into the findings production stores', () =
 
   /**
    * The findings a page must produce, derived from the recorded parse rather
-   * than from the collector: same two fields, same confidences, the fetched URL
-   * as evidence, and nothing at all for a field the page does not carry.
+   * than from the collector: same two fields, same confidences, the recorded
+   * evidence URL or the fetched one, and nothing at all for a field the page
+   * does not carry.
    */
   const expectedFindings = (
     page: CorpusPage,
@@ -258,13 +259,14 @@ describe('both collectors turn a page into the findings production stores', () =
     url: string,
   ): ResearchFinding[] => {
     const findings: ResearchFinding[] = [];
+    const evidence = page.evidence ?? url;
 
     if (page.title) {
       findings.push({
         source,
         field: `${source}_title`,
         value: page.title,
-        evidence_url: url,
+        evidence_url: evidence,
         observed_at: OBSERVED_AT,
         confidence: 'high',
       });
@@ -275,7 +277,7 @@ describe('both collectors turn a page into the findings production stores', () =
         source,
         field: `${source}_description`,
         value: page.description,
-        evidence_url: url,
+        evidence_url: evidence,
         observed_at: OBSERVED_AT,
         confidence: 'medium',
       });
@@ -309,6 +311,36 @@ describe('both collectors turn a page into the findings production stores', () =
           `${page.name} produced ${finding.field}, which nothing scores`,
         );
       }
+    }
+  });
+});
+
+describe('a canonical link moves the evidence only when a reader can follow it', () => {
+  const SITE = 'https://example.test/';
+
+  it('records an evidence URL exactly for the pages that relocate it', () => {
+    for (const page of corpusPages()) {
+      const relocates = page.shapes.some((shape) =>
+        shape.startsWith('canonical-link'),
+      );
+      const sameHost =
+        relocates && !page.shapes.includes('canonical-link-other-host');
+      assert.equal(
+        page.evidence !== undefined,
+        sameHost,
+        `${page.name} disagrees about whether it relocates its evidence`,
+      );
+    }
+  });
+
+  it('keeps the evidence on the host the collector visited', () => {
+    for (const page of corpusPages()) {
+      const evidence = page.evidence ?? SITE;
+      assert.equal(
+        new URL(evidence).hostname,
+        new URL(SITE).hostname,
+        `${page.name} points a reader at a host the collector never fetched`,
+      );
     }
   });
 });

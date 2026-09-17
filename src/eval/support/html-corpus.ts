@@ -18,6 +18,9 @@ export const EXPECTATIONS_FILE = `${CORPUS_DIR}/expected.json`;
 /** The shapes the parser has a branch for, which the corpus must cover. */
 export const PAGE_SHAPES = [
   'attribute-order',
+  'canonical-link',
+  'canonical-link-other-host',
+  'canonical-link-relative',
   'description-precedence',
   'doctype-and-comments',
   'empty-content-skipped',
@@ -39,6 +42,8 @@ export type PageShape = (typeof PAGE_SHAPES)[number];
 export type PageExpectation = {
   title: string;
   description: string;
+  /** The evidence URL, when the page moves it off the URL that was fetched. */
+  evidence?: string;
   shapes: PageShape[];
 };
 
@@ -89,6 +94,14 @@ const headOf = (html: string): string =>
 /** A title element with something in it. */
 const hasTitle = (html: string): boolean => /<title[^>]*>\s*\S/i.test(html);
 
+/** A canonical link whose href reads a particular way. */
+const canonicalHref = (html: string, href: RegExp): boolean =>
+  (html.match(/<link\b[^>]*>/gi) ?? []).some(
+    (tag) =>
+      /rel\s*=\s*["']canonical["']/i.test(tag) &&
+      href.test(/href\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1] ?? ''),
+  );
+
 /** Meta tags whose content attribute is written before the key that names it. */
 const contentBeforeKey = (html: string): boolean =>
   (html.match(/<meta\b[^>]*>/gi) ?? []).some(
@@ -106,6 +119,9 @@ const overCap = new RegExp(`content\\s*=\\s*"[^"]{${MAX_FINDING_VALUE_CHARS + 1}
  */
 export const SHAPE_EVIDENCE: Record<PageShape, (html: string) => boolean> = {
   'attribute-order': contentBeforeKey,
+  'canonical-link': (html) => canonicalHref(html, /^https?:\/\//i),
+  'canonical-link-other-host': (html) => canonicalHref(html, /^https?:\/\/(?!example\.test)/i),
+  'canonical-link-relative': (html) => canonicalHref(html, /^\//),
   'description-precedence': (html) =>
     /name\s*=\s*["']description["']/i.test(html) &&
     /property\s*=\s*["']og:description["']/i.test(html),
