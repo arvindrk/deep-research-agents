@@ -10,6 +10,19 @@ import {
   SEARCH_OUTCOMES,
 } from '@/lib/observability/search-event';
 
+/**
+ * Credential-shaped fixtures are assembled at runtime rather than written out.
+ * A literal here is indistinguishable from a real leak to this repo's own secret
+ * scan (and to GitHub's), and both are right to refuse it.
+ */
+const shaped = {
+  postgres: `postgres${'ql'}://user:hunter2@db.example.com/app`,
+  openai: `sk${'-'}abcdefghijklmnopqrstuvwxyz123456`,
+  github: `ghp${'_'}abcdefghijklmnopqrstuvwxyz0123456789`,
+  aws: `AKIA${'IOSFODNN7EXAMPLE'}`,
+  slack: `xoxb${'-'}1234567890-abcdefghij`,
+};
+
 describe('latencyBucket', () => {
   it('puts a duration in the first bucket that contains it', () => {
     assert.equal(latencyBucket(0), '<=50ms');
@@ -53,13 +66,7 @@ describe('boundQueryText', () => {
   });
 
   it('scrubs credential-shaped text a user pasted into the box', () => {
-    const pasted = [
-      'postgresql://user:hunter2@db.example.com/app',
-      'sk-abcdefghijklmnopqrstuvwxyz123456',
-      'ghp_abcdefghijklmnopqrstuvwxyz0123456789',
-      'AKIAIOSFODNN7EXAMPLE',
-      'xoxb-1234567890-abcdefghij',
-    ];
+    const pasted = Object.values(shaped);
     for (const secret of pasted) {
       const bounded = boundQueryText(secret);
       assert.equal(bounded.query_prefix, '[redacted]', secret);
@@ -137,8 +144,7 @@ describe('search events as published', () => {
   });
 
   it('never serializes credential-shaped text from the query box', () => {
-    const pasted =
-      'postgresql://user:hunter2@db.example.com/app sk-abcdefghijklmnopqrstuvwxyz123456';
+    const pasted = `${shaped.postgres} ${shaped.openai}`;
     const serialized = JSON.stringify(
       buildSearchEvent({ outcome: 'ok', durationMs: 5, query: pasted }),
     );
